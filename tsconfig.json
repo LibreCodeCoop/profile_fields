@@ -1,0 +1,31 @@
+{
+	"compilerOptions": {
+		"target": "ES2022",
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"allowImportingTsExtensions": true,
+		"noEmit": true,
+		"strict": true,
+		"allowJs": true,
+		"jsx": "preserve",
+		"resolveJsonModule": true,
+		"esModuleInterop": true,
+		"baseUrl": ".",
+		"paths": {
+			"vue": ["./node_modules/vue/dist/vue.d.ts"],
+			"@nextcloud/*": ["./node_modules/@nextcloud/*"]
+		},
+		"lib": ["ES2022", "DOM", "DOM.Iterable"],
+		"types": ["vite/client", "node"]
+	},
+	"exclude": [
+		"node_modules",
+		"vendor"
+	],
+	"include": [
+		"env.d.ts",
+		"src/tests/**/*.ts",
+		"src/**/*.ts",
+		"src/**/*.vue"
+	]
+}

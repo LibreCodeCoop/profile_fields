@@ -1,0 +1,23 @@
+<?php
+
+declare(strict_types=1);
+
+namespace OCA\ProfileFields\Listener;
+
+use OCA\ProfileFields\AppInfo\Application;
+use OCP\EventDispatcher\Event;
+use OCP\EventDispatcher\IEventListener;
+
+/**
+ * @template-implements IEventListener<Event>
+ */
+readonly class BeforeTemplateRenderedListener implements IEventListener {
+	#[\Override]
+	public function handle(Event $event): void {
+		if ($event::class !== '\\OCA\\Settings\\Events\\BeforeTemplateRenderedEvent') {
+			return;
+		}
+
+		Application::loadUserManagementAssets();
+	}
+}

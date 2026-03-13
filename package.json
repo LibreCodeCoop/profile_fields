@@ -1,0 +1,38 @@
+{
+  "name": "profile_fields",
+  "version": "0.0.1-dev",
+  "description": "Profile fields",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "NODE_ENV=production vite --mode production build",
+    "dev": "NODE_ENV=development vite --mode development build",
+    "watch": "NODE_ENV=development vite --mode development build --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test"
+  },
+  "browserslist": [
+    "extends @nextcloud/browserslist-config"
+  ],
+  "engines": {
+    "node": "^24.0.0",
+    "npm": "^11.3.0"
+  },
+  "dependencies": {
+    "@mdi/js": "^7.4.47",
+    "@nextcloud/axios": "^2.5.2",
+    "@nextcloud/initial-state": "^3.0.0",
+    "@nextcloud/l10n": "^3.4.1",
+    "@nextcloud/router": "^3.1.0",
+    "@nextcloud/vue": "^9.5.0",
+    "vue": "^3.5.29"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.54.2",
+    "@nextcloud/browserslist-config": "^3.1.2",
+    "@nextcloud/vite-config": "^2.5.2",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  }
+}

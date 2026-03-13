@@ -1,0 +1,65 @@
+<?php
+
+declare(strict_types=1);
+
+namespace OCA\ProfileFields;
+
+/**
+ * @psalm-type ProfileFieldsType = 'text'|'number'
+ * @psalm-type ProfileFieldsVisibility = 'private'|'users'|'public'
+ * @psalm-type ProfileFieldsDefinitionInput = array{
+ *     field_key?: string,
+ *     label?: string,
+ *     type?: string,
+ *     admin_only?: bool,
+ *     user_editable?: bool,
+ *     user_visible?: bool,
+ *     initial_visibility?: string,
+ *     sort_order?: int,
+ *     active?: bool,
+ * }
+ * @psalm-type ProfileFieldsDefinition = array{
+ *     id: int,
+ *     field_key: non-empty-string,
+ *     label: non-empty-string,
+ *     type: ProfileFieldsType,
+ *     admin_only: bool,
+ *     user_editable: bool,
+ *     user_visible: bool,
+ *     initial_visibility: ProfileFieldsVisibility,
+ *     sort_order: int,
+ *     active: bool,
+ *     created_at: string,
+ *     updated_at: string,
+ * }
+ * @psalm-type ProfileFieldsValuePayload = array{
+ *     value: mixed,
+ * }
+ * @psalm-type ProfileFieldsValueRecord = array{
+ *     id: int,
+ *     field_definition_id: int,
+ *     user_uid: string,
+ *     value: ProfileFieldsValuePayload,
+ *     current_visibility: ProfileFieldsVisibility,
+ *     updated_by_uid: string,
+ *     updated_at: string,
+ * }
+ * @psalm-type ProfileFieldsEditableField = array{
+ *     definition: ProfileFieldsDefinition,
+ *     value: ProfileFieldsValueRecord|null,
+ *     can_edit: bool,
+ * }
+ * @psalm-type ProfileFieldsLookupField = array{
+ *     definition: ProfileFieldsDefinition,
+ *     value: ProfileFieldsValueRecord,
+ * }
+ * @psalm-type ProfileFieldsLookupResult = array{
+ *     user_uid: string,
+ *     lookup_field_key: string,
+ *     fields: array<string, ProfileFieldsLookupField>,
+ * }
+ */
+final class ResponseDefinitions {
+	private function __construct() {
+	}
+}

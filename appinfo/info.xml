@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<info xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
+	<id>profile_fields</id>
+	<name>Profile fields</name>
+	<summary>Manage profile fields for Nextcloud accounts</summary>
+	<description><![CDATA[
+Managed profile fields with per-field edit and visibility rules.
+	]]></description>
+	<version>0.0.1-dev</version>
+	<licence>agpl</licence>
+	<author mail="contact@librecode.coop" homepage="https://librecode.coop">LibreCode</author>
+	<namespace>ProfileFields</namespace>
+	<category>organization</category>
+	<category>tools</category>
+	<dependencies>
+		<nextcloud min-version="32" max-version="34"/>
+	</dependencies>
+	<commands>
+		<command>OCA\ProfileFields\Command\Developer\Reset</command>
+	</commands>
+	<settings>
+		<admin>OCA\ProfileFields\Settings\Admin</admin>
+		<admin-section>OCA\ProfileFields\Settings\AdminSection</admin-section>
+		<personal>OCA\ProfileFields\Settings\PersonalInfo</personal>
+	</settings>
+</info>
