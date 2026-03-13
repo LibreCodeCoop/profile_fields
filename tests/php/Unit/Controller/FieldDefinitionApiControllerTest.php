@@ -1,0 +1,149 @@
+<?php
+
+declare(strict_types=1);
+
+namespace OCA\ProfileFields\Tests\Unit\Controller;
+
+use InvalidArgumentException;
+use OCA\ProfileFields\Controller\FieldDefinitionApiController;
+use OCA\ProfileFields\Db\FieldDefinition;
+use OCA\ProfileFields\Enum\FieldType;
+use OCA\ProfileFields\Enum\FieldVisibility;
+use OCA\ProfileFields\Service\FieldDefinitionService;
+use OCP\AppFramework\Http;
+use OCP\AppFramework\Http\DataResponse;
+use OCP\IRequest;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
+
+class FieldDefinitionApiControllerTest extends TestCase {
+	private IRequest&MockObject $request;
+	private FieldDefinitionService&MockObject $service;
+	private FieldDefinitionApiController $controller;
+
+	protected function setUp(): void {
+		parent::setUp();
+		$this->request = $this->createMock(IRequest::class);
+		$this->service = $this->createMock(FieldDefinitionService::class);
+		$this->controller = new FieldDefinitionApiController($this->request, $this->service);
+	}
+
+	public function testListReturnsSerializedDefinitions(): void {
+		$definition = $this->buildDefinition(3, 'performance_score');
+		$this->service->expects($this->once())
+			->method('findAllOrdered')
+			->willReturn([$definition]);
+
+		$response = $this->controller->index();
+
+		$this->assertInstanceOf(DataResponse::class, $response);
+		$this->assertSame(Http::STATUS_OK, $response->getStatus());
+		$this->assertSame([$definition->jsonSerialize()], $response->getData());
+	}
+
+	public function testCreateReturnsCreatedDefinition(): void {
+		$definition = $this->buildDefinition(5, 'cpf');
+		$this->service->expects($this->once())
+			->method('create')
+			->with([
+				'field_key' => 'cpf',
+				'label' => 'CPF',
+				'type' => FieldType::TEXT->value,
+				'admin_only' => false,
+				'user_editable' => true,
+				'user_visible' => true,
+				'initial_visibility' => FieldVisibility::USERS->value,
+				'sort_order' => 2,
+				'active' => true,
+			])
+			->willReturn($definition);
+
+		$response = $this->controller->create(
+			'cpf',
+			'CPF',
+			FieldType::TEXT->value,
+			false,
+			true,
+			true,
+			FieldVisibility::USERS->value,
+			2,
+			true,
+		);
+
+		$this->assertSame(Http::STATUS_CREATED, $response->getStatus());
+		$this->assertSame($definition->jsonSerialize(), $response->getData());
+	}
+
+	public function testCreateReturnsBadRequestOnValidationFailure(): void {
+		$this->service->expects($this->once())
+			->method('create')
+			->willThrowException(new InvalidArgumentException('field_key already exists'));
+
+		$response = $this->controller->create(
+			'cpf',
+			'CPF',
+			FieldType::TEXT->value,
+			false,
+			false,
+			true,
+			FieldVisibility::PRIVATE->value,
+			0,
+			true,
+		);
+
+		$this->assertSame(Http::STATUS_BAD_REQUEST, $response->getStatus());
+		$this->assertSame(['message' => 'field_key already exists'], $response->getData());
+	}
+
+	public function testUpdateReturnsNotFoundWhenDefinitionDoesNotExist(): void {
+		$this->service->expects($this->once())
+			->method('findById')
+			->with(99)
+			->willReturn(null);
+
+		$response = $this->controller->update(
+			99,
+			'CPF',
+			FieldType::TEXT->value,
+			false,
+			false,
+			true,
+			FieldVisibility::PRIVATE->value,
+			0,
+			true,
+		);
+
+		$this->assertSame(Http::STATUS_NOT_FOUND, $response->getStatus());
+		$this->assertSame(['message' => 'Field definition not found'], $response->getData());
+	}
+
+	public function testDeleteReturnsDeletedDefinition(): void {
+		$definition = $this->buildDefinition(8, 'rg');
+		$this->service->expects($this->once())
+			->method('delete')
+			->with(8)
+			->willReturn($definition);
+
+		$response = $this->controller->delete(8);
+
+		$this->assertSame(Http::STATUS_OK, $response->getStatus());
+		$this->assertSame($definition->jsonSerialize(), $response->getData());
+	}
+
+	private function buildDefinition(int $id, string $fieldKey): FieldDefinition {
+		$definition = new FieldDefinition();
+		$definition->setId($id);
+		$definition->setFieldKey($fieldKey);
+		$definition->setLabel(strtoupper($fieldKey));
+		$definition->setType(FieldType::TEXT->value);
+		$definition->setAdminOnly(false);
+		$definition->setUserEditable(true);
+		$definition->setUserVisible(true);
+		$definition->setInitialVisibility(FieldVisibility::PRIVATE->value);
+		$definition->setSortOrder(0);
+		$definition->setActive(true);
+		$definition->setCreatedAt(new \DateTime());
+		$definition->setUpdatedAt(new \DateTime());
+		return $definition;
+	}
+}

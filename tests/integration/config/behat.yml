@@ -1,0 +1,17 @@
+default:
+  autoload:
+    '': '%paths.base%/../features/bootstrap'
+  suites:
+    default:
+      contexts:
+        - FeatureContext
+        - Libresign\NextcloudBehat\NextcloudApiContext
+      paths:
+        - '%paths.base%/../features'
+
+  extensions:
+    PhpBuiltin\Server:
+      workers: 10
+    jarnaiz\JUnitFormatter\JUnitFormatterExtension:
+      filename: report.xml
+      outputDir: '%paths.base%/../output/'
