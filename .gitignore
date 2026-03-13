@@ -1,0 +1,14 @@
+/vendor/
+/node_modules/
+/css/
+/js/
+/vendor-bin/*/vendor/
+/tests/integration/vendor/
+/tests/integration/output/
+/build/
+/test-results/
+/playwright-report/
+/tests/php/.phpunit.cache/
+/tests/php/.phpunit.result.cache
+/.php-cs-fixer.cache
+/.phpunit.result.cache

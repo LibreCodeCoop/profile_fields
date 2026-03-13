@@ -1,0 +1,180 @@
+name: Playwright
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+      - stable*
+
+permissions:
+  contents: read
+
+concurrency:
+  group: playwright-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+
+    outputs:
+      src: ${{ steps.changes.outputs.src }}
+
+    steps:
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        id: changes
+        continue-on-error: true
+        with:
+          filters: |
+            src:
+              - '.github/workflows/playwright.yml'
+              - 'appinfo/**'
+              - 'css/**'
+              - 'js/**'
+              - 'lib/**'
+              - 'playwright/**'
+              - 'playwright.config.ts'
+              - 'src/**'
+              - 'templates/**'
+              - 'vendor/**'
+              - 'package.json'
+              - 'package-lock.json'
+
+  playwright:
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.src != 'false'
+    timeout-minutes: 45
+    env:
+      APP_NAME: profile_fields
+
+    name: Playwright E2E
+
+    steps:
+      - name: Checkout server
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          submodules: true
+          repository: nextcloud/server
+          ref: master
+
+      - name: Checkout app
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          path: apps-extra/${{ env.APP_NAME }}
+
+      - name: Set up php 8.2
+        uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1 # v2.36.0
+        with:
+          php-version: '8.2'
+          extensions: bz2, ctype, curl, dom, fileinfo, gd, iconv, intl, json, libxml, mbstring, openssl, pcntl, posix, session, simplexml, sqlite, pdo_sqlite, xmlreader, xmlwriter, zip, zlib
+          coverage: none
+          ini-file: development
+          ini-values: disable_functions=
+
+      - name: Install app dependencies
+        working-directory: apps-extra/${{ env.APP_NAME }}
+        run: |
+          composer remove nextcloud/ocp --dev --no-scripts
+          composer install --no-dev
+
+      - name: Read package.json node and npm engines version
+        uses: skjnldsv/read-package-engines-version-actions@06d6baf7d8f41934ab630e97d9e6c0bc9c9ac5e4 # v3
+        id: versions
+        with:
+          path: apps-extra/${{ env.APP_NAME }}
+          fallbackNode: '^24'
+          fallbackNpm: '^11.3'
+
+      - name: Set up node ${{ steps.versions.outputs.nodeVersion }}
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: ${{ steps.versions.outputs.nodeVersion }}
+          cache: npm
+          cache-dependency-path: apps-extra/${{ env.APP_NAME }}/package-lock.json
+
+      - name: Set up npm ${{ steps.versions.outputs.npmVersion }}
+        run: npm i -g 'npm@${{ steps.versions.outputs.npmVersion }}'
+
+      - name: Install node dependencies and build app
+        working-directory: apps-extra/${{ env.APP_NAME }}
+        run: |
+          npm ci --prefer-offline
+          TESTING=true npm run build --if-present
+
+      - name: Set up Nextcloud
+        run: |
+          mkdir data
+          ./occ maintenance:install \
+            --verbose \
+            --database=sqlite \
+            --database-name=nextcloud \
+            --admin-user admin \
+            --admin-pass admin
+          ./occ app:enable --force ${{ env.APP_NAME }}
+          ./occ config:system:set auth.bruteforce.protection.enabled --value false --type boolean
+          ./occ config:system:set ratelimit.protection.enabled --value false --type boolean
+          ./occ config:system:set overwrite.cli.url --value 'http://localhost:8080'
+          ./occ config:system:set overwritehost --value 'localhost:8080'
+          ./occ config:system:set debug --value true --type boolean
+
+      - name: Start PHP built-in server
+        run: |
+          front_controller_active=true php -S localhost:8080 -t . apps-extra/${{ env.APP_NAME }}/playwright/router.php &
+          timeout 30 bash -c 'until curl -s http://localhost:8080/status.php > /dev/null; do sleep 1; done'
+
+      - name: Install Playwright system dependencies
+        working-directory: apps-extra/${{ env.APP_NAME }}
+        run: npx playwright install-deps chromium
+
+      - name: Install Playwright browsers
+        working-directory: apps-extra/${{ env.APP_NAME }}
+        run: npx playwright install chromium
+
+      - name: Run Playwright tests
+        working-directory: apps-extra/${{ env.APP_NAME }}
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:8080
+          NEXTCLOUD_ADMIN_USER: admin
+          NEXTCLOUD_ADMIN_PASSWORD: admin
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        if: always()
+        with:
+          name: playwright-report
+          path: apps-extra/${{ env.APP_NAME }}/playwright-report/
+          retention-days: 30
+
+      - name: Upload Playwright results
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        if: always()
+        with:
+          name: playwright-test-results
+          path: apps-extra/${{ env.APP_NAME }}/test-results/
+          retention-days: 30
+
+      - name: Print logs
+        if: always()
+        run: cat data/nextcloud.log 2>/dev/null || true
+
+  summary:
+    permissions:
+      contents: none
+    runs-on: ubuntu-latest
+    needs: [changes, playwright]
+    if: always()
+
+    name: playwright-summary
+
+    steps:
+      - name: Summary status
+        run: if ${{ needs.changes.outputs.src != 'false' && needs.playwright.result != 'success' }}; then exit 1; fi
