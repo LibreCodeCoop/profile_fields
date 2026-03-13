@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 LibreCode coop and LibreCode contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import { t } from '@nextcloud/l10n'
 import { createApp, h, reactive } from 'vue'
 import AdminUserFieldsDialog from './components/AdminUserFieldsDialog.vue'

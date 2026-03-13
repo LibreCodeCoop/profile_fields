@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 LibreCode coop and LibreCode contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import { describe, expect, it } from 'vitest'
 
 import { buildFieldOrderUpdates } from '../../utils/fieldOrder.ts'

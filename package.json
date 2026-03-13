@@ -2,6 +2,7 @@
   "name": "profile_fields",
   "version": "0.0.1-dev",
   "description": "Profile fields",
+  "license": "AGPL-3.0-or-later",
   "private": true,
   "type": "module",
   "scripts": {

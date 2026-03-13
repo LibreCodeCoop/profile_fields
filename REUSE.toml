@@ -1,0 +1,40 @@
+# SPDX-FileCopyrightText: 2026 LibreCode coop and LibreCode contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+version = 1
+
+[[annotations]]
+path = [
+  "LICENSE",
+  "LICENSES/**",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "2007 Free Software Foundation, Inc."
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = [
+  ".l10nignore",
+  ".tx/config",
+  "appinfo/info.xml",
+  "composer.json",
+  "composer.lock",
+  "openapi-administration.json",
+  "openapi-full.json",
+  "openapi.json",
+  "package-lock.json",
+  "package.json",
+  "psalm.xml",
+  "tests/integration/composer.json",
+  "tests/integration/composer.lock",
+  "tests/integration/features/**/*.feature",
+  "tests/php/phpunit.xml",
+  "tests/psalm-baseline.xml",
+  "tsconfig.json",
+  "vendor-bin/**/composer.json",
+  "vendor-bin/**/composer.lock",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 LibreCode coop and LibreCode contributors"
+SPDX-License-Identifier = "AGPL-3.0-or-later"

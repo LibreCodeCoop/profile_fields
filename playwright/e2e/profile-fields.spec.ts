@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 LibreCode coop and LibreCode contributors
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 import { expect, test } from '@playwright/test'
 import { login } from '../support/nc-login'
 import { createDefinition, deleteDefinitionByFieldKey } from '../support/profile-fields'
