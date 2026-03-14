@@ -33,6 +33,8 @@ Each field can be governed with edit and visibility rules so teams can combine s
 		<nextcloud min-version="32" max-version="34"/>
 	</dependencies>
 	<commands>
+		<command>OCA\ProfileFields\Command\Data\Export</command>
+		<command>OCA\ProfileFields\Command\Data\Clear</command>
 		<command>OCA\ProfileFields\Command\Developer\Reset</command>
 	</commands>
 	<settings>
