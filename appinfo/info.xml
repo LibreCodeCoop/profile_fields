@@ -2,7 +2,6 @@
 
 <!--
 SPDX-FileCopyrightText: 2026 LibreCode coop and LibreCode contributors
-
 SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 
@@ -10,9 +9,13 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 	xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
 	<id>profile_fields</id>
 	<name>Profile fields</name>
-	<summary>Manage profile fields for Nextcloud accounts</summary>
+	<summary>Structured custom profile data for directories, operations and support teams</summary>
 	<description><![CDATA[
-Managed profile fields with per-field edit and visibility rules.
+Profile fields helps organizations turn Nextcloud accounts into a structured directory for real operational use.
+
+Create custom fields for support regions, product specialties, escalation aliases, customer segments, internal access levels and any other organization-specific context that does not belong in the default profile.
+
+Each field can be governed with edit and visibility rules so teams can combine self-service updates with admin-managed data, keeping sensitive operational context accurate without losing usability for employees, partners and support teams.
 	]]></description>
 	<version>0.0.1-dev</version>
 	<licence>agpl</licence>
@@ -20,6 +23,12 @@ Managed profile fields with per-field edit and visibility rules.
 	<namespace>ProfileFields</namespace>
 	<category>organization</category>
 	<category>tools</category>
+	<website>https://librecode.coop</website>
+	<bugs>https://github.com/LibreCodeCoop/profile_fields/issues</bugs>
+	<repository type="git">https://github.com/LibreCodeCoop/profile_fields</repository>
+	<screenshot small-thumbnail="https://raw.githubusercontent.com/LibreCodeCoop/profile_fields/main/img/screenshots/admin-catalog-thumb.png">https://raw.githubusercontent.com/LibreCodeCoop/profile_fields/main/img/screenshots/admin-catalog.png</screenshot>
+	<screenshot small-thumbnail="https://raw.githubusercontent.com/LibreCodeCoop/profile_fields/main/img/screenshots/personal-settings-thumb.png">https://raw.githubusercontent.com/LibreCodeCoop/profile_fields/main/img/screenshots/personal-settings.png</screenshot>
+	<screenshot small-thumbnail="https://raw.githubusercontent.com/LibreCodeCoop/profile_fields/main/img/screenshots/user-management-dialog-thumb.png">https://raw.githubusercontent.com/LibreCodeCoop/profile_fields/main/img/screenshots/user-management-dialog.png</screenshot>
 	<dependencies>
 		<nextcloud min-version="32" max-version="34"/>
 	</dependencies>

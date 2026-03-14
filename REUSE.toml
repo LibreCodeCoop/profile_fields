@@ -20,6 +20,7 @@ path = [
   "appinfo/info.xml",
   "composer.json",
   "composer.lock",
+  "img/screenshots/*.png",
   "openapi-administration.json",
   "openapi-full.json",
   "openapi.json",
