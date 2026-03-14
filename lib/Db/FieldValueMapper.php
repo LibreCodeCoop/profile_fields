@@ -36,6 +36,20 @@ class FieldValueMapper extends QBMapper {
 	/**
 	 * @return list<FieldValue>
 	 */
+	public function findAllOrdered(): array {
+		$qb = $this->db->getQueryBuilder();
+		$qb->select('*')
+			->from('profile_fields_values')
+			->orderBy('field_definition_id', 'ASC')
+			->addOrderBy('user_uid', 'ASC')
+			->addOrderBy('id', 'ASC');
+
+		return $this->findEntities($qb);
+	}
+
+	/**
+	 * @return list<FieldValue>
+	 */
 	public function findByUserUid(string $userUid): array {
 		$qb = $this->db->getQueryBuilder();
 		$qb->select('*')
