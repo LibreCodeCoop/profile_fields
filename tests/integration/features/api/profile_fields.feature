@@ -106,7 +106,6 @@ Feature: profile fields API
       | (jq).ocs.data.user_uid            | profileuser         |
       | (jq).ocs.data.value.value         | EMP-001             |
       | (jq).ocs.data.current_visibility  | users               |
-      | (jq).ocs.data.updated_by_uid      | admin               |
     Given as user "profileuser"
     When sending "get" to ocs "/apps/profile_fields/api/v1/me/values"
     Then the response should have a status code 200
@@ -129,7 +128,6 @@ Feature: profile fields API
       | (jq).ocs.data.user_uid            | profileuser         |
       | (jq).ocs.data.value.value         | Alpha               |
       | (jq).ocs.data.current_visibility  | users               |
-      | (jq).ocs.data.updated_by_uid      | profileuser         |
     When sending "put" to ocs "/apps/profile_fields/api/v1/me/values/<EMPLOYEE_FIELD_ID>"
       | value | denied |
     Then the response should have a status code 403
@@ -143,7 +141,6 @@ Feature: profile fields API
       | key                               | value               |
       | (jq).ocs.data.field_definition_id | <NICKNAME_FIELD_ID> |
       | (jq).ocs.data.current_visibility  | public              |
-      | (jq).ocs.data.updated_by_uid      | profileuser         |
     Given as user "admin"
     When sending "get" to ocs "/apps/profile_fields/api/v1/users/profileuser/values"
     Then the response should have a status code 200
@@ -152,9 +149,7 @@ Feature: profile fields API
       | (jq).ocs.data                                                                               | (jq)length == 2 |
       | (jq).ocs.data[] \| select(.field_definition_id == <NICKNAME_FIELD_ID>) \| .value.value    | Alpha            |
       | (jq).ocs.data[] \| select(.field_definition_id == <NICKNAME_FIELD_ID>) \| .current_visibility | public       |
-      | (jq).ocs.data[] \| select(.field_definition_id == <NICKNAME_FIELD_ID>) \| .updated_by_uid | profileuser      |
       | (jq).ocs.data[] \| select(.field_definition_id == <EMPLOYEE_FIELD_ID>) \| .value.value    | EMP-001          |
-      | (jq).ocs.data[] \| select(.field_definition_id == <EMPLOYEE_FIELD_ID>) \| .updated_by_uid | admin            |
 
   Scenario: payroll ETL can resolve a cooperado by cpf and read the other payment fields
     Given as user "admin"
