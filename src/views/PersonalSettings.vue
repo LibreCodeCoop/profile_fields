@@ -29,6 +29,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 				v-for="(field, index) in sortedFields"
 				:key="field.definition.id"
 				:id="embedded && index === 0 ? 'profile-fields-personal-info' : undefined"
+				:data-save-state="fieldSaveState(field.definition.id)"
 				:data-testid="`profile-fields-personal-field-${field.definition.field_key}`"
 				class="profile-fields-personal__card"
 				:class="{ 'profile-fields-personal__card--embedded': embedded }">
@@ -69,18 +70,25 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 					<div v-if="field.can_edit" class="profile-fields-personal__embedded-content">
 						<NcInputField
+							:data-testid="`profile-fields-personal-input-${field.definition.field_key}`"
 							:id="fieldInputId(field.definition.id)"
 							class="profile-fields-personal__input-control profile-fields-personal__input-control--embedded"
 							:model-value="draftValues[field.definition.id]"
 							:label="field.definition.label"
+							:error="fieldHasError(field.definition.id)"
+							:helper-text="fieldHelperText(field.definition.id)"
 							label-outside
 							:type="componentInputTypeForType(field.definition.type)"
 							:inputmode="inputModeForType(field.definition.type)"
 							:placeholder="placeholderForField(field)"
+							:success="fieldSaveSucceeded(field.definition.id)"
 							@update:model-value="updateDraftValue(field.definition.id, $event)"
 						/>
+						<span class="profile-fields-personal__sr-only" aria-atomic="true" aria-live="polite">
+							{{ autosaveAnnouncement(field) }}
+						</span>
 
-						<div class="profile-fields-personal__embedded-toolbar">
+						<div v-if="!embedded" class="profile-fields-personal__embedded-toolbar">
 							<label class="profile-fields-personal__embedded-visibility-label" :for="`profile-fields-personal-visibility-${field.definition.id}`">Visibility</label>
 							<NcSelect
 								:input-id="`profile-fields-personal-visibility-${field.definition.id}`"
@@ -88,45 +96,98 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 								:clearable="false"
 								:searchable="false"
 								:options="visibilityOptions"
-								input-label="Visibility"
+								:input-label="visibilityInputLabel(field.definition.label)"
 								label-outside
 								label="label"
 								:model-value="visibilityOptionFor(field.definition.id)"
 								@update:model-value="updateVisibility(field.definition.id, $event)"
 							/>
 
-							<NcButton v-if="!embedded" variant="primary" :disabled="isSaving(field.definition.id) || !hasFieldChanges(field)" @click="saveField(field)">
+							<NcButton variant="primary" :disabled="isSaving(field.definition.id) || !hasFieldChanges(field)" @click="saveField(field)">
 								{{ isSaving(field.definition.id) ? 'Saving...' : 'Save' }}
 							</NcButton>
 						</div>
 
-						<p v-if="fieldErrors[field.definition.id]" :data-testid="`profile-fields-personal-error-${field.definition.field_key}`" class="profile-fields-personal__inline-message profile-fields-personal__inline-message--error">
-							{{ fieldErrors[field.definition.id] }}
-						</p>
-						<p v-if="isSaved(field.definition.id)" :data-testid="`profile-fields-personal-success-${field.definition.field_key}`" class="profile-fields-personal__inline-message profile-fields-personal__inline-message--success">
-							{{ embedded ? 'Saved automatically.' : 'Field saved.' }}
-						</p>
 					</div>
 				</div>
 			</article>
 		</div>
+
+		<Teleport v-if="embedded && embeddedVisibilityAnchorReady && editableVisibilityFields.length > 0" to="#profile-fields-personal-visibility-anchor">
+			<div class="profile-fields-personal__visibility-teleport-root" data-testid="profile-fields-personal-visibility-panel" role="group" :aria-labelledby="visibilitySectionHeadingId" :aria-describedby="visibilitySectionDescriptionId">
+				<h3 :id="visibilitySectionHeadingId" class="profile-fields-personal__sr-only">Additional profile fields visibility</h3>
+				<p :id="visibilitySectionDescriptionId" class="profile-fields-personal__sr-only">Choose who can see each custom profile field on your profile.</p>
+				<div
+					v-for="field in editableVisibilityFields"
+					:key="`embedded-visibility-${field.definition.id}`"
+					:data-testid="`profile-fields-personal-visibility-${field.definition.field_key}`"
+					class="profile-fields-personal__native-visibility-row">
+					<label class="profile-fields-personal__native-visibility-label" :for="`profile-fields-personal-visibility-${field.definition.id}`">
+						{{ field.definition.label }}
+					</label>
+					<NcSelect
+						:input-id="`profile-fields-personal-visibility-${field.definition.id}`"
+						class="profile-fields-personal__native-visibility-select"
+						:clearable="false"
+						:searchable="false"
+						:options="visibilityOptions"
+						:input-label="visibilityInputLabel(field.definition.label)"
+						label-outside
+						label="label"
+						:model-value="visibilityOptionFor(field.definition.id)"
+						@update:model-value="updateVisibility(field.definition.id, $event)"
+					/>
+				</div>
+			</div>
+		</Teleport>
+
+		<section
+			v-else-if="embedded && editableVisibilityFields.length > 0"
+			class="profile-fields-personal__visibility-panel"
+			role="group"
+			:aria-labelledby="visibilitySectionHeadingId"
+			:aria-describedby="visibilitySectionDescriptionId"
+			data-testid="profile-fields-personal-visibility-panel">
+			<h3 :id="visibilitySectionHeadingId" class="profile-fields-personal__sr-only">Additional profile fields visibility</h3>
+			<p :id="visibilitySectionDescriptionId" class="profile-fields-personal__sr-only">Choose who can see each custom profile field on your profile.</p>
+			<div class="profile-fields-personal__visibility-grid">
+				<div
+					v-for="field in editableVisibilityFields"
+					:key="`fallback-visibility-${field.definition.id}`"
+					:data-testid="`profile-fields-personal-visibility-${field.definition.field_key}`"
+					class="profile-fields-personal__native-visibility-row">
+					<label class="profile-fields-personal__native-visibility-label" :for="`profile-fields-personal-visibility-${field.definition.id}`">
+						{{ field.definition.label }}
+					</label>
+					<NcSelect
+						:input-id="`profile-fields-personal-visibility-${field.definition.id}`"
+						class="profile-fields-personal__native-visibility-select"
+						:clearable="false"
+						:searchable="false"
+						:options="visibilityOptions"
+						:input-label="visibilityInputLabel(field.definition.label)"
+						label-outside
+						label="label"
+						:model-value="visibilityOptionFor(field.definition.id)"
+						@update:model-value="updateVisibility(field.definition.id, $event)"
+					/>
+				</div>
+			</div>
+		</section>
 	</section>
 </template>
 
 <script setup lang="ts">
 import { mdiLockOutline, mdiInformationOutline } from '@mdi/js'
-import { computed, inject, onMounted, reactive, ref } from 'vue'
+import { computed, inject, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { NcButton, NcEmptyContent, NcIconSvgWrapper, NcInputField, NcLoadingIcon, NcNoteCard, NcPopover, NcSelect } from '@nextcloud/vue'
 import { listEditableFields, upsertOwnValue } from '../api'
 import type { EditableField, FieldType, FieldVisibility } from '../types'
+import { visibilityOptions } from '../utils/visibilityOptions.js'
 
 const embedded = inject<boolean>('profileFieldsEmbedded', false)
-
-const visibilityOptions: Array<{ value: FieldVisibility, label: string }> = [
-	{ value: 'private', label: 'Private' },
-	{ value: 'users', label: 'Authenticated users' },
-	{ value: 'public', label: 'Public' },
-]
+const visibilitySectionHeadingId = 'profile-fields-personal-visibility-heading'
+const visibilitySectionDescriptionId = 'profile-fields-personal-visibility-description'
 
 const fields = ref<EditableField[]>([])
 const isLoading = ref(true)
@@ -135,6 +196,7 @@ const savingIds = ref<number[]>([])
 const successIds = ref<number[]>([])
 const fieldErrors = reactive<Record<number, string>>({})
 const autoSaveTimers = new Map<number, number>()
+const embeddedVisibilityAnchorReady = ref(false)
 
 const draftValues = reactive<Record<number, string>>({})
 const draftVisibilities = reactive<Record<number, FieldVisibility>>({})
@@ -193,8 +255,43 @@ const loadFields = async() => {
 
 const isSaving = (fieldId: number) => savingIds.value.includes(fieldId)
 const isSaved = (fieldId: number) => successIds.value.includes(fieldId)
+const fieldHasError = (fieldId: number) => Boolean(fieldErrors[fieldId])
+const fieldHelperText = (fieldId: number) => fieldErrors[fieldId] ?? ''
+const fieldSaveSucceeded = (fieldId: number) => isSaved(fieldId) && !fieldHasError(fieldId)
+const visibilityInputLabel = (fieldLabel: string) => `Visibility for ${fieldLabel}`
+const fieldSaveState = (fieldId: number) => {
+	if (fieldHasError(fieldId)) {
+		return 'error'
+	}
+
+	if (fieldSaveSucceeded(fieldId)) {
+		return 'success'
+	}
+
+	if (isSaving(fieldId)) {
+		return 'saving'
+	}
+
+	return 'idle'
+}
 const visibilityOptionFor = (fieldId: number) => visibilityOptions.find((option) => option.value === draftVisibilities[fieldId]) ?? visibilityOptions[0]
 const currentDraftValue = (field: EditableField) => draftValues[field.definition.id]
+const autosaveAnnouncement = (field: EditableField) => {
+	const fieldId = field.definition.id
+	if (fieldHasError(fieldId)) {
+		return `${field.definition.label}: ${fieldHelperText(fieldId)}`
+	}
+
+	if (fieldSaveSucceeded(fieldId)) {
+		return `${field.definition.label} saved.`
+	}
+
+	if (isSaving(fieldId)) {
+		return `Saving ${field.definition.label}.`
+	}
+
+	return ''
+}
 
 const currentStoredValue = (field: EditableField) => {
 	const existingValue = field.value?.value as unknown
@@ -346,8 +443,34 @@ const saveField = async(field: EditableField) => {
 }
 
 const sortedFields = computed(() => [...fields.value].sort((left, right) => left.definition.sort_order - right.definition.sort_order || left.definition.id - right.definition.id))
+const editableVisibilityFields = computed(() => sortedFields.value.filter((field: EditableField) => field.can_edit))
 
-onMounted(loadFields)
+const syncEmbeddedVisibilityAnchorReady = () => {
+	embeddedVisibilityAnchorReady.value = document.querySelector('#profile-fields-personal-visibility-anchor') !== null
+}
+
+onMounted(() => {
+	void loadFields()
+	if (!embedded) {
+		return
+	}
+
+	syncEmbeddedVisibilityAnchorReady()
+	window.addEventListener('profile-fields:embedded-visibility-anchor-ready', syncEmbeddedVisibilityAnchorReady)
+	window.addEventListener('load', syncEmbeddedVisibilityAnchorReady, { once: true, passive: true })
+})
+
+onBeforeUnmount(() => {
+	if (!embedded) {
+		return
+	}
+
+	window.removeEventListener('profile-fields:embedded-visibility-anchor-ready', syncEmbeddedVisibilityAnchorReady)
+	for (const timerId of autoSaveTimers.values()) {
+		window.clearTimeout(timerId)
+	}
+	autoSaveTimers.clear()
+})
 </script>
 
 <style lang="scss">
@@ -387,14 +510,15 @@ onMounted(loadFields)
 }
 
 #personal-settings.profile-fields-personal-info-grid {
-	grid-auto-flow: row dense;
 	align-items: start;
 }
 
+#personal-settings.profile-fields-personal-info-grid .personal-settings-setting-box:has(#account-property-biography),
 #personal-settings.profile-fields-personal-info-stacked .personal-settings-setting-box:has(#account-property-biography) {
 	min-block-size: 260px;
 }
 
+#personal-settings.profile-fields-personal-info-grid .personal-settings-setting-box:has(#account-property-biography) #account-property-biography,
 #personal-settings.profile-fields-personal-info-stacked .personal-settings-setting-box:has(#account-property-biography) #account-property-biography {
 	min-block-size: 176px;
 }
@@ -405,12 +529,17 @@ onMounted(loadFields)
 
 .profile-fields-personal-info-box--stacked #profile-fields-personal-info-settings > .profile-fields-personal .profile-fields-personal__grid--embedded {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+	grid-template-columns: 1fr;
 	gap: 18px;
 }
 
 .profile-fields-personal-info-box {
-	display: contents;
+	display: block;
+	width: 100%;
+	max-width: 100%;
+	min-width: 0;
+	align-self: start;
+	box-sizing: border-box;
 }
 
 .profile-fields-personal-info-box--stacked {
@@ -427,14 +556,9 @@ onMounted(loadFields)
 	border-radius: 0;
 	background: transparent;
 	box-shadow: none;
-	max-inline-size: 360px;
+	max-inline-size: none;
 }
 
-@media (max-width: 920px) {
-	.profile-fields-personal-info-box--stacked #profile-fields-personal-info-settings > .profile-fields-personal .profile-fields-personal__grid--embedded {
-		grid-template-columns: 1fr;
-	}
-}
 </style>
 
 <style scoped lang="scss">
@@ -451,7 +575,9 @@ onMounted(loadFields)
 	}
 
 	&--embedded {
-		display: contents;
+		display: block;
+		width: 100%;
+		max-width: 100%;
 	}
 
 	&__hero {
@@ -488,7 +614,8 @@ onMounted(loadFields)
 		gap: 18px;
 
 		&--embedded {
-			display: contents;
+			display: grid;
+			grid-template-columns: 1fr;
 		}
 	}
 
@@ -502,15 +629,15 @@ onMounted(loadFields)
 		box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
 
 		&--embedded {
-			gap: 14px;
-			padding: 22px;
-			border-radius: 16px;
-			background: var(--color-main-background);
-			border: 1px solid var(--color-border-default);
+			gap: 12px;
+			padding: 10px;
+			border-radius: 0;
+			background: transparent;
+			border: 0;
 			box-shadow: none;
 			align-self: start;
 			inline-size: 100%;
-			max-inline-size: 360px;
+			max-inline-size: none;
 		}
 	}
 
@@ -702,21 +829,45 @@ onMounted(loadFields)
 		line-height: 1.45;
 	}
 
+	&__sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
+	}
+
 	&__visibility-select {
 		width: min(100%, 220px);
 	}
 
-	&__inline-message {
-		margin: 0;
-		font-size: 12px;
+	&__visibility-panel {
+		display: grid;
+		padding-top: 22px;
+	}
 
-		&--error {
-			color: var(--color-error-text);
-		}
+	&__visibility-teleport-root {
+		display: contents;
+	}
 
-		&--success {
-			color: var(--color-success-text);
-		}
+	&__visibility-grid {
+		display: grid;
+		gap: 12px;
+	}
+
+	&__native-visibility-row {
+		display: flex;
+		flex-wrap: wrap;
+	}
+
+	&__native-visibility-label {
+		color: var(--color-text-maxcontrast);
+		line-height: 50px;
+		width: 150px;
 	}
 
 	&__field-grid {
@@ -757,14 +908,6 @@ onMounted(loadFields)
 			:deep(.input-field__label) {
 				display: none;
 			}
-
-			:deep(.input-field__main-wrapper) {
-				min-height: 34px;
-			}
-
-			:deep(input) {
-				min-height: 34px;
-			}
 		}
 
 		:deep(.input-field__helper-text) {
@@ -795,13 +938,13 @@ onMounted(loadFields)
 		}
 	}
 
-	&__visibility-select {
-		flex: 1 1 220px;
-		min-width: min(100%, 220px);
+	&__native-visibility-select {
+		width: 270px;
+		max-width: 40vw;
 
 		:deep(.multiselect) {
-			width: min(100%, 220px);
-			min-width: 160px;
+			width: 270px;
+			max-width: 40vw;
 		}
 
 		:deep(.multiselect__tags) {
@@ -873,7 +1016,13 @@ onMounted(loadFields)
 
 		&__grid {
 			&--embedded {
-				display: contents;
+				grid-template-columns: 1fr;
+			}
+		}
+
+		&__card {
+			&--embedded {
+				max-inline-size: none;
 			}
 		}
 
