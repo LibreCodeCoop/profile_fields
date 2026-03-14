@@ -16,7 +16,6 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 				<NcAvatar :key="userUid" :user="userUid" :size="40" disable-menu hide-status />
 
 				<div class="profile-fields-user-dialog__header-copy-block">
-					<p class="profile-fields-user-dialog__eyebrow">User management</p>
 					<h2>{{ headerUserName }}</h2>
 					<p class="profile-fields-user-dialog__header-copy">{{ headerDescription }}</p>
 				</div>
@@ -76,12 +75,6 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 								@update:model-value="updateVisibility(field.definition.id, $event)"
 							/>
 						</div>
-					</div>
-
-					<div v-if="field.value !== null" class="profile-fields-user-dialog__row-footer">
-						<p class="profile-fields-user-dialog__meta profile-fields-user-dialog__meta--secondary">
-							Last updated by {{ field.value.updated_by_uid }} on {{ field.value.updated_at }}
-						</p>
 					</div>
 
 				</article>
@@ -490,15 +483,6 @@ export default defineComponent({
 		min-width: 0;
 	}
 
-	&__eyebrow {
-		margin: 0;
-		font-size: 12px;
-		font-weight: 700;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-		color: var(--color-text-maxcontrast);
-	}
-
 	&__header-copy {
 		margin: 0;
 		max-width: 72ch;
@@ -597,20 +581,6 @@ export default defineComponent({
 		:deep(input) {
 			width: 100%;
 		}
-	}
-
-	&__meta {
-		margin: 0;
-		font-size: 12px;
-		color: var(--color-text-maxcontrast);
-
-		&--secondary {
-			font-size: 12px;
-		}
-	}
-
-	&__row-footer {
-		margin-top: 2px;
 	}
 
 	&__visibility-control {
