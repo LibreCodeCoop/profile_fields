@@ -3,7 +3,7 @@
     "info": {
         "title": "profile_fields",
         "version": "0.0.1",
-        "description": "Manage profile fields for Nextcloud accounts",
+        "description": "Structured custom profile data for directories, operations and support teams",
         "license": {
             "name": "agpl"
         }
@@ -148,9 +148,7 @@
                     "field_definition_id",
                     "user_uid",
                     "value",
-                    "current_visibility",
-                    "updated_by_uid",
-                    "updated_at"
+                    "current_visibility"
                 ],
                 "properties": {
                     "id": {
@@ -169,12 +167,6 @@
                     },
                     "current_visibility": {
                         "$ref": "#/components/schemas/Visibility"
-                    },
-                    "updated_by_uid": {
-                        "type": "string"
-                    },
-                    "updated_at": {
-                        "type": "string"
                     }
                 }
             },
