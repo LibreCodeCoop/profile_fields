@@ -8,10 +8,57 @@ import { createApp } from 'vue'
 import PersonalSettings from './views/PersonalSettings.vue'
 
 const PERSONAL_INFO_SELECTOR = '#profile-fields-personal-info-settings'
-const EMBEDDED_GRID_MIN_WIDTH = 1100
+const EMBEDDED_VISIBILITY_ANCHOR_ID = 'profile-fields-personal-visibility-anchor'
 
 let embeddedShellPlacementFrame = 0
 let embeddedShellResizeDebounceTimer = 0
+let embeddedVisibilityAnchorObserver: MutationObserver | null = null
+let observedProfileVisibilityRoot: HTMLElement | null = null
+
+const personalSettingsUsesMultipleColumns = (personalSettings: HTMLElement) => {
+	const gridTemplateColumns = window.getComputedStyle(personalSettings).gridTemplateColumns
+	if (gridTemplateColumns === '') {
+		return personalSettings.getBoundingClientRect().width >= 900
+	}
+
+	return gridTemplateColumns
+		.split(' ')
+		.map((value) => value.trim())
+		.filter(Boolean)
+		.length > 1
+}
+
+const ensureEmbeddedVisibilityAnchor = () => {
+	const profileVisibilityRoot = document.querySelector<HTMLElement>('#profile-visibility')
+	if (profileVisibilityRoot === null) {
+		return
+	}
+
+	if (observedProfileVisibilityRoot !== profileVisibilityRoot) {
+		embeddedVisibilityAnchorObserver?.disconnect()
+		embeddedVisibilityAnchorObserver = new MutationObserver(() => {
+			ensureEmbeddedVisibilityAnchor()
+		})
+		embeddedVisibilityAnchorObserver.observe(profileVisibilityRoot, { childList: true })
+		observedProfileVisibilityRoot = profileVisibilityRoot
+	}
+
+	let anchor = profileVisibilityRoot.querySelector<HTMLElement>(`#${EMBEDDED_VISIBILITY_ANCHOR_ID}`)
+	if (anchor !== null) {
+		return
+	}
+
+	anchor = document.createElement('div')
+	anchor.id = EMBEDDED_VISIBILITY_ANCHOR_ID
+	anchor.className = 'profile-fields-personal-info-visibility-anchor'
+	const insertionTarget = profileVisibilityRoot.querySelector('.visibility-dropdowns')
+	if (insertionTarget !== null) {
+		insertionTarget.appendChild(anchor)
+	} else {
+		profileVisibilityRoot.appendChild(anchor)
+	}
+	window.dispatchEvent(new CustomEvent('profile-fields:embedded-visibility-anchor-ready'))
+}
 
 const scheduleEmbeddedPersonalInfoShellPlacement = () => {
 	if (embeddedShellPlacementFrame !== 0) {
@@ -43,7 +90,9 @@ const syncEmbeddedPersonalInfoShellPlacement = () => {
 		return
 	}
 
-	const useGridPlacement = personalSettings.getBoundingClientRect().width >= EMBEDDED_GRID_MIN_WIDTH
+	ensureEmbeddedVisibilityAnchor()
+
+	const useGridPlacement = personalSettingsUsesMultipleColumns(personalSettings)
 	personalSettings.classList.toggle('profile-fields-personal-info-grid', useGridPlacement)
 	personalSettings.classList.toggle('profile-fields-personal-info-stacked', !useGridPlacement)
 	shell.classList.toggle('personal-settings-setting-box', useGridPlacement)
