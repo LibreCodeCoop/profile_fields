@@ -215,16 +215,11 @@ import { NcButton, NcCheckboxRadioSwitch, NcEmptyContent, NcInputField, NcLoadin
 import { createDefinition, deleteDefinition, listDefinitions, updateDefinition } from '../api'
 import type { FieldDefinition, FieldType, FieldVisibility } from '../types'
 import { buildFieldOrderUpdates } from '../utils/fieldOrder.js'
+import { visibilityOptions } from '../utils/visibilityOptions.js'
 
 const fieldTypeOptions: Array<{ value: FieldType, label: string }> = [
 	{ value: 'text', label: 'Text' },
 	{ value: 'number', label: 'Number' },
-]
-
-const visibilityOptions: Array<{ value: FieldVisibility, label: string }> = [
-	{ value: 'private', label: 'Private' },
-	{ value: 'users', label: 'Authenticated users' },
-	{ value: 'public', label: 'Public' },
 ]
 
 const definitions = ref<FieldDefinition[]>([])
