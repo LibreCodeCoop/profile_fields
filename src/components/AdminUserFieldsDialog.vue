@@ -99,6 +99,7 @@ import { NcButton, NcDialog, NcEmptyContent, NcInputField, NcLoadingIcon, NcNote
 import { listAdminUserValues, listDefinitions, upsertAdminUserValue } from '../api'
 import type { AdminEditableField, FieldDefinition, FieldType, FieldValueRecord, FieldVisibility } from '../types'
 import { buildAdminEditableFields } from '../utils/adminFieldValues.js'
+import { visibilityOptions } from '../utils/visibilityOptions.js'
 
 export default defineComponent({
 	name: 'AdminUserFieldsDialog',
@@ -130,12 +131,6 @@ export default defineComponent({
 		'update:open': (value: boolean) => typeof value === 'boolean',
 	},
 	setup(props: { open: boolean, userUid: string, userDisplayName: string }, { emit }: { emit: (event: 'update:open', value: boolean) => void }) {
-		const visibilityOptions: Array<{ value: FieldVisibility, label: string }> = [
-			{ value: 'private', label: 'Private' },
-			{ value: 'users', label: 'Authenticated users' },
-			{ value: 'public', label: 'Public' },
-		]
-
 		const definitions = ref<FieldDefinition[]>([])
 		const userValues = ref<FieldValueRecord[]>([])
 		const isLoading = ref(false)
