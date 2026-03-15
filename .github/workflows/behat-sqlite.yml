@@ -65,7 +65,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-          path: apps-extra/${{ env.APP_NAME }}
+          path: apps/${{ env.APP_NAME }}
 
       - name: Set up php 8.2
         uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1 # v2.36.0
@@ -77,7 +77,7 @@ jobs:
           ini-values: disable_functions=
 
       - name: Install app dependencies
-        working-directory: apps-extra/${{ env.APP_NAME }}
+        working-directory: apps/${{ env.APP_NAME }}
         run: |
           composer remove nextcloud/ocp --dev --no-scripts
           composer install --no-dev
@@ -98,7 +98,7 @@ jobs:
           ./occ config:system:set debug --value true --type boolean
 
       - name: Run Behat
-        working-directory: apps-extra/${{ env.APP_NAME }}/tests/integration
+        working-directory: apps/${{ env.APP_NAME }}/tests/integration
         env:
           BEHAT_ROOT_DIR: ../../../../
           BEHAT_RUN_AS: runner
@@ -110,7 +110,7 @@ jobs:
         if: always()
         with:
           name: behat-results
-          path: apps-extra/${{ env.APP_NAME }}/tests/integration/output/
+          path: apps/${{ env.APP_NAME }}/tests/integration/output/
           retention-days: 30
 
       - name: Print logs
