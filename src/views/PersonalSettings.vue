@@ -513,6 +513,10 @@ onBeforeUnmount(() => {
 	align-items: start;
 }
 
+#personal-settings.profile-fields-personal-info-grid .profile-fields-personal-info-box {
+	grid-column: 1 / -1;
+}
+
 #personal-settings.profile-fields-personal-info-grid .personal-settings-setting-box:has(#account-property-biography),
 #personal-settings.profile-fields-personal-info-stacked .personal-settings-setting-box:has(#account-property-biography) {
 	min-block-size: 260px;
@@ -615,7 +619,7 @@ onBeforeUnmount(() => {
 
 		&--embedded {
 			display: grid;
-			grid-template-columns: 1fr;
+			grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
 		}
 	}
 
