@@ -72,7 +72,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-          path: apps-extra/${{ env.APP_NAME }}
+          path: apps/${{ env.APP_NAME }}
 
       - name: Set up php 8.2
         uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1 # v2.36.0
@@ -84,7 +84,7 @@ jobs:
           ini-values: disable_functions=
 
       - name: Install app dependencies
-        working-directory: apps-extra/${{ env.APP_NAME }}
+        working-directory: apps/${{ env.APP_NAME }}
         run: |
           composer remove nextcloud/ocp --dev --no-scripts
           composer install --no-dev
@@ -93,7 +93,7 @@ jobs:
         uses: skjnldsv/read-package-engines-version-actions@06d6baf7d8f41934ab630e97d9e6c0bc9c9ac5e4 # v3
         id: versions
         with:
-          path: apps-extra/${{ env.APP_NAME }}
+          path: apps/${{ env.APP_NAME }}
           fallbackNode: '^24'
           fallbackNpm: '^11.3'
 
@@ -102,13 +102,13 @@ jobs:
         with:
           node-version: ${{ steps.versions.outputs.nodeVersion }}
           cache: npm
-          cache-dependency-path: apps-extra/${{ env.APP_NAME }}/package-lock.json
+          cache-dependency-path: apps/${{ env.APP_NAME }}/package-lock.json
 
       - name: Set up npm ${{ steps.versions.outputs.npmVersion }}
         run: npm i -g 'npm@${{ steps.versions.outputs.npmVersion }}'
 
       - name: Install node dependencies and build app
-        working-directory: apps-extra/${{ env.APP_NAME }}
+        working-directory: apps/${{ env.APP_NAME }}
         run: |
           npm ci --prefer-offline
           TESTING=true npm run build --if-present
@@ -131,19 +131,19 @@ jobs:
 
       - name: Start PHP built-in server
         run: |
-          front_controller_active=true php -S localhost:8080 -t . apps-extra/${{ env.APP_NAME }}/playwright/router.php &
+          front_controller_active=true php -S localhost:8080 -t . apps/${{ env.APP_NAME }}/playwright/router.php &
           timeout 30 bash -c 'until curl -s http://localhost:8080/status.php > /dev/null; do sleep 1; done'
 
       - name: Install Playwright system dependencies
-        working-directory: apps-extra/${{ env.APP_NAME }}
+        working-directory: apps/${{ env.APP_NAME }}
         run: npx playwright install-deps chromium
 
       - name: Install Playwright browsers
-        working-directory: apps-extra/${{ env.APP_NAME }}
+        working-directory: apps/${{ env.APP_NAME }}
         run: npx playwright install chromium
 
       - name: Run Playwright tests
-        working-directory: apps-extra/${{ env.APP_NAME }}
+        working-directory: apps/${{ env.APP_NAME }}
         env:
           PLAYWRIGHT_BASE_URL: http://localhost:8080
           NEXTCLOUD_ADMIN_USER: admin
@@ -155,7 +155,7 @@ jobs:
         if: always()
         with:
           name: playwright-report
-          path: apps-extra/${{ env.APP_NAME }}/playwright-report/
+          path: apps/${{ env.APP_NAME }}/playwright-report/
           retention-days: 30
 
       - name: Upload Playwright results
@@ -163,7 +163,7 @@ jobs:
         if: always()
         with:
           name: playwright-test-results
-          path: apps-extra/${{ env.APP_NAME }}/test-results/
+          path: apps/${{ env.APP_NAME }}/test-results/
           retention-days: 30
 
       - name: Print logs
