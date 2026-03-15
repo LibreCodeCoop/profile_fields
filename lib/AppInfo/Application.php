@@ -10,11 +10,13 @@ declare(strict_types=1);
 namespace OCA\ProfileFields\AppInfo;
 
 use OCA\ProfileFields\Listener\BeforeTemplateRenderedListener;
+use OCA\ProfileFields\Listener\UserDeletedCleanupListener;
 use OCP\AppFramework\App;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
 use OCP\IRequest;
+use OCP\User\Events\UserDeletedEvent;
 use OCP\Util;
 
 /**
@@ -31,6 +33,7 @@ class Application extends App implements IBootstrap {
 	#[\Override]
 	public function register(IRegistrationContext $context): void {
 		$context->registerEventListener('\\OCA\\Settings\\Events\\BeforeTemplateRenderedEvent', BeforeTemplateRenderedListener::class);
+		$context->registerEventListener(UserDeletedEvent::class, UserDeletedCleanupListener::class);
 	}
 
 	#[\Override]
