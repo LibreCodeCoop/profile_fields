@@ -15,6 +15,10 @@ Profile fields lets teams add organization-specific profile data that does not f
 
 This makes the app useful for internal directories, support operations, partner programs and other corporate deployments that need richer account metadata without leaving Nextcloud.
 
+## API documentation
+
+The public API contract for this app is published as [openapi-full.json](https://github.com/LibreCodeCoop/profile_fields/blob/main/openapi-full.json).
+
 ## Screenshots
 
 ![Admin catalog](img/screenshots/admin-catalog.png)
