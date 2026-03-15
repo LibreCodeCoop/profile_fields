@@ -43,9 +43,6 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 				<article v-for="field in editableFields" :key="field.definition.id" class="profile-fields-user-dialog__row" :class="{ 'profile-fields-user-dialog__row--error': fieldHasError(field) }">
 					<div class="profile-fields-user-dialog__row-header">
 						<label class="profile-fields-user-dialog__field-label" :for="`profile-fields-user-dialog-value-${field.definition.id}`">{{ field.definition.label }}</label>
-						<div class="profile-fields-user-dialog__badges">
-							<span class="profile-fields-user-dialog__type-tag">{{ field.definition.type }}</span>
-						</div>
 					</div>
 
 					<div class="profile-fields-user-dialog__row-body">
@@ -59,7 +56,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 							label-outside
 							type="text"
 							:inputmode="inputModeForField(field.definition.type)"
-							:placeholder="field.definition.type === 'number' ? 'Enter a number' : ''"
+							:placeholder="placeholderForField(field.definition.type)"
 							@update:model-value="clearFieldError(field.definition.id)"
 						/>
 
@@ -167,6 +164,11 @@ export default defineComponent({
 			number: 'Only numeric values are accepted.',
 		}[type])
 
+		const placeholderForField = (type: FieldType) => ({
+			text: 'Free text stored as a scalar value.',
+			number: 'Enter a number',
+		}[type])
+
 		const plainNumberPattern = /^-?\d+(\.\d+)?$/
 
 		const inputModeForField = (type: FieldType) => ({
@@ -198,7 +200,9 @@ export default defineComponent({
 		const hasInvalidFields = computed(() => invalidFields.value.length > 0)
 
 		const helperTextForField = (field: AdminEditableField) => {
-			return descriptionForType(field.definition.type)
+			return field.definition.type === 'number'
+				? descriptionForType(field.definition.type)
+				: ''
 		}
 
 		const helperMessageForField = (field: AdminEditableField) => displayedFieldError(field) ?? helperTextForField(field)
@@ -431,6 +435,7 @@ export default defineComponent({
 			isLoading,
 			isSavingAny,
 			inputModeForField,
+			placeholderForField,
 			saveAllFields,
 			successMessage,
 			title,
@@ -502,7 +507,7 @@ export default defineComponent({
 	&__row {
 		display: flex;
 		flex-direction: column;
-		gap: 8px;
+		gap: 10px;
 		padding: 10px 10px;
 		min-width: 0;
 		height: 100%;
@@ -516,12 +521,12 @@ export default defineComponent({
 	}
 
 	&__row-header {
+		display: flex;
 		align-items: center;
 		color: var(--color-main-text);
-		display: inline-flex;
 		font-size: 16px;
 		font-weight: normal;
-		gap: 8px;
+		gap: 10px;
 		margin: 12px 0 0;
 		width: 100%;
 	}
@@ -534,32 +539,6 @@ export default defineComponent({
 		min-width: 0;
 		overflow: hidden;
 		text-overflow: ellipsis;
-	}
-
-	&__badges {
-		display: flex;
-		gap: 8px;
-		align-items: center;
-		flex-wrap: wrap;
-		margin-inline-start: auto;
-	}
-
-	&__type-tag,
-	&__status-tag {
-		padding: 4px 8px;
-		border-radius: 999px;
-		font-size: 11px;
-		font-weight: 700;
-		text-transform: uppercase;
-		color: var(--color-main-text);
-	}
-
-	&__type-tag {
-		background: color-mix(in srgb, var(--color-primary-element) 14%, transparent);
-	}
-
-	&__status-tag {
-		background: color-mix(in srgb, #c96c10 14%, transparent);
 	}
 
 	&__row-body {
@@ -581,11 +560,19 @@ export default defineComponent({
 	&__visibility-control {
 		min-width: 0;
 		display: grid;
-		gap: 6px;
+		grid-template-columns: 80px minmax(0, 1fr);
+		align-items: center;
+		gap: 10px;
+		padding-top: 0;
+
+		:deep(.multiselect__tags) {
+			min-height: 34px;
+		}
 
 		:deep(.multiselect),
 		:deep(.input-field__main-wrapper) {
 			width: 100%;
+			min-width: 0;
 		}
 
 		&--error {
@@ -608,9 +595,14 @@ export default defineComponent({
 	}
 
 	&__control-label {
-		font-size: 13px;
-		font-weight: 600;
-		color: var(--color-main-text);
+		display: inline-flex;
+		align-items: center;
+		min-height: 34px;
+		font-size: 14px;
+		font-weight: 400;
+		line-height: 1.4;
+		color: var(--color-text-maxcontrast);
+		white-space: nowrap;
 	}
 }
 
@@ -626,6 +618,12 @@ export default defineComponent({
 
 		&__list {
 			grid-template-columns: 1fr;
+		}
+
+		&__visibility-control {
+			grid-template-columns: 1fr;
+			align-items: stretch;
+			gap: 4px;
 		}
 	}
 }
