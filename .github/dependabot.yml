@@ -1,0 +1,25 @@
+# SPDX-FileCopyrightText: 2026 LibreCode coop and contributors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+version: 2
+updates:
+  - package-ecosystem: "composer"
+    directories:
+      - "/"
+      - "/vendor-bin/coding-standard"
+      - "/vendor-bin/openapi-extractor"
+      - "/vendor-bin/phpunit"
+      - "/vendor-bin/psalm"
+      - "/tests/integration"
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: daily
