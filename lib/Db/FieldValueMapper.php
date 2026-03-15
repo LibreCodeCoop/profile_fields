@@ -75,6 +75,30 @@ class FieldValueMapper extends QBMapper {
 	}
 
 	/**
+	 * @return list<string>
+	 */
+	public function findDistinctUserUids(): array {
+		$qb = $this->db->getQueryBuilder();
+		$qb->selectDistinct('user_uid')
+			->from('profile_fields_values')
+			->orderBy('user_uid', 'ASC');
+
+		$cursor = $qb->executeQuery();
+		$userUids = $cursor->fetchFirstColumn();
+		$cursor->closeCursor();
+
+		return array_values(array_map(static fn (mixed $uid): string => (string)$uid, $userUids));
+	}
+
+	public function deleteByUserUid(string $userUid): int {
+		$qb = $this->db->getQueryBuilder();
+		$qb->delete('profile_fields_values')
+			->where($qb->expr()->eq('user_uid', $qb->createNamedParameter($userUid)));
+
+		return $qb->executeStatement();
+	}
+
+	/**
 	 * @return list<FieldValue>
 	 */
 	public function findByFieldDefinitionIdAndValueJson(int $fieldDefinitionId, string $valueJson): array {
