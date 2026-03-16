@@ -16,7 +16,7 @@ use OCP\EventDispatcher\IEventListener;
 /**
  * @template-implements IEventListener<Event>
  */
-class BeforeTemplateRenderedListener implements IEventListener {
+readonly class BeforeTemplateRenderedListener implements IEventListener {
 	#[\Override]
 	public function handle(Event $event): void {
 		if ($event::class !== '\\OCA\\Settings\\Events\\BeforeTemplateRenderedEvent') {
