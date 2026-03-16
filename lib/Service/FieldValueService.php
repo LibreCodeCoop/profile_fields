@@ -27,7 +27,7 @@ class FieldValueService {
 	/**
 	 * @param array<string, mixed>|scalar|null $rawValue
 	 */
-	public function upsert(FieldDefinition $definition, string $userUid, array|string|int|float|bool|null $rawValue, string $updatedByUid, ?string $currentVisibility = null): FieldValue {
+	public function upsert(FieldDefinition $definition, string $userUid, array|string|int|float|bool|null $rawValue, string $updatedByUid, ?string $currentVisibility = null, ?DateTime $updatedAt = null): FieldValue {
 		$normalizedValue = $this->normalizeValue($definition, $rawValue);
 		$visibility = $currentVisibility ?? $definition->getInitialVisibility();
 		if (!FieldVisibility::isValid($visibility)) {
@@ -40,7 +40,7 @@ class FieldValueService {
 		$entity->setValueJson($this->encodeValue($normalizedValue));
 		$entity->setCurrentVisibility($visibility);
 		$entity->setUpdatedByUid($updatedByUid);
-		$entity->setUpdatedAt(new DateTime());
+		$entity->setUpdatedAt($updatedAt ?? new DateTime());
 
 		if ($entity->getId() === null) {
 			return $this->fieldValueMapper->insert($entity);
