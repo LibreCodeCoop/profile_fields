@@ -82,6 +82,33 @@ class FieldDefinitionServiceTest extends TestCase {
 		$this->assertSame('performance_score', $created->getFieldKey());
 	}
 
+	public function testCreatePreservesImportedTimestamps(): void {
+		$this->fieldDefinitionMapper
+			->method('findByFieldKey')
+			->willReturn(null);
+
+		$this->fieldDefinitionMapper
+			->expects($this->once())
+			->method('insert')
+			->with($this->callback(function (FieldDefinition $definition): bool {
+				$this->assertSame('2026-03-10T08:00:00+00:00', $definition->getCreatedAt()->format(DATE_ATOM));
+				$this->assertSame('2026-03-11T09:30:00+00:00', $definition->getUpdatedAt()->format(DATE_ATOM));
+				return true;
+			}))
+			->willReturnCallback(static fn (FieldDefinition $definition): FieldDefinition => $definition);
+
+		$created = $this->service->create([
+			'field_key' => 'region',
+			'label' => 'Region',
+			'type' => FieldType::TEXT->value,
+			'created_at' => '2026-03-10T08:00:00+00:00',
+			'updated_at' => '2026-03-11T09:30:00+00:00',
+		]);
+
+		$this->assertSame('2026-03-10T08:00:00+00:00', $created->getCreatedAt()->format(DATE_ATOM));
+		$this->assertSame('2026-03-11T09:30:00+00:00', $created->getUpdatedAt()->format(DATE_ATOM));
+	}
+
 	public function testUpdateRejectsFieldKeyRename(): void {
 		$existing = new FieldDefinition();
 		$existing->setId(7);
@@ -120,5 +147,38 @@ class FieldDefinitionServiceTest extends TestCase {
 			'label' => 'CPF',
 			'type' => FieldType::NUMBER->value,
 		]);
+	}
+
+	public function testUpdatePreservesImportedUpdatedAt(): void {
+		$existing = new FieldDefinition();
+		$existing->setId(7);
+		$existing->setFieldKey('cpf');
+		$existing->setLabel('CPF');
+		$existing->setType(FieldType::TEXT->value);
+		$existing->setAdminOnly(false);
+		$existing->setUserEditable(false);
+		$existing->setUserVisible(true);
+		$existing->setInitialVisibility('private');
+		$existing->setSortOrder(0);
+		$existing->setActive(true);
+		$existing->setCreatedAt(new \DateTime('2026-03-01T00:00:00+00:00'));
+		$existing->setUpdatedAt(new \DateTime('2026-03-02T00:00:00+00:00'));
+
+		$this->fieldDefinitionMapper
+			->expects($this->once())
+			->method('update')
+			->with($this->callback(function (FieldDefinition $definition): bool {
+				$this->assertSame('2026-03-12T10:00:00+00:00', $definition->getUpdatedAt()->format(DATE_ATOM));
+				return true;
+			}))
+			->willReturnCallback(static fn (FieldDefinition $definition): FieldDefinition => $definition);
+
+		$updated = $this->service->update($existing, [
+			'label' => 'CPF',
+			'type' => FieldType::TEXT->value,
+			'updated_at' => '2026-03-12T10:00:00+00:00',
+		]);
+
+		$this->assertSame('2026-03-12T10:00:00+00:00', $updated->getUpdatedAt()->format(DATE_ATOM));
 	}
 }
