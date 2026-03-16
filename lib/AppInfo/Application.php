@@ -38,7 +38,14 @@ class Application extends App implements IBootstrap {
 
 	#[\Override]
 	public function boot(IBootContext $context): void {
-		$request = $context->getServerContainer()->get(IRequest::class);
+		try {
+			$context->injectFn($this->bootWithRequest(...));
+		} catch (\Throwable) {
+			return;
+		}
+	}
+
+	private function bootWithRequest(IRequest $request): void {
 		$path = $this->readRequestString(static fn (): string|false => $request->getPathInfo());
 		$requestUri = $this->readRequestString(static fn (): string => $request->getRequestUri());
 
