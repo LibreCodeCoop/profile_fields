@@ -28,7 +28,14 @@ class FieldValueService {
 	/**
 	 * @param array<string, mixed>|scalar|null $rawValue
 	 */
-	public function upsert(FieldDefinition $definition, string $userUid, array|string|int|float|bool|null $rawValue, string $updatedByUid, ?string $currentVisibility = null, ?DateTimeInterface $updatedAt = null): FieldValue {
+	public function upsert(
+		FieldDefinition $definition,
+		string $userUid,
+		array|string|int|float|bool|null $rawValue,
+		string $updatedByUid,
+		?string $currentVisibility = null,
+		?DateTimeInterface $updatedAt = null,
+	): FieldValue {
 		$normalizedValue = $this->normalizeValue($definition, $rawValue);
 		$visibility = $currentVisibility ?? $definition->getInitialVisibility();
 		if (!FieldVisibility::isValid($visibility)) {
