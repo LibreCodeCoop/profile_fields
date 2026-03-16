@@ -92,29 +92,7 @@ jobs:
         uses: shivammathur/setup-php@accd6127cb78bee3e8082180cb391013d204ef9f # v2.37.0
         with:
           php-version: ${{ matrix.php-versions }}
-          extensions: >-
-            bz2,
-            ctype,
-            curl,
-            dom,
-            fileinfo,
-            gd,
-            iconv,
-            intl,
-            json,
-            libxml,
-            mbstring,
-            openssl,
-            pcntl,
-            posix,
-            session,
-            simplexml,
-            xmlreader,
-            xmlwriter,
-            zip,
-            zlib,
-            sqlite,
-            pdo_sqlite
+          extensions: bz2, ctype, curl, dom, fileinfo, gd, iconv, intl, json, libxml, mbstring, openssl, pcntl, posix, session, simplexml, xmlreader, xmlwriter, zip, zlib, sqlite, pdo_sqlite
           coverage: none
           ini-file: development
           ini-values: disable_functions=
@@ -158,7 +136,4 @@ jobs:
 
     steps:
       - name: Summary status
-        run: |
-          if ${{ needs.changes.outputs.src != 'false' && needs.phpunit-sqlite.result != 'success' }}; then
-            exit 1
-          fi
+        run: if ${{ needs.changes.outputs.src != 'false' && needs.phpunit-sqlite.result != 'success' }}; then exit 1; fi
