@@ -5,7 +5,16 @@ import './polyfills/buffer.js'
 
 import axios from '@nextcloud/axios'
 import { generateOcsUrl } from '@nextcloud/router'
-import type { EditableField, FieldDefinition, FieldValueRecord } from './types'
+import type {
+	CreateDefinitionPayload,
+	EditableField,
+	FieldDefinition,
+	FieldValueRecord,
+	UpdateDefinitionPayload,
+	UpdateOwnVisibilityPayload,
+	UpsertAdminUserValuePayload,
+	UpsertOwnValuePayload,
+} from './types'
 
 const jsonHeaders = {
 	'OCS-APIRequest': 'true',
@@ -22,14 +31,14 @@ export const listDefinitions = async(): Promise<FieldDefinition[]> => {
 	return response.data.ocs.data
 }
 
-export const createDefinition = async(payload: Record<string, unknown>): Promise<FieldDefinition> => {
+export const createDefinition = async(payload: CreateDefinitionPayload): Promise<FieldDefinition> => {
 	const response = await axios.post<{ ocs: { data: FieldDefinition } }>(apiUrl('/api/v1/definitions'), payload, {
 		headers: jsonHeaders,
 	})
 	return response.data.ocs.data
 }
 
-export const updateDefinition = async(id: number, payload: Record<string, unknown>): Promise<FieldDefinition> => {
+export const updateDefinition = async(id: number, payload: UpdateDefinitionPayload): Promise<FieldDefinition> => {
 	const response = await axios.put<{ ocs: { data: FieldDefinition } }>(apiUrl(`/api/v1/definitions/${id}`), payload, {
 		headers: jsonHeaders,
 	})
@@ -49,17 +58,18 @@ export const listEditableFields = async(): Promise<EditableField[]> => {
 	return response.data.ocs.data
 }
 
-export const upsertOwnValue = async(fieldDefinitionId: number, payload: Record<string, unknown>): Promise<FieldValueRecord> => {
+export const upsertOwnValue = async(fieldDefinitionId: number, payload: UpsertOwnValuePayload): Promise<FieldValueRecord> => {
 	const response = await axios.put<{ ocs: { data: FieldValueRecord } }>(apiUrl(`/api/v1/me/values/${fieldDefinitionId}`), payload, {
 		headers: jsonHeaders,
 	})
 	return response.data.ocs.data
 }
 
-export const updateOwnVisibility = async(fieldDefinitionId: number, currentVisibility: string): Promise<FieldValueRecord> => {
-	const response = await axios.put<{ ocs: { data: FieldValueRecord } }>(apiUrl(`/api/v1/me/values/${fieldDefinitionId}/visibility`), {
+export const updateOwnVisibility = async(fieldDefinitionId: number, currentVisibility: UpdateOwnVisibilityPayload['currentVisibility']): Promise<FieldValueRecord> => {
+	const payload: UpdateOwnVisibilityPayload = {
 		currentVisibility,
-	}, {
+	}
+	const response = await axios.put<{ ocs: { data: FieldValueRecord } }>(apiUrl(`/api/v1/me/values/${fieldDefinitionId}/visibility`), payload, {
 		headers: jsonHeaders,
 	})
 	return response.data.ocs.data
@@ -72,7 +82,7 @@ export const listAdminUserValues = async(userUid: string): Promise<FieldValueRec
 	return response.data.ocs.data
 }
 
-export const upsertAdminUserValue = async(userUid: string, fieldDefinitionId: number, payload: Record<string, unknown>): Promise<FieldValueRecord> => {
+export const upsertAdminUserValue = async(userUid: string, fieldDefinitionId: number, payload: UpsertAdminUserValuePayload): Promise<FieldValueRecord> => {
 	const response = await axios.put<{ ocs: { data: FieldValueRecord } }>(apiUrl(`/api/v1/users/${encodeURIComponent(userUid)}/values/${fieldDefinitionId}`), payload, {
 		headers: jsonHeaders,
 	})
