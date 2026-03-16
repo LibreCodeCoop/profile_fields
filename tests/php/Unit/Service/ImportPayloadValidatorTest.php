@@ -58,6 +58,8 @@ class ImportPayloadValidatorTest extends TestCase {
 				'initial_visibility' => 'users',
 				'sort_order' => 1,
 				'active' => true,
+				'created_at' => '2026-03-10T08:00:00+00:00',
+				'updated_at' => '2026-03-11T09:30:00+00:00',
 			]],
 			'values' => [[
 				'field_key' => 'cost_center',
@@ -71,6 +73,8 @@ class ImportPayloadValidatorTest extends TestCase {
 
 		$this->assertSame(1, $validated['schema_version']);
 		$this->assertSame('cost_center', $validated['definitions'][0]['field_key']);
+		$this->assertSame('2026-03-10T08:00:00+00:00', $validated['definitions'][0]['created_at']);
+		$this->assertSame('2026-03-11T09:30:00+00:00', $validated['definitions'][0]['updated_at']);
 		$this->assertSame(['value' => 'finance'], $validated['values'][0]['value']);
 	}
 
