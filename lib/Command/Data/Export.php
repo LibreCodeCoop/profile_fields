@@ -49,24 +49,30 @@ class Export extends Command {
 
 	#[\Override]
 	protected function execute(InputInterface $input, OutputInterface $output): int {
-		$definitions = $this->fieldDefinitionService->findAllOrdered();
-		$fieldKeysByDefinitionId = [];
-		foreach ($definitions as $definition) {
-			$fieldKeysByDefinitionId[$definition->getId()] = $definition->getFieldKey();
-		}
+		try {
+			$definitions = $this->fieldDefinitionService->findAllOrdered();
+			$fieldKeysByDefinitionId = [];
+			foreach ($definitions as $definition) {
+				$fieldKeysByDefinitionId[$definition->getId()] = $definition->getFieldKey();
+			}
 
-		$payload = [
-			'schema_version' => self::SCHEMA_VERSION,
-			'exported_at' => gmdate(DATE_ATOM),
-			'definitions' => array_map(
-				static fn ($definition): array => $definition->jsonSerialize(),
-				$definitions,
-			),
-			'values' => array_map(
-				fn (FieldValue $value): array => $this->serializeValue($value, $fieldKeysByDefinitionId),
-				$this->fieldValueMapper->findAllOrdered(),
-			),
-		];
+			$payload = [
+				'schema_version' => self::SCHEMA_VERSION,
+				'exported_at' => gmdate(DATE_ATOM),
+				'definitions' => array_map(
+					static fn ($definition): array => $definition->jsonSerialize(),
+					$definitions,
+				),
+				'values' => array_map(
+					fn (FieldValue $value): array => $this->serializeValue($value, $fieldKeysByDefinitionId),
+					$this->fieldValueMapper->findAllOrdered(),
+				),
+			];
+		} catch (\Throwable $exception) {
+			$output->writeln('<error>Failed to build export payload.</error>');
+			$output->writeln(sprintf('<error>%s</error>', $exception->getMessage()));
+			return self::FAILURE;
+		}
 
 		try {
 			$json = json_encode(
