@@ -30,6 +30,8 @@ export interface FieldValueRecord {
 	user_uid: string
 	value: FieldValuePayload
 	current_visibility: FieldVisibility
+	updated_by_uid: string
+	updated_at: string
 }
 
 export interface EditableField {
