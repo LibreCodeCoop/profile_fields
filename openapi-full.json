@@ -218,7 +218,9 @@
                     "field_definition_id",
                     "user_uid",
                     "value",
-                    "current_visibility"
+                    "current_visibility",
+                    "updated_by_uid",
+                    "updated_at"
                 ],
                 "properties": {
                     "id": {
@@ -237,6 +239,12 @@
                     },
                     "current_visibility": {
                         "$ref": "#/components/schemas/Visibility"
+                    },
+                    "updated_by_uid": {
+                        "type": "string"
+                    },
+                    "updated_at": {
+                        "type": "string"
                     }
                 }
             },
