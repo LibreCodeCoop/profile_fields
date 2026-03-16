@@ -9,11 +9,9 @@ declare(strict_types=1);
 
 namespace OCA\ProfileFields\Service;
 
+use DateTime;
 use OCA\ProfileFields\Db\FieldDefinition;
 use OCA\ProfileFields\Db\FieldValue;
-use OCA\ProfileFields\Service\FieldDefinitionService;
-use OCA\ProfileFields\Service\FieldValueService;
-use OCA\ProfileFields\Service\ImportPayloadValidator;
 use OCP\IDBConnection;
 
 class DataImportService {
@@ -78,6 +76,8 @@ class DataImportService {
 	 *     initial_visibility: 'private'|'users'|'public',
 	 *     sort_order: int,
 	 *     active: bool,
+	 *     created_at?: non-empty-string,
+	 *     updated_at?: non-empty-string,
 	 * }> $definitions
 	 * @param array{
 	 *     created_definitions: int,
@@ -157,6 +157,8 @@ class DataImportService {
 	 *     initial_visibility: 'private'|'users'|'public',
 	 *     sort_order: int,
 	 *     active: bool,
+	 *     created_at?: non-empty-string,
+	 *     updated_at?: non-empty-string,
 	 * }> $definitions
 	 * @param array{
 	 *     created_definitions: int,
@@ -223,6 +225,7 @@ class DataImportService {
 					$value['value']['value'],
 					$value['updated_by_uid'],
 					$value['current_visibility'],
+					new DateTime($value['updated_at']),
 				);
 				$summary['created_values']++;
 				continue;
@@ -235,6 +238,7 @@ class DataImportService {
 					$value['value']['value'],
 					$value['updated_by_uid'],
 					$value['current_visibility'],
+					new DateTime($value['updated_at']),
 				);
 				$summary['updated_values']++;
 				continue;
@@ -255,12 +259,15 @@ class DataImportService {
 	 *     initial_visibility: 'private'|'users'|'public',
 	 *     sort_order: int,
 	 *     active: bool,
+	 *     created_at?: non-empty-string,
+	 *     updated_at?: non-empty-string,
 	 * } $definition
 	 */
 	private function definitionNeedsUpdate(FieldDefinition $existingDefinition, array $definition): bool {
 		return $existingDefinition->getLabel() !== $definition['label']
 			|| $existingDefinition->getSortOrder() !== $definition['sort_order']
-			|| $existingDefinition->getActive() !== $definition['active'];
+			|| $existingDefinition->getActive() !== $definition['active']
+			|| (($definition['updated_at'] ?? null) !== null && $existingDefinition->getUpdatedAt()->format(DATE_ATOM) !== $definition['updated_at']);
 	}
 
 	/**
@@ -278,6 +285,7 @@ class DataImportService {
 
 		return $serializedValue['value'] !== $value['value']
 			|| $serializedValue['current_visibility'] !== $value['current_visibility']
-			|| $serializedValue['updated_by_uid'] !== $value['updated_by_uid'];
+			|| $serializedValue['updated_by_uid'] !== $value['updated_by_uid']
+			|| $serializedValue['updated_at'] !== $value['updated_at'];
 	}
 }
