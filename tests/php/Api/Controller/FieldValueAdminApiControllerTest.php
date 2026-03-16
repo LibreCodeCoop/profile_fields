@@ -70,4 +70,39 @@ class FieldValueAdminApiControllerTest extends ApiTestCase {
 
 		$this->assertSame(200, $response->getStatusCode());
 	}
+
+	/**
+	 * @throws DefinitionNotFoundException
+	 * @throws GenericSwaggerException
+	 * @throws HttpMethodNotFoundException
+	 * @throws InvalidDefinitionException
+	 * @throws InvalidRequestException
+	 * @throws NotMatchedException
+	 * @throws PathNotFoundException
+	 * @throws RequiredArgumentNotFound
+	 * @throws StatusCodeNotMatchedException
+	 */
+	public function testAdminSearchMatchesOpenApiContract(): void {
+		$fieldKey = $this->uniqueFieldKey('api_admin_search_contract_field');
+		$definition = $this->createDefinition(
+			$fieldKey,
+			'Admin API search contract field',
+			FieldType::TEXT->value,
+			false,
+			true,
+			FieldVisibility::PUBLIC->value,
+			20,
+			true,
+		);
+		$this->createStoredValue($definition, self::OWNER_USER_ID, 'LATAM', self::ADMIN_USER_ID, FieldVisibility::PUBLIC->value);
+
+		$response = $this->withBasicAuth($this->newApiRequester(), self::ADMIN_USER_ID, self::ADMIN_PASSWORD)
+			->withMethod('GET')
+			->withPath('/ocs/v2.php/apps/profile_fields/api/v1/users/search?fieldKey=' . rawurlencode($fieldKey) . '&operator=contains&value=lat')
+			->assertResponseCode(200)
+			->assertBodyContains(self::OWNER_USER_ID)
+			->send();
+
+		$this->assertSame(200, $response->getStatusCode());
+	}
 }
