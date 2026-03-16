@@ -20,6 +20,8 @@ use OCA\ProfileFields\Service\FieldValueService;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
+use OCP\IUser;
+use OCP\IUserManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -27,6 +29,7 @@ class FieldValueAdminApiControllerTest extends TestCase {
 	private IRequest&MockObject $request;
 	private FieldDefinitionService&MockObject $fieldDefinitionService;
 	private FieldValueService&MockObject $fieldValueService;
+	private IUserManager&MockObject $userManager;
 	private FieldValueAdminApiController $controller;
 
 	protected function setUp(): void {
@@ -34,10 +37,12 @@ class FieldValueAdminApiControllerTest extends TestCase {
 		$this->request = $this->createMock(IRequest::class);
 		$this->fieldDefinitionService = $this->createMock(FieldDefinitionService::class);
 		$this->fieldValueService = $this->createMock(FieldValueService::class);
+		$this->userManager = $this->createMock(IUserManager::class);
 		$this->controller = new FieldValueAdminApiController(
 			$this->request,
 			$this->fieldDefinitionService,
 			$this->fieldValueService,
+			$this->userManager,
 			'admin',
 		);
 	}
@@ -86,6 +91,7 @@ class FieldValueAdminApiControllerTest extends TestCase {
 			$this->request,
 			$this->fieldDefinitionService,
 			$this->fieldValueService,
+			$this->userManager,
 			null,
 		);
 
@@ -226,6 +232,72 @@ class FieldValueAdminApiControllerTest extends TestCase {
 
 		$this->assertSame(Http::STATUS_CONFLICT, $response->getStatus());
 		$this->assertSame(['message' => 'Multiple users match the lookup field value'], $response->getData());
+	}
+
+	public function testSearchReturnsPaginatedMatchesWithDisplayNames(): void {
+		$definition = $this->buildDefinition();
+		$definition->setFieldKey('region');
+		$firstMatch = $this->buildValue();
+		$secondMatch = $this->buildValue();
+		$secondMatch->setId(4);
+		$secondMatch->setUserUid('bob');
+		$secondMatch->setValueJson('{"value":"LATAM 2"}');
+
+		$alice = $this->createMock(IUser::class);
+		$alice->method('getDisplayName')->willReturn('Alice Doe');
+		$bob = $this->createMock(IUser::class);
+		$bob->method('getDisplayName')->willReturn('Bob Doe');
+
+		$this->fieldDefinitionService->expects($this->once())
+			->method('findByFieldKey')
+			->with('region')
+			->willReturn($definition);
+		$this->fieldValueService->expects($this->once())
+			->method('searchByDefinition')
+			->with($definition, 'contains', 'latam', 1, 1)
+			->willReturn([
+				'total' => 2,
+				'matches' => [$secondMatch],
+			]);
+		$this->fieldValueService->expects($this->once())
+			->method('serializeForResponse')
+			->with($secondMatch)
+			->willReturn([
+				'id' => 4,
+				'field_definition_id' => 7,
+				'user_uid' => 'bob',
+				'value' => ['value' => 'LATAM 2'],
+				'current_visibility' => 'users',
+				'updated_by_uid' => 'admin',
+				'updated_at' => $secondMatch->getUpdatedAt()->format(DATE_ATOM),
+			]);
+		$this->userManager->expects($this->once())
+			->method('get')
+			->with('bob')
+			->willReturn($bob);
+
+		$response = $this->controller->search('region', 'contains', 'latam', 1, 1);
+
+		$this->assertSame(Http::STATUS_OK, $response->getStatus());
+		$this->assertSame(2, $response->getData()['pagination']['total']);
+		$this->assertSame(1, $response->getData()['pagination']['limit']);
+		$this->assertSame(1, $response->getData()['pagination']['offset']);
+		$this->assertCount(1, $response->getData()['items']);
+		$this->assertSame('bob', $response->getData()['items'][0]['user_uid']);
+		$this->assertSame('Bob Doe', $response->getData()['items'][0]['display_name']);
+		$this->assertSame(['value' => 'LATAM 2'], $response->getData()['items'][0]['fields']['region']['value']['value']);
+	}
+
+	public function testSearchReturnsNotFoundWhenDefinitionDoesNotExist(): void {
+		$this->fieldDefinitionService->expects($this->once())
+			->method('findByFieldKey')
+			->with('region')
+			->willReturn(null);
+
+		$response = $this->controller->search('region', 'eq', 'LATAM');
+
+		$this->assertSame(Http::STATUS_NOT_FOUND, $response->getStatus());
+		$this->assertSame(['message' => 'Search field definition not found'], $response->getData());
 	}
 
 	private function buildDefinition(): FieldDefinition {

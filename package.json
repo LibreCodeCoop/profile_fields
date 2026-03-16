@@ -9,7 +9,7 @@
     "build": "NODE_ENV=production vite --mode production build",
     "dev": "NODE_ENV=development vite --mode development build",
     "screenshots:refresh": "node playwright/generate-screenshots.mjs",
-    "typescript:generate": "mkdir -p src/types/openapi && openapi-typescript openapi.json -o src/types/openapi/openapi.ts && openapi-typescript openapi-administration.json -o src/types/openapi/openapi-administration.ts && openapi-typescript openapi-full.json -o src/types/openapi/openapi-full.ts",
+    "typescript:generate": "mkdir -p src/types/openapi && npx openapi-typescript openapi.json -o src/types/openapi/openapi.ts && npx openapi-typescript openapi-administration.json -o src/types/openapi/openapi-administration.ts && npx openapi-typescript openapi-full.json -o src/types/openapi/openapi-full.ts",
     "watch": "NODE_ENV=development vite --mode development build --watch",
     "test": "vitest run",
     "test:watch": "vitest",

@@ -277,3 +277,72 @@ Feature: profile fields API
     And the response should be a JSON array with the following mandatory values
       | key                   | value                                      |
       | (jq).ocs.data.message | Multiple users match the lookup field value |
+
+  Scenario: admins can search users by field value with pagination
+    Given user "profileuser2" exists
+    And user "profileuser3" exists
+    And as user "admin"
+    When sending "post" to ocs "/apps/profile_fields/api/v1/definitions"
+      | fieldKey          | region |
+      | label             | Region |
+      | type              | text |
+      | adminOnly         | false |
+      | userEditable      | false |
+      | userVisible       | true |
+      | initialVisibility | private |
+      | sortOrder         | 10 |
+      | active            | true |
+    Then the response should have a status code 201
+    And fetch field "(REGION_FIELD_ID)(jq).ocs.data.id" from previous JSON response
+    When sending "put" to ocs "/apps/profile_fields/api/v1/users/profileuser/values/<REGION_FIELD_ID>"
+      | value             | LATAM - South |
+      | currentVisibility | private |
+    Then the response should have a status code 200
+    When sending "put" to ocs "/apps/profile_fields/api/v1/users/profileuser2/values/<REGION_FIELD_ID>"
+      | value             | LATAM - North |
+      | currentVisibility | private |
+    Then the response should have a status code 200
+    When sending "put" to ocs "/apps/profile_fields/api/v1/users/profileuser3/values/<REGION_FIELD_ID>"
+      | value             | EMEA |
+      | currentVisibility | private |
+    Then the response should have a status code 200
+    When sending "get" to ocs "/apps/profile_fields/api/v1/users/search?fieldKey=region&operator=contains&value=latam&limit=1&offset=1"
+    Then the response should have a status code 200
+    And the response should be a JSON array with the following mandatory values
+      | key                                                                                     | value           |
+      | (jq).ocs.data.pagination.total                                                         | 2               |
+      | (jq).ocs.data.pagination.limit                                                         | 1               |
+      | (jq).ocs.data.pagination.offset                                                        | 1               |
+      | (jq).ocs.data.items                                                                     | (jq)length == 1 |
+      | (jq).ocs.data.items[0].user_uid                                                        | profileuser2    |
+      | (jq).ocs.data.items[0].display_name                                                    | profileuser2-displayname |
+      | (jq).ocs.data.items[0].fields.region.definition.field_key                              | region          |
+      | (jq).ocs.data.items[0].fields.region.value.value.value                                 | LATAM - North   |
+      | (jq).ocs.data.items[0].fields.region.value.current_visibility                          | private         |
+
+  Scenario: admins get a bad request when search operator is not supported
+    Given as user "admin"
+    When sending "post" to ocs "/apps/profile_fields/api/v1/definitions"
+      | fieldKey          | region |
+      | label             | Region |
+      | type              | text |
+      | adminOnly         | false |
+      | userEditable      | false |
+      | userVisible       | true |
+      | initialVisibility | private |
+      | sortOrder         | 10 |
+      | active            | true |
+    Then the response should have a status code 201
+    When sending "get" to ocs "/apps/profile_fields/api/v1/users/search?fieldKey=region&operator=startsWith&value=latam"
+    Then the response should have a status code 400
+    And the response should be a JSON array with the following mandatory values
+      | key                   | value                            |
+      | (jq).ocs.data.message | search operator is not supported |
+
+  Scenario: admins get not found when search field definition does not exist
+    Given as user "admin"
+    When sending "get" to ocs "/apps/profile_fields/api/v1/users/search?fieldKey=unknown_region&operator=eq&value=LATAM"
+    Then the response should have a status code 404
+    And the response should be a JSON array with the following mandatory values
+      | key                   | value                           |
+      | (jq).ocs.data.message | Search field definition not found |

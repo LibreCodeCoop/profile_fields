@@ -99,6 +99,7 @@ class FieldValueAdminApiControllerTest extends TestCase {
 			$this->createMock(IRequest::class),
 			$this->fieldDefinitionService,
 			$this->fieldValueService,
+			$this->userManager,
 			$this->currentUserId,
 		);
 
@@ -152,6 +153,7 @@ class FieldValueAdminApiControllerTest extends TestCase {
 			$this->createMock(IRequest::class),
 			$this->fieldDefinitionService,
 			$this->fieldValueService,
+			$this->userManager,
 			$this->currentUserId,
 		);
 
@@ -161,6 +163,49 @@ class FieldValueAdminApiControllerTest extends TestCase {
 		$this->assertSame($ownerId, $response->getData()['user_uid']);
 		$this->assertSame(['value' => '12345678900'], $response->getData()['fields']['cpf_lookup_integration']['value']['value']);
 		$this->assertSame(['value' => 'coop-premium'], $response->getData()['fields']['health_plan_type_lookup_integration']['value']['value']);
+	}
+
+	public function testAdminCanSearchUsersByFieldWithPagination(): void {
+		$this->currentUserId = $this->createUser('pf_admin_search');
+		$firstOwnerId = $this->createUser('pf_owner_search_a');
+		$secondOwnerId = $this->createUser('pf_owner_search_b');
+		$thirdOwnerId = $this->createUser('pf_owner_search_c');
+
+		$definition = $this->fieldDefinitionService->create([
+			'field_key' => 'region_search_integration',
+			'label' => 'Region',
+			'type' => FieldType::TEXT->value,
+			'admin_only' => false,
+			'user_editable' => false,
+			'user_visible' => true,
+			'initial_visibility' => FieldVisibility::PRIVATE->value,
+			'sort_order' => 0,
+			'active' => true,
+		]);
+		$this->rememberDefinition($definition->getId());
+
+		$this->fieldValueService->upsert($definition, $firstOwnerId, 'LATAM - South', $this->currentUserId, FieldVisibility::PRIVATE->value);
+		$this->fieldValueService->upsert($definition, $secondOwnerId, 'LATAM - North', $this->currentUserId, FieldVisibility::PRIVATE->value);
+		$this->fieldValueService->upsert($definition, $thirdOwnerId, 'EMEA', $this->currentUserId, FieldVisibility::PRIVATE->value);
+
+		$controller = new FieldValueAdminApiController(
+			$this->createMock(IRequest::class),
+			$this->fieldDefinitionService,
+			$this->fieldValueService,
+			$this->userManager,
+			$this->currentUserId,
+		);
+
+		$response = $controller->search('region_search_integration', 'contains', 'latam', 1, 1);
+
+		$this->assertSame(Http::STATUS_OK, $response->getStatus());
+		$this->assertSame(2, $response->getData()['pagination']['total']);
+		$this->assertSame(1, $response->getData()['pagination']['limit']);
+		$this->assertSame(1, $response->getData()['pagination']['offset']);
+		$this->assertCount(1, $response->getData()['items']);
+		$this->assertSame($secondOwnerId, $response->getData()['items'][0]['user_uid']);
+		$this->assertSame($secondOwnerId, $response->getData()['items'][0]['display_name']);
+		$this->assertSame(['value' => 'LATAM - North'], $response->getData()['items'][0]['fields']['region_search_integration']['value']['value']);
 	}
 
 	private function rememberDefinition(int $definitionId): void {

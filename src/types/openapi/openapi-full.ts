@@ -119,6 +119,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/ocs/v2.php/apps/profile_fields/api/v1/users/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search users by one profile field filter
+         * @description Return a paginated list of users that match one explicit profile field filter. The response includes only the field/value pair that produced the match, not the full profile.
+         *     This endpoint requires admin access
+         */
+        get: operations["field_value_admin_api-search"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/ocs/v2.php/apps/profile_fields/api/v1/me/values": {
         parameters: {
             query?: never;
@@ -233,6 +254,24 @@ export interface components {
             message?: string;
             totalitems?: string;
             itemsperpage?: string;
+        };
+        SearchItem: {
+            user_uid: string;
+            display_name: string;
+            fields: {
+                [key: string]: components["schemas"]["LookupField"];
+            };
+        };
+        SearchResult: {
+            items: components["schemas"]["SearchItem"][];
+            pagination: {
+                /** Format: int64 */
+                limit: number;
+                /** Format: int64 */
+                offset: number;
+                /** Format: int64 */
+                total: number;
+            };
         };
         /** @enum {string} */
         Type: "text" | "number";
@@ -746,6 +785,93 @@ export interface operations {
             };
             /** @description Multiple users match the lookup field value */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        ocs: {
+                            meta: components["schemas"]["OCSMeta"];
+                            data: {
+                                message: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+    };
+    "field_value_admin_api-search": {
+        parameters: {
+            query: {
+                /** @description Immutable key of the field to filter by */
+                fieldKey: string;
+                /** @description Explicit search operator, currently `eq` or `contains` */
+                operator?: string;
+                /** @description Value payload to compare against the stored field value */
+                value?: string | null;
+                /** @description Maximum number of users to return in the current page */
+                limit?: number;
+                /** @description Zero-based offset into the matched result set */
+                offset?: number;
+            };
+            header: {
+                /** @description Required to be true for the API request to pass */
+                "OCS-APIRequest": boolean;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description User search completed successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        ocs: {
+                            meta: components["schemas"]["OCSMeta"];
+                            data: components["schemas"]["SearchResult"];
+                        };
+                    };
+                };
+            };
+            /** @description Invalid search filter or pagination values */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        ocs: {
+                            meta: components["schemas"]["OCSMeta"];
+                            data: {
+                                message: string;
+                            };
+                        };
+                    };
+                };
+            };
+            /** @description Authenticated admin user is required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        ocs: {
+                            meta: components["schemas"]["OCSMeta"];
+                            data: {
+                                message: string;
+                            };
+                        };
+                    };
+                };
+            };
+            /** @description Search field definition not found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

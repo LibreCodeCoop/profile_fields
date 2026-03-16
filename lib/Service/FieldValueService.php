@@ -20,6 +20,10 @@ use OCA\ProfileFields\Enum\FieldType;
 use OCA\ProfileFields\Enum\FieldVisibility;
 
 class FieldValueService {
+	private const SEARCH_OPERATOR_EQ = 'eq';
+	private const SEARCH_OPERATOR_CONTAINS = 'contains';
+	private const SEARCH_MAX_LIMIT = 100;
+
 	public function __construct(
 		private FieldValueMapper $fieldValueMapper,
 	) {
@@ -95,6 +99,48 @@ class FieldValueService {
 			$definition->getId(),
 			$this->encodeValue($normalizedValue),
 		);
+	}
+
+	/**
+	 * @param array<string, mixed>|scalar|null $rawValue
+	 * @return array{total: int, matches: list<FieldValue>}
+	 */
+	public function searchByDefinition(
+		FieldDefinition $definition,
+		string $operator,
+		array|string|int|float|bool|null $rawValue,
+		int $limit,
+		int $offset,
+	): array {
+		if ($limit < 1 || $limit > self::SEARCH_MAX_LIMIT) {
+			throw new InvalidArgumentException(sprintf('limit must be between 1 and %d', self::SEARCH_MAX_LIMIT));
+		}
+
+		if ($offset < 0) {
+			throw new InvalidArgumentException('offset must be greater than or equal to 0');
+		}
+
+		$normalizedOperator = strtolower(trim($operator));
+		if (!in_array($normalizedOperator, [self::SEARCH_OPERATOR_EQ, self::SEARCH_OPERATOR_CONTAINS], true)) {
+			throw new InvalidArgumentException('search operator is not supported');
+		}
+
+		$searchValue = $this->normalizeSearchValue($definition, $normalizedOperator, $rawValue);
+		$fieldType = FieldType::from($definition->getType());
+		$matches = array_values(array_filter(
+			$this->fieldValueMapper->findByFieldDefinitionId($definition->getId()),
+			fn (FieldValue $candidate): bool => $this->matchesSearchOperator(
+				$fieldType,
+				$this->decodeValue($candidate->getValueJson()),
+				$searchValue,
+				$normalizedOperator,
+			),
+		));
+
+		return [
+			'total' => count($matches),
+			'matches' => array_slice($matches, $offset, $limit),
+		];
 	}
 
 	public function updateVisibility(FieldDefinition $definition, string $userUid, string $updatedByUid, string $currentVisibility): FieldValue {
@@ -187,6 +233,50 @@ class FieldValueService {
 		}
 
 		return $decoded;
+	}
+
+	/**
+	 * @param array<string, mixed>|scalar|null $rawValue
+	 * @return array{value: mixed}
+	 */
+	private function normalizeSearchValue(FieldDefinition $definition, string $operator, array|string|int|float|bool|null $rawValue): array {
+		if ($operator === self::SEARCH_OPERATOR_EQ) {
+			return $this->normalizeValue($definition, $rawValue);
+		}
+
+		if (FieldType::from($definition->getType()) !== FieldType::TEXT) {
+			throw new InvalidArgumentException('contains operator is only supported for text fields');
+		}
+
+		$normalized = $this->normalizeValue($definition, $rawValue);
+		$value = $normalized['value'] ?? null;
+		if (!is_string($value) || $value === '') {
+			throw new InvalidArgumentException('contains operator requires a non-empty text value');
+		}
+
+		return ['value' => $value];
+	}
+
+	/**
+	 * @param array<string, mixed> $candidateValue
+	 * @param array{value: mixed} $searchValue
+	 */
+	private function matchesSearchOperator(FieldType $fieldType, array $candidateValue, array $searchValue, string $operator): bool {
+		if ($operator === self::SEARCH_OPERATOR_EQ) {
+			return ($candidateValue['value'] ?? null) === ($searchValue['value'] ?? null);
+		}
+
+		if ($fieldType !== FieldType::TEXT) {
+			return false;
+		}
+
+		$candidateText = $candidateValue['value'] ?? null;
+		$needle = $searchValue['value'] ?? null;
+		if (!is_string($candidateText) || !is_string($needle)) {
+			return false;
+		}
+
+		return str_contains(strtolower($candidateText), strtolower($needle));
 	}
 
 	private function asMutableDateTime(?DateTimeInterface $value = null): DateTime {

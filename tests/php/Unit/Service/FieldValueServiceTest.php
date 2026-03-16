@@ -185,6 +185,93 @@ class FieldValueServiceTest extends TestCase {
 		$this->service->updateVisibility($definition, 'alice', 'admin', 'users');
 	}
 
+	public function testSearchByDefinitionReturnsPaginatedExactMatches(): void {
+		$definition = $this->buildDefinition(FieldType::TEXT->value);
+		$definition->setId(3);
+
+		$firstMatch = new FieldValue();
+		$firstMatch->setId(10);
+		$firstMatch->setFieldDefinitionId(3);
+		$firstMatch->setUserUid('alice');
+		$firstMatch->setValueJson('{"value":"LATAM"}');
+		$firstMatch->setCurrentVisibility('users');
+		$firstMatch->setUpdatedByUid('admin');
+		$firstMatch->setUpdatedAt(new \DateTime());
+
+		$secondMatch = new FieldValue();
+		$secondMatch->setId(11);
+		$secondMatch->setFieldDefinitionId(3);
+		$secondMatch->setUserUid('bob');
+		$secondMatch->setValueJson('{"value":"LATAM"}');
+		$secondMatch->setCurrentVisibility('users');
+		$secondMatch->setUpdatedByUid('admin');
+		$secondMatch->setUpdatedAt(new \DateTime());
+
+		$nonMatch = new FieldValue();
+		$nonMatch->setId(12);
+		$nonMatch->setFieldDefinitionId(3);
+		$nonMatch->setUserUid('carol');
+		$nonMatch->setValueJson('{"value":"EMEA"}');
+		$nonMatch->setCurrentVisibility('users');
+		$nonMatch->setUpdatedByUid('admin');
+		$nonMatch->setUpdatedAt(new \DateTime());
+
+		$this->fieldValueMapper->expects($this->once())
+			->method('findByFieldDefinitionId')
+			->with(3)
+			->willReturn([$firstMatch, $secondMatch, $nonMatch]);
+
+		$result = $this->service->searchByDefinition($definition, 'eq', 'LATAM', 1, 1);
+
+		$this->assertSame(2, $result['total']);
+		$this->assertCount(1, $result['matches']);
+		$this->assertSame('bob', $result['matches'][0]->getUserUid());
+	}
+
+	public function testSearchByDefinitionSupportsContainsForTextFields(): void {
+		$definition = $this->buildDefinition(FieldType::TEXT->value);
+		$definition->setId(3);
+
+		$match = new FieldValue();
+		$match->setId(10);
+		$match->setFieldDefinitionId(3);
+		$match->setUserUid('alice');
+		$match->setValueJson('{"value":"Ops LATAM"}');
+		$match->setCurrentVisibility('users');
+		$match->setUpdatedByUid('admin');
+		$match->setUpdatedAt(new \DateTime());
+
+		$nonMatch = new FieldValue();
+		$nonMatch->setId(11);
+		$nonMatch->setFieldDefinitionId(3);
+		$nonMatch->setUserUid('bob');
+		$nonMatch->setValueJson('{"value":"EMEA"}');
+		$nonMatch->setCurrentVisibility('users');
+		$nonMatch->setUpdatedByUid('admin');
+		$nonMatch->setUpdatedAt(new \DateTime());
+
+		$this->fieldValueMapper->expects($this->once())
+			->method('findByFieldDefinitionId')
+			->with(3)
+			->willReturn([$match, $nonMatch]);
+
+		$result = $this->service->searchByDefinition($definition, 'contains', 'latam', 50, 0);
+
+		$this->assertSame(1, $result['total']);
+		$this->assertCount(1, $result['matches']);
+		$this->assertSame('alice', $result['matches'][0]->getUserUid());
+	}
+
+	public function testSearchByDefinitionRejectsUnsupportedOperator(): void {
+		$definition = $this->buildDefinition(FieldType::TEXT->value);
+		$definition->setId(3);
+
+		$this->expectException(InvalidArgumentException::class);
+		$this->expectExceptionMessage('search operator is not supported');
+
+		$this->service->searchByDefinition($definition, 'starts_with', 'lat', 50, 0);
+	}
+
 	private function buildDefinition(string $type): FieldDefinition {
 		$definition = new FieldDefinition();
 		$definition->setType($type);
