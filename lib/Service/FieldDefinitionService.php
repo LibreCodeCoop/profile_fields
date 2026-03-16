@@ -32,7 +32,8 @@ class FieldDefinitionService {
 			throw new InvalidArgumentException('field_key already exists');
 		}
 
-		$now = new DateTime();
+		$createdAt = $this->parseImportedDate($definition['created_at'] ?? null) ?? new DateTime();
+		$updatedAt = $this->parseImportedDate($definition['updated_at'] ?? null) ?? clone $createdAt;
 		$entity = new FieldDefinition();
 		$entity->setFieldKey($validated['field_key']);
 		$entity->setLabel($validated['label']);
@@ -43,8 +44,8 @@ class FieldDefinitionService {
 		$entity->setInitialVisibility($validated['initial_visibility']);
 		$entity->setSortOrder($validated['sort_order']);
 		$entity->setActive($validated['active']);
-		$entity->setCreatedAt($now);
-		$entity->setUpdatedAt($now);
+		$entity->setCreatedAt($createdAt);
+		$entity->setUpdatedAt($updatedAt);
 
 		return $this->fieldDefinitionMapper->insert($entity);
 	}
@@ -70,9 +71,17 @@ class FieldDefinitionService {
 		$existing->setInitialVisibility($validated['initial_visibility']);
 		$existing->setSortOrder($validated['sort_order']);
 		$existing->setActive($validated['active']);
-		$existing->setUpdatedAt(new DateTime());
+		$existing->setUpdatedAt($this->parseImportedDate($definition['updated_at'] ?? null) ?? new DateTime());
 
 		return $this->fieldDefinitionMapper->update($existing);
+	}
+
+	private function parseImportedDate(mixed $value): ?DateTime {
+		if (!is_string($value) || $value === '') {
+			return null;
+		}
+
+		return new DateTime($value);
 	}
 
 	/**
