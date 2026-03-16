@@ -96,7 +96,7 @@ class FieldValueServiceTest extends TestCase {
 			'finance',
 			'admin',
 			'users',
-			new \DateTime('2026-03-12T14:00:00+00:00'),
+			new \DateTimeImmutable('2026-03-12T14:00:00+00:00'),
 		);
 
 		$this->assertSame('2026-03-12T14:00:00+00:00', $stored->getUpdatedAt()->format(DATE_ATOM));
