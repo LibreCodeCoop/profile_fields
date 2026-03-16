@@ -39,6 +39,8 @@ class ImportPayloadValidator {
 	 *         initial_visibility: 'private'|'users'|'public',
 	 *         sort_order: int,
 	 *         active: bool,
+	 *         created_at?: non-empty-string,
+	 *         updated_at?: non-empty-string,
 	 *     }>,
 	 *     values: list<array{
 	 *         field_key: non-empty-string,
@@ -78,6 +80,8 @@ class ImportPayloadValidator {
 	 *     initial_visibility: 'private'|'users'|'public',
 	 *     sort_order: int,
 	 *     active: bool,
+	 *     created_at?: non-empty-string,
+	 *     updated_at?: non-empty-string,
 	 * }>
 	 */
 	private function validateDefinitions(array $definitions): array {
@@ -89,6 +93,8 @@ class ImportPayloadValidator {
 			}
 
 			$validatedDefinition = $this->fieldDefinitionValidator->validate($definition);
+			$createdAt = $this->normalizeOptionalDate($definition, 'created_at', sprintf('definitions[%d].created_at must be a valid ISO-8601 datetime', $index));
+			$updatedAt = $this->normalizeOptionalDate($definition, 'updated_at', sprintf('definitions[%d].updated_at must be a valid ISO-8601 datetime', $index));
 			$fieldKey = $validatedDefinition['field_key'];
 
 			if (isset($normalizedDefinitions[$fieldKey])) {
@@ -101,6 +107,12 @@ class ImportPayloadValidator {
 			}
 
 			$normalizedDefinitions[$fieldKey] = $validatedDefinition;
+			if ($createdAt !== null) {
+				$normalizedDefinitions[$fieldKey]['created_at'] = $createdAt;
+			}
+			if ($updatedAt !== null) {
+				$normalizedDefinitions[$fieldKey]['updated_at'] = $updatedAt;
+			}
 		}
 
 		return $normalizedDefinitions;
@@ -118,6 +130,8 @@ class ImportPayloadValidator {
 	 *     initial_visibility: 'private'|'users'|'public',
 	 *     sort_order: int,
 	 *     active: bool,
+	 *     created_at?: non-empty-string,
+	 *     updated_at?: non-empty-string,
 	 * }> $definitions
 	 * @return list<array{
 	 *     field_key: non-empty-string,
@@ -219,6 +233,25 @@ class ImportPayloadValidator {
 	private function assertDate(string $value, string $message): void {
 		try {
 			new DateTimeImmutable($value);
+		} catch (\Exception) {
+			throw new InvalidArgumentException($message);
+		}
+	}
+
+	/**
+	 * @param array<string, mixed> $payload
+	 */
+	private function normalizeOptionalDate(array $payload, string $key, string $message): ?string {
+		if (!array_key_exists($key, $payload) || $payload[$key] === null || $payload[$key] === '') {
+			return null;
+		}
+
+		if (!is_string($payload[$key])) {
+			throw new InvalidArgumentException($message);
+		}
+
+		try {
+			return (new DateTimeImmutable($payload[$key]))->format(DATE_ATOM);
 		} catch (\Exception) {
 			throw new InvalidArgumentException($message);
 		}
