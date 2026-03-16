@@ -9,6 +9,7 @@
     "build": "NODE_ENV=production vite --mode production build",
     "dev": "NODE_ENV=development vite --mode development build",
     "screenshots:refresh": "node playwright/generate-screenshots.mjs",
+    "typescript:generate": "mkdir -p src/types/openapi && openapi-typescript openapi.json -o src/types/openapi/openapi.ts && openapi-typescript openapi-administration.json -o src/types/openapi/openapi-administration.ts && openapi-typescript openapi-full.json -o src/types/openapi/openapi-full.ts",
     "watch": "NODE_ENV=development vite --mode development build --watch",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -31,9 +32,10 @@
     "vue": "^3.5.29"
   },
   "devDependencies": {
-    "@playwright/test": "^1.54.2",
     "@nextcloud/browserslist-config": "^3.1.2",
     "@nextcloud/vite-config": "^2.5.2",
+    "@playwright/test": "^1.54.2",
+    "openapi-typescript": "^7.13.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
   }
