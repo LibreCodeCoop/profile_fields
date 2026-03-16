@@ -63,6 +63,15 @@ namespace OCA\ProfileFields;
  *     lookup_field_key: string,
  *     fields: array<string, ProfileFieldsLookupField>,
  * }
+ * @psalm-type ProfileFieldsSearchItem = array{
+ *     user_uid: string,
+ *     display_name: string,
+ *     fields: array<string, ProfileFieldsLookupField>,
+ * }
+ * @psalm-type ProfileFieldsSearchResult = array{
+ *     items: list<ProfileFieldsSearchItem>,
+ *     pagination: array{limit: int, offset: int, total: int},
+ * }
  */
 final class ResponseDefinitions {
 	private function __construct() {
