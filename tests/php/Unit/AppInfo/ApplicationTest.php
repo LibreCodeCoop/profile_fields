@@ -12,7 +12,6 @@ namespace OCA\ProfileFields\Tests\Unit\AppInfo;
 use OCA\ProfileFields\AppInfo\Application;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\IRequest;
-use OCP\IServerContainer;
 use PHPUnit\Framework\TestCase;
 
 class ApplicationTest extends TestCase {
@@ -25,16 +24,25 @@ class ApplicationTest extends TestCase {
 			->method('getRequestUri')
 			->willThrowException(new \RuntimeException('unsupported uri context'));
 
-		$serverContainer = $this->createMock(IServerContainer::class);
-		$serverContainer->expects($this->once())
-			->method('get')
-			->with(IRequest::class)
-			->willReturn($request);
-
 		$bootContext = $this->createMock(IBootContext::class);
 		$bootContext->expects($this->once())
-			->method('getServerContainer')
-			->willReturn($serverContainer);
+			->method('injectFn')
+			->willReturnCallback(static function (callable $fn) use ($request): mixed {
+				return $fn($request);
+			});
+
+		$application = new Application();
+
+		$application->boot($bootContext);
+
+		self::assertTrue(true);
+	}
+
+	public function testBootIgnoresUnresolvableRequestInjection(): void {
+		$bootContext = $this->createMock(IBootContext::class);
+		$bootContext->expects($this->once())
+			->method('injectFn')
+			->willThrowException(new \RuntimeException('request unavailable'));
 
 		$application = new Application();
 
