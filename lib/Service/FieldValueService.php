@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace OCA\ProfileFields\Service;
 
 use DateTime;
+use DateTimeInterface;
 use InvalidArgumentException;
 use JsonException;
 use OCA\ProfileFields\Db\FieldDefinition;
@@ -27,7 +28,7 @@ class FieldValueService {
 	/**
 	 * @param array<string, mixed>|scalar|null $rawValue
 	 */
-	public function upsert(FieldDefinition $definition, string $userUid, array|string|int|float|bool|null $rawValue, string $updatedByUid, ?string $currentVisibility = null, ?DateTime $updatedAt = null): FieldValue {
+	public function upsert(FieldDefinition $definition, string $userUid, array|string|int|float|bool|null $rawValue, string $updatedByUid, ?string $currentVisibility = null, ?DateTimeInterface $updatedAt = null): FieldValue {
 		$normalizedValue = $this->normalizeValue($definition, $rawValue);
 		$visibility = $currentVisibility ?? $definition->getInitialVisibility();
 		if (!FieldVisibility::isValid($visibility)) {
@@ -40,7 +41,7 @@ class FieldValueService {
 		$entity->setValueJson($this->encodeValue($normalizedValue));
 		$entity->setCurrentVisibility($visibility);
 		$entity->setUpdatedByUid($updatedByUid);
-		$entity->setUpdatedAt($updatedAt ?? new DateTime());
+		$entity->setUpdatedAt($this->asMutableDateTime($updatedAt));
 
 		if ($entity->getId() === null) {
 			return $this->fieldValueMapper->insert($entity);
@@ -101,7 +102,7 @@ class FieldValueService {
 
 		$entity->setCurrentVisibility($currentVisibility);
 		$entity->setUpdatedByUid($updatedByUid);
-		$entity->setUpdatedAt(new DateTime());
+		$entity->setUpdatedAt($this->asMutableDateTime());
 
 		return $this->fieldValueMapper->update($entity);
 	}
@@ -179,5 +180,17 @@ class FieldValueService {
 		}
 
 		return $decoded;
+	}
+
+	private function asMutableDateTime(?DateTimeInterface $value = null): DateTime {
+		if ($value instanceof DateTime) {
+			return clone $value;
+		}
+
+		if ($value !== null) {
+			return DateTime::createFromInterface($value);
+		}
+
+		return new DateTime();
 	}
 }
