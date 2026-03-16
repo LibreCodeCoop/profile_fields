@@ -71,6 +71,37 @@ class FieldValueServiceTest extends TestCase {
 		$this->assertSame('{"value":9.5}', $stored->getValueJson());
 	}
 
+	public function testUpsertPreservesImportedUpdatedAt(): void {
+		$definition = $this->buildDefinition(FieldType::TEXT->value);
+		$definition->setId(3);
+		$definition->setInitialVisibility('users');
+
+		$this->fieldValueMapper
+			->method('findByFieldDefinitionIdAndUserUid')
+			->with(3, 'alice')
+			->willReturn(null);
+
+		$this->fieldValueMapper
+			->expects($this->once())
+			->method('insert')
+			->with($this->callback(function (FieldValue $value): bool {
+				$this->assertSame('2026-03-12T14:00:00+00:00', $value->getUpdatedAt()->format(DATE_ATOM));
+				return true;
+			}))
+			->willReturnCallback(static fn (FieldValue $value): FieldValue => $value);
+
+		$stored = $this->service->upsert(
+			$definition,
+			'alice',
+			'finance',
+			'admin',
+			'users',
+			new \DateTimeImmutable('2026-03-12T14:00:00+00:00'),
+		);
+
+		$this->assertSame('2026-03-12T14:00:00+00:00', $stored->getUpdatedAt()->format(DATE_ATOM));
+	}
+
 	public function testSerializeForResponseReturnsDecodedPayload(): void {
 		$value = new FieldValue();
 		$value->setId(10);

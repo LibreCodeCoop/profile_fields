@@ -92,10 +92,12 @@ abstract class ApiTestCase extends TestCase {
 	protected function setUp(): void {
 		parent::setUp();
 
+		$baseUrl = $this->resolveApiBaseUrl();
+
 		/** @var array<string, mixed> $data */
 		$data = json_decode((string)file_get_contents(__DIR__ . '/../../../openapi-full.json'), true, flags: JSON_THROW_ON_ERROR);
 		$data['servers'] = [
-			['url' => 'http://nginx'],
+			['url' => $baseUrl],
 		];
 
 		$this->schema = Schema::getInstance($data);
@@ -207,6 +209,21 @@ abstract class ApiTestCase extends TestCase {
 
 	protected function uniqueFieldKey(string $prefix): string {
 		return sprintf('%s_%d', $prefix, random_int(1000, 999999));
+	}
+
+	private function resolveApiBaseUrl(): string {
+		$configuredBaseUrl = getenv('PROFILE_FIELDS_API_BASE_URL');
+		if (is_string($configuredBaseUrl) && $configuredBaseUrl !== '') {
+			return $configuredBaseUrl;
+		}
+
+		$defaultBaseUrl = 'http://nginx';
+		$defaultHost = parse_url($defaultBaseUrl, PHP_URL_HOST);
+		if (is_string($defaultHost) && gethostbyname($defaultHost) !== $defaultHost) {
+			return $defaultBaseUrl;
+		}
+
+		$this->markTestSkipped('API contract tests require PROFILE_FIELDS_API_BASE_URL or a resolvable nginx host.');
 	}
 
 	private static function ensureSchemaExists(): void {

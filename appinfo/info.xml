@@ -49,6 +49,7 @@ Developed with ❤️ by [LibreCode](https://librecode.coop). Help us transform 
 	</repair-steps>
 	<commands>
 		<command>OCA\ProfileFields\Command\Data\Export</command>
+		<command>OCA\ProfileFields\Command\Data\Import</command>
 		<command>OCA\ProfileFields\Command\Data\Clear</command>
 		<command>OCA\ProfileFields\Command\Developer\Reset</command>
 	</commands>

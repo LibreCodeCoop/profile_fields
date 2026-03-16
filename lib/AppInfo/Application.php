@@ -38,16 +38,33 @@ class Application extends App implements IBootstrap {
 
 	#[\Override]
 	public function boot(IBootContext $context): void {
-		$request = $context->getServerContainer()->get(IRequest::class);
-		$path = $request->getPathInfo();
-		$requestUri = $request->getRequestUri();
+		try {
+			$context->injectFn($this->bootWithRequest(...));
+		} catch (\Throwable) {
+			return;
+		}
+	}
+
+	private function bootWithRequest(IRequest $request): void {
+		$path = $this->readRequestString(static fn (): string|false => $request->getPathInfo());
+		$requestUri = $this->readRequestString(static fn (): string => $request->getRequestUri());
 
 		if (
-			($path !== false && str_contains($path, '/settings/users'))
-			|| str_contains($requestUri, '/settings/users')
+			($path !== null && str_contains($path, '/settings/users'))
+			|| ($requestUri !== null && str_contains($requestUri, '/settings/users'))
 		) {
 			self::loadUserManagementAssets();
 		}
+	}
+
+	private function readRequestString(callable $reader): ?string {
+		try {
+			$value = $reader();
+		} catch (\Throwable) {
+			return null;
+		}
+
+		return is_string($value) && $value !== '' ? $value : null;
 	}
 
 	public static function loadUserManagementAssets(): void {

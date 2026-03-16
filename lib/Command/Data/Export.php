@@ -19,6 +19,8 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class Export extends Command {
+	private const SCHEMA_VERSION = 1;
+
 	public function __construct(
 		private FieldDefinitionService $fieldDefinitionService,
 		private FieldValueMapper $fieldValueMapper,
@@ -47,17 +49,30 @@ class Export extends Command {
 
 	#[\Override]
 	protected function execute(InputInterface $input, OutputInterface $output): int {
-		$payload = [
-			'exported_at' => gmdate(DATE_ATOM),
-			'definitions' => array_map(
-				static fn ($definition): array => $definition->jsonSerialize(),
-				$this->fieldDefinitionService->findAllOrdered(),
-			),
-			'values' => array_map(
-				fn (FieldValue $value): array => $this->serializeValue($value),
-				$this->fieldValueMapper->findAllOrdered(),
-			),
-		];
+		try {
+			$definitions = $this->fieldDefinitionService->findAllOrdered();
+			$fieldKeysByDefinitionId = [];
+			foreach ($definitions as $definition) {
+				$fieldKeysByDefinitionId[$definition->getId()] = $definition->getFieldKey();
+			}
+
+			$payload = [
+				'schema_version' => self::SCHEMA_VERSION,
+				'exported_at' => gmdate(DATE_ATOM),
+				'definitions' => array_map(
+					static fn ($definition): array => $definition->jsonSerialize(),
+					$definitions,
+				),
+				'values' => array_map(
+					fn (FieldValue $value): array => $this->serializeValue($value, $fieldKeysByDefinitionId),
+					$this->fieldValueMapper->findAllOrdered(),
+				),
+			];
+		} catch (\Throwable $exception) {
+			$output->writeln('<error>Failed to build export payload.</error>');
+			$output->writeln(sprintf('<error>%s</error>', $exception->getMessage()));
+			return self::FAILURE;
+		}
 
 		try {
 			$json = json_encode(
@@ -88,16 +103,22 @@ class Export extends Command {
 	/**
 	 * @return array<string, mixed>
 	 */
-	private function serializeValue(FieldValue $value): array {
+	private function serializeValue(FieldValue $value, array $fieldKeysByDefinitionId): array {
 		try {
 			$decodedValue = json_decode($value->getValueJson(), true, 512, JSON_THROW_ON_ERROR);
 		} catch (JsonException $exception) {
 			throw new \RuntimeException('Failed to decode stored field value JSON.', 0, $exception);
 		}
 
+		$fieldKey = $fieldKeysByDefinitionId[$value->getFieldDefinitionId()] ?? null;
+		if (!is_string($fieldKey) || $fieldKey === '') {
+			throw new \RuntimeException(sprintf('Could not resolve field_key for field definition %d.', $value->getFieldDefinitionId()));
+		}
+
 		return [
 			'id' => $value->getId(),
 			'field_definition_id' => $value->getFieldDefinitionId(),
+			'field_key' => $fieldKey,
 			'user_uid' => $value->getUserUid(),
 			'value' => $decodedValue,
 			'current_visibility' => $value->getCurrentVisibility(),

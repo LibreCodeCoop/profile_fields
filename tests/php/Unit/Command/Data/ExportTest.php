@@ -72,9 +72,37 @@ class ExportTest extends TestCase {
 		/** @var array{exported_at: string, definitions: list<array<string, mixed>>, values: list<array<string, mixed>>} $payload */
 		$payload = json_decode($tester->getDisplay(), true, 512, JSON_THROW_ON_ERROR);
 
+		self::assertSame(1, $payload['schema_version']);
 		self::assertArrayHasKey('exported_at', $payload);
 		self::assertSame('cost_center', $payload['definitions'][0]['field_key']);
+		self::assertSame('cost_center', $payload['values'][0]['field_key']);
 		self::assertSame('alice', $payload['values'][0]['user_uid']);
 		self::assertSame(['value' => 'finance'], $payload['values'][0]['value']);
+	}
+
+	public function testExecuteFailsWhenFieldKeyCannotBeResolved(): void {
+		$value = new FieldValue();
+		$value->setId(11);
+		$value->setFieldDefinitionId(999);
+		$value->setUserUid('alice');
+		$value->setValueJson('{"value":"finance"}');
+		$value->setCurrentVisibility('users');
+		$value->setUpdatedByUid('admin');
+		$value->setUpdatedAt(new \DateTime('2026-03-03T12:00:00+00:00'));
+
+		$this->fieldDefinitionService->expects($this->once())
+			->method('findAllOrdered')
+			->willReturn([]);
+
+		$this->fieldValueMapper->expects($this->once())
+			->method('findAllOrdered')
+			->willReturn([$value]);
+
+		$tester = new CommandTester($this->command);
+		$exitCode = $tester->execute([]);
+
+		self::assertSame(1, $exitCode);
+		self::assertStringContainsString('Failed to build export payload.', $tester->getDisplay());
+		self::assertStringContainsString('Could not resolve field_key for field definition 999.', $tester->getDisplay());
 	}
 }

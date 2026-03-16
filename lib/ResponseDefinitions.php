@@ -46,6 +46,8 @@ namespace OCA\ProfileFields;
  *     user_uid: string,
  *     value: ProfileFieldsValuePayload,
  *     current_visibility: ProfileFieldsVisibility,
+ *     updated_by_uid: string,
+ *     updated_at: string,
  * }
  * @psalm-type ProfileFieldsEditableField = array{
  *     definition: ProfileFieldsDefinition,

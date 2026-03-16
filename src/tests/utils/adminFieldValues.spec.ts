@@ -27,6 +27,8 @@ const value = (fieldDefinitionId: number, userUid = 'alice'): FieldValueRecord =
 	user_uid: userUid,
 	value: { value: `value-${fieldDefinitionId}` },
 	current_visibility: 'users',
+	updated_by_uid: 'admin',
+	updated_at: '2026-03-10T00:00:00+00:00',
 })
 
 describe('buildAdminEditableFields', () => {
