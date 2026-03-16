@@ -23,12 +23,12 @@ The public API contract for this app is published as [openapi-full.json](https:/
 
 Run the app commands from the Nextcloud stack root, not from the host PHP environment.
 
-| Command | Description |
+| occ Command | Description |
 | --- | --- |
-| `occ profile_fields:data:export --output=/tmp/profile_fields-export.json` | Export the current Profile Fields catalog and stored values. |
-| `occ profile_fields:data:import --input=/tmp/profile_fields-export.json --dry-run` | Validate an import payload without writing anything. |
-| `occ profile_fields:data:import --input=/tmp/profile_fields-export.json` | Apply the non-destructive `upsert` import. |
-| `occ profile_fields:data:clear --definitions --force` | Clear app definitions explicitly before reimporting into the same environment. |
+| `profile_fields:data:export` | Export the current Profile Fields catalog and stored values. |
+| `profile_fields:data:import` | Validate an import payload without writing anything. |
+| `profile_fields:data:import` | Apply the non-destructive `upsert` import. |
+| `profile_fields:data:clear` | Clear app definitions explicitly before reimporting into the same environment. |
 
 Notes:
 
