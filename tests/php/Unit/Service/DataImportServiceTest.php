@@ -42,7 +42,9 @@ class DataImportServiceTest extends TestCase {
 
 	public function testImportDryRunReturnsSummaryWithoutPersisting(): void {
 		$existingDefinition = $this->buildDefinition(7, 'cost_center', 'Cost center', 2, true);
+		$existingDefinition->setUpdatedAt(new \DateTime('2026-03-11T09:30:00+00:00'));
 		$existingValue = $this->buildValue(7, 'alice', ['value' => 'finance'], 'users', 'ops-admin');
+		$existingValue->setUpdatedAt(new \DateTime('2026-03-15T12:00:00+00:00'));
 
 		$this->importPayloadValidator->expects($this->once())
 			->method('validate')
@@ -108,14 +110,14 @@ class DataImportServiceTest extends TestCase {
 
 		$this->fieldDefinitionService->expects($this->once())
 			->method('create')
-			->with($this->callback(static fn (array $definition): bool => $definition['field_key'] === 'region'))
+			->with($this->callback(static fn (array $definition): bool => $definition['field_key'] === 'region' && $definition['created_at'] === '2026-03-10T08:00:00+00:00' && $definition['updated_at'] === '2026-03-10T08:00:00+00:00'))
 			->willReturn($createdDefinition);
 
 		$this->fieldDefinitionService->expects($this->once())
 			->method('update')
 			->with(
 				$existingDefinition,
-				$this->callback(static fn (array $definition): bool => $definition['field_key'] === 'cost_center' && $definition['label'] === 'Cost center' && $definition['sort_order'] === 2),
+				$this->callback(static fn (array $definition): bool => $definition['field_key'] === 'cost_center' && $definition['label'] === 'Cost center' && $definition['sort_order'] === 2 && $definition['updated_at'] === '2026-03-11T09:30:00+00:00'),
 			)
 			->willReturn($updatedDefinition);
 
@@ -147,6 +149,7 @@ class DataImportServiceTest extends TestCase {
 				$this->callback(static fn (mixed $value): bool => in_array($value, ['emea', 'finance'], true)),
 				$this->callback(static fn (string $updatedByUid): bool => in_array($updatedByUid, ['admin', 'ops-admin'], true)),
 				'users',
+				$this->callback(static fn (\DateTimeInterface $updatedAt): bool => in_array($updatedAt->format(DATE_ATOM), ['2026-03-15T12:00:00+00:00'], true)),
 			);
 
 		$this->connection->expects($this->once())->method('beginTransaction');
@@ -186,6 +189,8 @@ class DataImportServiceTest extends TestCase {
 					'initial_visibility' => 'users',
 					'sort_order' => 0,
 					'active' => true,
+					'created_at' => '2026-03-10T08:00:00+00:00',
+					'updated_at' => '2026-03-10T08:00:00+00:00',
 				],
 				[
 					'field_key' => 'cost_center',
@@ -197,6 +202,8 @@ class DataImportServiceTest extends TestCase {
 					'initial_visibility' => 'users',
 					'sort_order' => 2,
 					'active' => true,
+					'created_at' => '2026-03-01T12:00:00+00:00',
+					'updated_at' => '2026-03-11T09:30:00+00:00',
 				],
 			],
 			'values' => [
