@@ -78,6 +78,10 @@ jobs:
       - name: Regenerate OpenAPI
         run: composer run openapi
 
+      - name: Regenerate TypeScript OpenAPI types
+        if: steps.check_typescript_openapi.outputs.files_exists == 'true'
+        run: npm run typescript:generate
+
       - name: Check openapi*.json and typescript changes
         run: |
           bash -c "[[ ! \"`git status --porcelain `\" ]] || (echo 'Please run \"composer run openapi\" and commit the openapi*.json files and, if applicable, src/types/openapi/openapi*.ts. See the diff below.' && exit 1)"
