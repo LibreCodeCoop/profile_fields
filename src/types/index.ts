@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 LibreCode coop and LibreCode contributors
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import type { components as ApiComponents, operations as ApiOperations } from './types/openapi/openapi-full'
+import type { components as ApiComponents, operations as ApiOperations } from './openapi/openapi-full'
 
 type ApiJsonBody<TRequestBody> = TRequestBody extends {
 	content: {
