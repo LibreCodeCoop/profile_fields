@@ -72,8 +72,10 @@ class ExportTest extends TestCase {
 		/** @var array{exported_at: string, definitions: list<array<string, mixed>>, values: list<array<string, mixed>>} $payload */
 		$payload = json_decode($tester->getDisplay(), true, 512, JSON_THROW_ON_ERROR);
 
+		self::assertSame(1, $payload['schema_version']);
 		self::assertArrayHasKey('exported_at', $payload);
 		self::assertSame('cost_center', $payload['definitions'][0]['field_key']);
+		self::assertSame('cost_center', $payload['values'][0]['field_key']);
 		self::assertSame('alice', $payload['values'][0]['user_uid']);
 		self::assertSame(['value' => 'finance'], $payload['values'][0]['value']);
 	}
