@@ -39,7 +39,7 @@ class LogProfileFieldChangeOperation implements IOperation {
 
 	#[\Override]
 	public function getIcon(): string {
-		return $this->urlGenerator->imagePath('core', 'actions/profile.svg');
+		return $this->urlGenerator->imagePath('core', 'actions/history.svg');
 	}
 
 	#[\Override]
