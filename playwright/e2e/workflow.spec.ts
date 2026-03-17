@@ -17,12 +17,25 @@ const selectNcOption = async(page: Page, combobox: Locator, optionName: string) 
 	}).first().click()
 }
 
+const ensureFlowCardIsVisible = async(page: Page, addFlowCard: Locator) => {
+	if (await addFlowCard.count() > 0) {
+		return
+	}
+
+	const showMoreButton = page.getByRole('button', { name: 'Show more', exact: true })
+	if (await showMoreButton.count() > 0) {
+		await showMoreButton.click()
+	}
+
+	await expect(addFlowCard).toBeVisible()
+}
+
 const configureDraftRule = async(page: Page, actionName: string, label: string, fieldValue: string, operationValue?: string) => {
 	const initialRuleCount = await page.locator('.section.rule').count()
 	const addFlowCard = page.locator('.actions__item.colored').filter({
 		has: page.getByRole('heading', { name: actionName, exact: true }),
 	})
-	await expect(addFlowCard).toBeVisible()
+	await ensureFlowCardIsVisible(page, addFlowCard)
 	await addFlowCard.getByRole('button', { name: 'Add new flow' }).click()
 
 	const configuredRule = page.locator('.section.rule').filter({
@@ -135,6 +148,32 @@ test('admin can create a send webhook workflow rule', async ({ page }) => {
 
 	await expect(savedRule.getByText('Send webhook', { exact: true })).toBeVisible()
 	await expect(savedRule.locator('input[type="url"]')).toHaveValue(webhookUrl)
+
+	await savedRule.getByRole('button', { name: 'Delete' }).click()
+	await expect(page.locator('.section.rule')).toHaveCount(initialRuleCount)
+	await deleteDefinitionByFieldKey(page.request, fieldKey)
+})
+
+test('admin can create an email affected user workflow rule', async ({ page }) => {
+	const suffix = Date.now()
+	const fieldKey = `playwright_email_workflow_${suffix}`
+	const label = `Playwright email workflow ${suffix}`
+	const fieldValue = `engineering-email-${suffix}`
+
+	await deleteDefinitionByFieldKey(page.request, fieldKey)
+	await createDefinition(page.request, {
+		fieldKey,
+		label,
+		userEditable: true,
+		userVisible: true,
+		initialVisibility: 'users',
+	})
+
+	await page.goto('./settings/admin/workflow')
+	await expect(page.getByRole('heading', { name: 'Available flows' })).toBeVisible()
+	const { savedRule, initialRuleCount } = await configureDraftRule(page, 'Email affected user', label, fieldValue)
+
+	await expect(savedRule.getByText('Email affected user', { exact: true })).toBeVisible()
 
 	await savedRule.getByRole('button', { name: 'Delete' }).click()
 	await expect(page.locator('.section.rule')).toHaveCount(initialRuleCount)
