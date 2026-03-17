@@ -58,6 +58,26 @@ class MockWebServerContext extends NextcloudApiContext {
 		}
 	}
 
+	/**
+	 * @When /^read the last Nextcloud log entry containing "([^"]*)"$/
+	 */
+	public function readTheLastNextcloudLogEntryContaining(string $needle): void {
+		$logPath = static::findParentDirContainingFile('console.php') . '/data/nextcloud.log';
+
+		$deadline = microtime(true) + 4;
+		do {
+			$entry = $this->findLastLogEntryContaining($logPath, $needle);
+			if ($entry !== null) {
+				self::$commandOutput = $entry;
+				return;
+			}
+
+			usleep(200000);
+		} while (microtime(true) < $deadline);
+
+		throw new RuntimeException('Nextcloud log does not contain: ' . $needle);
+	}
+
 	#[AfterScenario()]
 	public function stopMockWebServers(): void {
 		foreach ($this->mockServers as $server) {
@@ -94,5 +114,24 @@ class MockWebServerContext extends NextcloudApiContext {
 		}
 
 		return $request;
+	}
+
+	private function findLastLogEntryContaining(string $logPath, string $needle): ?string {
+		if (!is_file($logPath)) {
+			throw new RuntimeException('Nextcloud log file not found at ' . $logPath);
+		}
+
+		$lines = file($logPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+		if (!is_array($lines)) {
+			throw new RuntimeException('Unable to read Nextcloud log file at ' . $logPath);
+		}
+
+		for ($index = count($lines) - 1; $index >= 0; $index--) {
+			if (str_contains($lines[$index], $needle)) {
+				return $lines[$index];
+			}
+		}
+
+		return null;
 	}
 }
