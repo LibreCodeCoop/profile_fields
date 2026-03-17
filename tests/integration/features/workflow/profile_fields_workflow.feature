@@ -2,6 +2,7 @@ Feature: profile field workflows
   Background:
     Given user "workflow_subject" exists
     And run the command "app:enable --force profile_fields" with result code 0
+    And run the command "config:system:set allow_local_remote_servers --value true --type boolean" with result code 0
     And run the command "profile_fields:developer:reset --all" with result code 0
 
   Scenario: matching field updates notify configured admin targets through workflow and notifications OCS
@@ -108,7 +109,7 @@ Feature: profile field workflows
       | value             | operations |
       | currentVisibility | users      |
     Then the response should have a status code 200
-    When run the bash command "grep -F 'Profile field workflow rule matched' <nextcloudRootDir>/data/nextcloud.log | tail -n 1" with result code 0
+    When read the last Nextcloud log entry containing "Profile field workflow rule matched"
     Then the output of the last command should contain the following text:
       """
       Profile field workflow rule matched
