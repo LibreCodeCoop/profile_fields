@@ -151,6 +151,68 @@ Feature: profile fields API
       | (jq).ocs.data[] \| select(.field_definition_id == <NICKNAME_FIELD_ID>) \| .current_visibility | public       |
       | (jq).ocs.data[] \| select(.field_definition_id == <EMPLOYEE_FIELD_ID>) \| .value.value    | EMP-001          |
 
+  Scenario: matching field updates notify configured admin targets through workflow and notifications OCS
+    Given user "workflow_notify_subject" exists
+    And as user "admin"
+    When sending "post" to ocs "/apps/profile_fields/api/v1/definitions"
+      | fieldKey          | workflow_notify_department |
+      | label             | Workflow Notify Department |
+      | type              | text                       |
+      | adminOnly         | false                      |
+      | userEditable      | true                       |
+      | userVisible       | true                       |
+      | initialVisibility | users                      |
+      | sortOrder         | 10                         |
+      | active            | true                       |
+    Then the response should have a status code 201
+    And fetch field "(WORKFLOW_NOTIFY_FIELD_ID)(jq).ocs.data.id" from previous JSON response
+    When sending "put" to ocs "/apps/profile_fields/api/v1/definitions/<WORKFLOW_NOTIFY_FIELD_ID>"
+      | label             | Workflow Notify Department <WORKFLOW_NOTIFY_FIELD_ID> |
+      | type              | text                                                  |
+      | adminOnly         | false                                                 |
+      | userEditable      | true                                                  |
+      | userVisible       | true                                                  |
+      | initialVisibility | users                                                 |
+      | sortOrder         | 10                                                    |
+      | active            | true                                                  |
+    Then the response should have a status code 200
+    When sending "post" to ocs "/apps/workflowengine/api/v1/workflows/global"
+      """
+      {
+        "class": "OCA\\ProfileFields\\Workflow\\NotifyAdminsOrGroupsProfileFieldChangeOperation",
+        "name": "workflow notify admins",
+        "checks": [
+          {
+            "class": "OCA\\ProfileFields\\Workflow\\UserProfileFieldCheck",
+            "operator": "is",
+            "value": "{\"field_key\":\"workflow_notify_department\",\"value\":\"engineering\"}"
+          }
+        ],
+        "operation": "{\"targets\":\"user:admin\"}",
+        "entity": "OCA\\ProfileFields\\Workflow\\ProfileFieldValueEntity",
+        "events": [
+          "OCA\\ProfileFields\\Workflow\\Event\\ProfileFieldValueUpdatedEvent"
+        ]
+      }
+      """
+    Then the response should have a status code 200
+    Given as user "workflow_notify_subject"
+    When sending "put" to ocs "/apps/profile_fields/api/v1/me/values/<WORKFLOW_NOTIFY_FIELD_ID>"
+      | value             | finance |
+      | currentVisibility | users   |
+    Then the response should have a status code 200
+    When sending "put" to ocs "/apps/profile_fields/api/v1/me/values/<WORKFLOW_NOTIFY_FIELD_ID>"
+      | value             | engineering |
+      | currentVisibility | users       |
+    Then the response should have a status code 200
+    Given as user "admin"
+    When sending "get" to ocs "/apps/notifications/api/v2/notifications"
+    Then the response should have a status code 200
+    And the response should be a JSON array with the following mandatory values
+      | key                                                                                                                                                                     | value                                                                          |
+      | (jq).ocs.data[] \| select(.app == "profile_fields" and .user == "admin" and .object_type == "profile-field-admin-change" and .subject == "Profile field updated" and .message == "workflow_notify_subject changed workflow_notify_subject's Workflow Notify Department <WORKFLOW_NOTIFY_FIELD_ID> profile field.") \| .app | profile_fields                                                                 |
+      | (jq).ocs.data[] \| select(.app == "profile_fields" and .user == "admin" and .object_type == "profile-field-admin-change" and .subject == "Profile field updated" and .message == "workflow_notify_subject changed workflow_notify_subject's Workflow Notify Department <WORKFLOW_NOTIFY_FIELD_ID> profile field.") \| .message | workflow_notify_subject changed workflow_notify_subject's Workflow Notify Department <WORKFLOW_NOTIFY_FIELD_ID> profile field. |
+
   Scenario: payroll ETL can resolve a cooperado by cpf and read the other payment fields
     Given as user "admin"
     When sending "post" to ocs "/apps/profile_fields/api/v1/definitions"
