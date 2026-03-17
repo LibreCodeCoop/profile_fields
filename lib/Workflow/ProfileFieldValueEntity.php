@@ -13,8 +13,6 @@ use OCA\ProfileFields\Workflow\Event\AbstractProfileFieldValueEvent;
 use OCA\ProfileFields\Workflow\Event\ProfileFieldValueCreatedEvent;
 use OCA\ProfileFields\Workflow\Event\ProfileFieldValueUpdatedEvent;
 use OCA\ProfileFields\Workflow\Event\ProfileFieldVisibilityUpdatedEvent;
-use OCA\ProfileFields\Workflow\ProfileFieldValueSubjectContext;
-use OCA\ProfileFields\Workflow\ProfileFieldValueWorkflowSubject;
 use OCP\EventDispatcher\Event;
 use OCP\IL10N;
 use OCP\IURLGenerator;
