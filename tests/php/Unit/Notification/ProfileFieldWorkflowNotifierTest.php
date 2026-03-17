@@ -13,11 +13,11 @@ use OCA\ProfileFields\AppInfo\Application;
 use OCA\ProfileFields\Notification\ProfileFieldWorkflowNotifier;
 use OCP\IL10N;
 use OCP\IURLGenerator;
+use OCP\IUser;
+use OCP\IUserManager;
 use OCP\L10N\IFactory;
 use OCP\Notification\INotification;
 use OCP\Notification\UnknownNotificationException;
-use OCP\IUser;
-use OCP\IUserManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
