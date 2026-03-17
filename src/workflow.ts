@@ -75,6 +75,7 @@ const workflowCheckClass = 'OCA\\ProfileFields\\Workflow\\UserProfileFieldCheck'
 const workflowOperationClasses = [
 	'OCA\\ProfileFields\\Workflow\\LogProfileFieldChangeOperation',
 	'OCA\\ProfileFields\\Workflow\\NotifyUserProfileFieldChangeOperation',
+	'OCA\\ProfileFields\\Workflow\\EmailUserProfileFieldChangeOperation',
 	'OCA\\ProfileFields\\Workflow\\SendWebhookProfileFieldChangeOperation',
 ]
 const workflowEntityClass = 'OCA\\ProfileFields\\Workflow\\ProfileFieldValueEntity'
@@ -84,6 +85,7 @@ const webhookOperationElementId = 'oca-profile-fields-webhook-operation'
 const workflowOperationNames = new Set([
 	t('profile_fields', 'Log profile field change'),
 	t('profile_fields', 'Notify affected user'),
+	t('profile_fields', 'Email affected user'),
 	t('profile_fields', 'Send webhook'),
 ])
 const workflowCardClassName = 'profile-fields-workflow-card'
