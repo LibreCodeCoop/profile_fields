@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import { rmSync } from 'node:fs'
-import { mkdir, rm } from 'node:fs/promises'
+import { mkdir, readFile, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { chromium, request } from '@playwright/test'
@@ -11,13 +11,17 @@ const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'https://localhost'
 const adminUser = process.env.NEXTCLOUD_ADMIN_USER ?? 'admin'
 const adminPassword = process.env.NEXTCLOUD_ADMIN_PASSWORD ?? 'admin'
 const screenshotDir = 'img/screenshots'
-const storageStatePath = 'playwright/.tmp-storage-state.json'
+const adminStorageStatePath = 'playwright/.tmp-admin-storage-state.json'
+const demoStorageStatePath = 'playwright/.tmp-demo-storage-state.json'
+const demoAvatarPath = 'playwright/fixtures/pedro-poti-avatar.png'
+
+const legacyDemoUserIds = ['amina_okafor_demo', 'araci_potira_demo']
 
 const demoUser = {
-	id: 'amina_okafor_demo',
-	password: 'AminaDemoPass123!',
-	displayName: 'Amina Okafor',
-	email: 'amina.okafor@example.net',
+	id: 'pedro_poti_demo',
+	password: 'PedroDemoPass123!',
+	displayName: 'Pedro Poti',
+	email: 'pedro.poti@example.net',
 }
 
 const showcaseFields = [
@@ -97,16 +101,21 @@ const showcaseFields = [
 
 const showcaseKeys = new Set(showcaseFields.map((field) => field.fieldKey))
 const showcaseLabels = new Set(showcaseFields.map((field) => field.label))
+const transientFieldKeyPrefixes = ['showcase_', 'playwright_']
 
-async function loginApi() {
+const isTransientScreenshotDefinition = (definition) => transientFieldKeyPrefixes
+	.some((prefix) => definition.field_key.startsWith(prefix))
+
+
+async function loginApi(user = adminUser, password = adminPassword) {
 	const api = await request.newContext({ baseURL, ignoreHTTPSErrors: true })
 	const tokenResponse = await api.get('./csrftoken')
 	const { token: requesttoken } = await tokenResponse.json()
 	const origin = tokenResponse.url().replace(/index\.php.*/, '')
 	const loginResponse = await api.post('./login', {
 		form: {
-			user: adminUser,
-			password: adminPassword,
+			user,
+			password,
 			requesttoken,
 		},
 		headers: {
@@ -121,6 +130,43 @@ async function loginApi() {
 	}
 
 	return api
+}
+
+async function getRequestToken(api) {
+	const response = await api.get('./csrftoken')
+	const parsed = await response.json()
+	return parsed.token
+}
+
+async function uploadCurrentUserAvatar(api, imagePath) {
+	const imageBuffer = await readFile(imagePath)
+	const requesttoken = await getRequestToken(api)
+	const response = await api.post('./avatar/', {
+		headers: {
+			requesttoken,
+		},
+		multipart: {
+			'files[]': {
+				name: imagePath.split('/').pop() ?? 'avatar.png',
+				mimeType: 'image/png',
+				buffer: imageBuffer,
+			},
+		},
+		failOnStatusCode: false,
+	})
+
+	const body = await response.text()
+	let parsed
+
+	try {
+		parsed = JSON.parse(body)
+	} catch {
+		throw new Error(`Avatar upload failed: ${response.status()} ${body}`)
+	}
+
+	if (!response.ok() || parsed.status !== 'success') {
+		throw new Error(`Avatar upload failed: ${response.status()} ${body}`)
+	}
 }
 
 async function appRequest(api, method, path, body) {
@@ -157,6 +203,10 @@ async function createDemoUser(api) {
 		Accept: 'application/json',
 	}
 
+	for (const legacyUserId of legacyDemoUserIds) {
+		await api.delete(`./ocs/v1.php/cloud/users/${legacyUserId}`, { headers, failOnStatusCode: false })
+	}
+
 	await api.delete(`./ocs/v1.php/cloud/users/${demoUser.id}`, { headers, failOnStatusCode: false })
 	const response = await api.post('./ocs/v1.php/cloud/users', {
 		headers,
@@ -177,6 +227,16 @@ async function createDemoUser(api) {
 }
 
 async function deleteDemoUser(api) {
+	for (const legacyUserId of legacyDemoUserIds) {
+		await api.delete(`./ocs/v1.php/cloud/users/${legacyUserId}`, {
+			headers: {
+				'OCS-APIRequest': 'true',
+				Accept: 'application/json',
+			},
+			failOnStatusCode: false,
+		})
+	}
+
 	await api.delete(`./ocs/v1.php/cloud/users/${demoUser.id}`, {
 		headers: {
 			'OCS-APIRequest': 'true',
@@ -237,6 +297,25 @@ const hideNonShowcaseDialogFields = async(page) => {
 	}, { labels: [...showcaseLabels], demoUserId: demoUser.id })
 }
 
+const prepareWorkflowScreenshot = async(page) => {
+	await page.goto('./settings/admin/workflow')
+	await page.getByRole('heading', { name: 'Available flows' }).waitFor({ state: 'visible', timeout: 60_000 })
+
+	const showMoreButton = page.getByRole('button', { name: 'Show more', exact: true })
+	if (await showMoreButton.count() > 0) {
+		await showMoreButton.click()
+	}
+	await page.getByRole('heading', { name: 'Create Talk conversation', exact: true }).waitFor({ state: 'visible', timeout: 60_000 })
+
+	await page.evaluate(() => {
+		document.querySelector('header')?.setAttribute('style', 'display:none')
+		document.querySelector('#app-navigation')?.setAttribute('style', 'display:none')
+		document.querySelector('.settings-menu')?.setAttribute('style', 'display:none')
+	})
+
+	return page.locator('#workflowengine .settings-section').first()
+}
+
 const generateThumbnail = (inputName, outputName) => {
 	const result = spawnSync('magick', [
 		join(screenshotDir, inputName),
@@ -257,10 +336,13 @@ const cleanupOutput = async() => {
 	rmSync(join(screenshotDir, 'personal-settings-thumb.png'), { force: true })
 	rmSync(join(screenshotDir, 'user-management-dialog.png'), { force: true })
 	rmSync(join(screenshotDir, 'user-management-dialog-thumb.png'), { force: true })
+	rmSync(join(screenshotDir, 'workflow-notify-admins.png'), { force: true })
+	rmSync(join(screenshotDir, 'workflow-notify-admins-thumb.png'), { force: true })
 }
 
 const run = async() => {
 	const api = await loginApi()
+	let demoApi
 	const createdIds = []
 	let browser
 
@@ -270,12 +352,14 @@ const run = async() => {
 
 		const existingDefinitions = await appRequest(api, 'GET', './ocs/v2.php/apps/profile_fields/api/v1/definitions')
 		for (const definition of existingDefinitions) {
-			if (showcaseKeys.has(definition.field_key)) {
+			if (isTransientScreenshotDefinition(definition)) {
 				await appRequest(api, 'DELETE', `./ocs/v2.php/apps/profile_fields/api/v1/definitions/${definition.id}`)
 			}
 		}
 
 		await createDemoUser(api)
+		demoApi = await loginApi(demoUser.id, demoUser.password)
+		await uploadCurrentUserAvatar(demoApi, demoAvatarPath)
 
 		for (const field of showcaseFields) {
 			const definition = await appRequest(api, 'POST', './ocs/v2.php/apps/profile_fields/api/v1/definitions', {
@@ -295,30 +379,38 @@ const run = async() => {
 			await appRequest(api, 'PUT', `./ocs/v2.php/apps/profile_fields/api/v1/users/${encodeURIComponent(demoUser.id)}/values/${definition.id}`, field.demoValue)
 		}
 
-		await api.storageState({ path: storageStatePath })
+		await api.storageState({ path: adminStorageStatePath })
+		await demoApi.storageState({ path: demoStorageStatePath })
 		browser = await chromium.launch({ headless: true })
-		const context = await browser.newContext({
+		const adminContext = await browser.newContext({
 			baseURL,
 			ignoreHTTPSErrors: true,
-			storageState: storageStatePath,
+			storageState: adminStorageStatePath,
+			viewport: { width: 1680, height: 1500 },
+			deviceScaleFactor: 2,
+		})
+		const demoContext = await browser.newContext({
+			baseURL,
+			ignoreHTTPSErrors: true,
+			storageState: demoStorageStatePath,
 			viewport: { width: 1680, height: 1500 },
 			deviceScaleFactor: 2,
 		})
 
-		const adminPage = await context.newPage()
+		const adminPage = await adminContext.newPage()
 		await adminPage.goto('./settings/admin/profile_fields')
 		await adminPage.getByTestId('profile-fields-admin-definition-showcase_support_region').waitFor({ state: 'visible', timeout: 60_000 })
 		await hideNonShowcaseAdminDefinitions(adminPage)
 		await adminPage.getByTestId('profile-fields-admin-definition-showcase_support_region').click()
 		await adminPage.locator('[data-testid="profile-fields-admin"]').screenshot({ path: join(screenshotDir, 'admin-catalog.png'), type: 'png' })
 
-		const personalPage = await context.newPage()
+		const personalPage = await demoContext.newPage()
 		await personalPage.goto('./settings/user/personal-info')
 		await personalPage.getByTestId('profile-fields-personal-field-showcase_support_region').waitFor({ state: 'visible', timeout: 60_000 })
 		await hideNonShowcasePersonalFields(personalPage)
 		await personalPage.locator('main').screenshot({ path: join(screenshotDir, 'personal-settings.png'), type: 'png' })
 
-		const usersPage = await context.newPage()
+		const usersPage = await adminContext.newPage()
 		await usersPage.goto('./settings/users')
 		const demoRow = usersPage.getByRole('row', { name: new RegExp(demoUser.displayName) })
 		await demoRow.waitFor({ state: 'visible', timeout: 60_000 })
@@ -326,12 +418,19 @@ const run = async() => {
 		await usersPage.getByRole('menuitem', { name: 'Edit profile fields' }).click()
 		const dialog = usersPage.locator('.profile-fields-user-dialog')
 		await dialog.waitFor({ state: 'visible', timeout: 60_000 })
+		await usersPage.locator('.profile-fields-user-dialog__loading').waitFor({ state: 'hidden', timeout: 60_000 }).catch(() => {})
+		await dialog.locator('.profile-fields-user-dialog__row').first().waitFor({ state: 'visible', timeout: 60_000 })
 		await hideNonShowcaseDialogFields(usersPage)
 		await dialog.screenshot({ path: join(screenshotDir, 'user-management-dialog.png'), type: 'png' })
+
+		const workflowPage = await adminContext.newPage()
+		const workflowSection = await prepareWorkflowScreenshot(workflowPage)
+		await workflowSection.screenshot({ path: join(screenshotDir, 'workflow-notify-admins.png'), type: 'png' })
 
 		generateThumbnail('admin-catalog.png', 'admin-catalog-thumb.png')
 		generateThumbnail('personal-settings.png', 'personal-settings-thumb.png')
 		generateThumbnail('user-management-dialog.png', 'user-management-dialog-thumb.png')
+		generateThumbnail('workflow-notify-admins.png', 'workflow-notify-admins-thumb.png')
 
 		console.log('Generated screenshots in', screenshotDir)
 	} finally {
@@ -353,8 +452,13 @@ const run = async() => {
 			console.error('Failed to delete demo user:', error)
 		}
 
+		if (demoApi) {
+			await demoApi.dispose()
+		}
+
 		await api.dispose()
-		await rm(storageStatePath, { force: true })
+		await rm(adminStorageStatePath, { force: true })
+		await rm(demoStorageStatePath, { force: true })
 	}
 }
 
