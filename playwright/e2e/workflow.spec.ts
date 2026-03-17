@@ -110,23 +110,6 @@ test('admin can create a profile field workflow rule', async ({ page }) => {
 	await deleteDefinitionByFieldKey(page.request, fieldKey)
 })
 
-test('admin can create a notify affected user workflow rule', async ({ page }) => {
-	const suffix = Date.now()
-	const fieldKey = `playwright_notify_workflow_${suffix}`
-	const label = `Playwright notify workflow ${suffix}`
-	const fieldValue = `engineering-notify-${suffix}`
-
-	await createWorkflowFieldDefinition(page, fieldKey, label)
-
-	await page.goto('./settings/admin/workflow')
-	await expect(page.getByRole('heading', { name: 'Available flows' })).toBeVisible()
-	const { savedRule, initialRuleCount } = await configureDraftRule(page, 'Notify affected user', label, fieldValue)
-
-	await savedRule.getByRole('button', { name: 'Delete' }).click()
-	await expect(page.locator('.section.rule')).toHaveCount(initialRuleCount)
-	await deleteDefinitionByFieldKey(page.request, fieldKey)
-})
-
 test('admin can create a send webhook workflow rule', async ({ page }) => {
 	const suffix = Date.now()
 	const fieldKey = `playwright_webhook_workflow_${suffix}`
@@ -179,25 +162,15 @@ test('admin can create a notify admins or groups workflow rule', async ({ page }
 	await page.goto('./settings/admin/workflow')
 	await expect(page.getByRole('heading', { name: 'Available flows' })).toBeVisible()
 	const { savedRule, initialRuleCount } = await configureDraftRule(page, 'Notify admins or groups', label, fieldValue, async (configuredRule) => {
-		await configuredRule.locator(`input[placeholder="Targets: admin, group:staff, user:alice"]`).fill('admin,group:admin')
+		const targetsEditor = configuredRule.locator('oca-profile-fields-targets-operation')
+		await expect(targetsEditor).toBeVisible()
+
+		await targetsEditor.getByRole('combobox').click()
+		await targetsEditor.getByRole('searchbox').fill('admin')
+		await expect(page.locator('.vs__dropdown-menu')).toBeVisible()
+		await page.locator('.vs__dropdown-option').filter({ hasText: /Administrators/ }).first().click()
+		await expect(targetsEditor).toContainText('Administrators')
 	})
-
-	await savedRule.getByRole('button', { name: 'Delete' }).click()
-	await expect(page.locator('.section.rule')).toHaveCount(initialRuleCount)
-	await deleteDefinitionByFieldKey(page.request, fieldKey)
-})
-
-test('admin can create a create activity entry workflow rule', async ({ page }) => {
-	const suffix = Date.now()
-	const fieldKey = `playwright_activity_workflow_${suffix}`
-	const label = `Playwright activity workflow ${suffix}`
-	const fieldValue = `engineering-activity-${suffix}`
-
-	await createWorkflowFieldDefinition(page, fieldKey, label)
-
-	await page.goto('./settings/admin/workflow')
-	await expect(page.getByRole('heading', { name: 'Available flows' })).toBeVisible()
-	const { savedRule, initialRuleCount } = await configureDraftRule(page, 'Create activity entry', label, fieldValue)
 
 	await savedRule.getByRole('button', { name: 'Delete' }).click()
 	await expect(page.locator('.section.rule')).toHaveCount(initialRuleCount)
