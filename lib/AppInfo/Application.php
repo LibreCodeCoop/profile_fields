@@ -15,6 +15,7 @@ use OCA\ProfileFields\Listener\RegisterWorkflowCheckListener;
 use OCA\ProfileFields\Listener\RegisterWorkflowEntityListener;
 use OCA\ProfileFields\Listener\RegisterWorkflowOperationListener;
 use OCA\ProfileFields\Listener\UserDeletedCleanupListener;
+use OCA\ProfileFields\Notification\Notifier;
 use OCP\AppFramework\App;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
@@ -40,6 +41,7 @@ class Application extends App implements IBootstrap {
 
 	#[\Override]
 	public function register(IRegistrationContext $context): void {
+		$context->registerNotifierService(Notifier::class);
 		$context->registerEventListener('\\OCA\\Settings\\Events\\BeforeTemplateRenderedEvent', BeforeTemplateRenderedListener::class);
 		$context->registerEventListener(UserDeletedEvent::class, UserDeletedCleanupListener::class);
 		$context->registerEventListener(RegisterEntitiesEvent::class, RegisterWorkflowEntityListener::class);
