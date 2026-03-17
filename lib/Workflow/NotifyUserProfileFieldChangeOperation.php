@@ -40,7 +40,7 @@ class NotifyUserProfileFieldChangeOperation implements IOperation {
 
 	#[\Override]
 	public function getIcon(): string {
-		return $this->urlGenerator->imagePath('core', 'actions/profile.svg');
+		return $this->urlGenerator->imagePath('core', 'actions/comment.svg');
 	}
 
 	#[\Override]
@@ -82,7 +82,7 @@ class NotifyUserProfileFieldChangeOperation implements IOperation {
 					'actorUid' => $subject->getActorUid(),
 				])
 				->setDateTime(new \DateTime())
-				->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('core', 'actions/profile.svg')));
+				->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('core', 'actions/comment.svg')));
 
 			$this->notificationManager->notify($notification);
 		} finally {
