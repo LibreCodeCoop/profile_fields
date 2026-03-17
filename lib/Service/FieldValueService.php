@@ -18,6 +18,11 @@ use OCA\ProfileFields\Db\FieldValue;
 use OCA\ProfileFields\Db\FieldValueMapper;
 use OCA\ProfileFields\Enum\FieldType;
 use OCA\ProfileFields\Enum\FieldVisibility;
+use OCA\ProfileFields\Workflow\Event\ProfileFieldValueCreatedEvent;
+use OCA\ProfileFields\Workflow\Event\ProfileFieldValueUpdatedEvent;
+use OCA\ProfileFields\Workflow\Event\ProfileFieldVisibilityUpdatedEvent;
+use OCA\ProfileFields\Workflow\ProfileFieldValueWorkflowSubject;
+use OCP\EventDispatcher\IEventDispatcher;
 
 class FieldValueService {
 	private const SEARCH_OPERATOR_EQ = 'eq';
@@ -26,6 +31,7 @@ class FieldValueService {
 
 	public function __construct(
 		private FieldValueMapper $fieldValueMapper,
+		private IEventDispatcher $eventDispatcher,
 	) {
 	}
 
@@ -41,24 +47,46 @@ class FieldValueService {
 		?DateTimeInterface $updatedAt = null,
 	): FieldValue {
 		$normalizedValue = $this->normalizeValue($definition, $rawValue);
+		$valueJson = $this->encodeValue($normalizedValue);
 		$visibility = $currentVisibility ?? $definition->getInitialVisibility();
 		if (!FieldVisibility::isValid($visibility)) {
 			throw new InvalidArgumentException('current_visibility is not supported');
 		}
 
 		$entity = $this->fieldValueMapper->findByFieldDefinitionIdAndUserUid($definition->getId(), $userUid) ?? new FieldValue();
+		$previousValue = $entity->getId() === null ? null : $this->extractScalarValue($entity->getValueJson());
+		$previousVisibility = $entity->getId() === null ? null : $entity->getCurrentVisibility();
+		$valueChanged = $previousValue !== ($normalizedValue['value'] ?? null);
+		$visibilityChanged = $previousVisibility !== null && $previousVisibility !== $visibility;
 		$entity->setFieldDefinitionId($definition->getId());
 		$entity->setUserUid($userUid);
-		$entity->setValueJson($this->encodeValue($normalizedValue));
+		$entity->setValueJson($valueJson);
 		$entity->setCurrentVisibility($visibility);
 		$entity->setUpdatedByUid($updatedByUid);
 		$entity->setUpdatedAt($this->asMutableDateTime($updatedAt));
 
 		if ($entity->getId() === null) {
-			return $this->fieldValueMapper->insert($entity);
+			$stored = $this->fieldValueMapper->insert($entity);
+			$this->eventDispatcher->dispatchTyped(new ProfileFieldValueCreatedEvent(
+				$this->buildWorkflowSubject($definition, $stored, $updatedByUid, null, null),
+			));
+
+			return $stored;
 		}
 
-		return $this->fieldValueMapper->update($entity);
+		$stored = $this->fieldValueMapper->update($entity);
+		if ($valueChanged) {
+			$this->eventDispatcher->dispatchTyped(new ProfileFieldValueUpdatedEvent(
+				$this->buildWorkflowSubject($definition, $stored, $updatedByUid, $previousValue, $previousVisibility),
+			));
+		}
+		if ($visibilityChanged) {
+			$this->eventDispatcher->dispatchTyped(new ProfileFieldVisibilityUpdatedEvent(
+				$this->buildWorkflowSubject($definition, $stored, $updatedByUid, $previousValue, $previousVisibility),
+			));
+		}
+
+		return $stored;
 	}
 
 	/**
@@ -153,11 +181,19 @@ class FieldValueService {
 			throw new InvalidArgumentException('field value not found');
 		}
 
+		$previousValue = $this->extractScalarValue($entity->getValueJson());
+		$previousVisibility = $entity->getCurrentVisibility();
+
 		$entity->setCurrentVisibility($currentVisibility);
 		$entity->setUpdatedByUid($updatedByUid);
 		$entity->setUpdatedAt($this->asMutableDateTime());
 
-		return $this->fieldValueMapper->update($entity);
+		$stored = $this->fieldValueMapper->update($entity);
+		$this->eventDispatcher->dispatchTyped(new ProfileFieldVisibilityUpdatedEvent(
+			$this->buildWorkflowSubject($definition, $stored, $updatedByUid, $previousValue, $previousVisibility),
+		));
+
+		return $stored;
 	}
 
 	/**
@@ -233,6 +269,31 @@ class FieldValueService {
 		}
 
 		return $decoded;
+	}
+
+	private function extractScalarValue(string $valueJson): string|int|float|bool|null {
+		$decoded = $this->decodeValue($valueJson);
+		$value = $decoded['value'] ?? null;
+
+		return is_array($value) || is_object($value) ? null : $value;
+	}
+
+	private function buildWorkflowSubject(
+		FieldDefinition $definition,
+		FieldValue $value,
+		string $actorUid,
+		string|int|float|bool|null $previousValue,
+		?string $previousVisibility,
+	): ProfileFieldValueWorkflowSubject {
+		return new ProfileFieldValueWorkflowSubject(
+			userUid: $value->getUserUid(),
+			actorUid: $actorUid,
+			fieldDefinition: $definition,
+			currentValue: $this->extractScalarValue($value->getValueJson()),
+			previousValue: $previousValue,
+			currentVisibility: $value->getCurrentVisibility(),
+			previousVisibility: $previousVisibility,
+		);
 	}
 
 	/**
