@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import { t } from '@nextcloud/l10n'
+import WorkflowTargetsSelect from './components/WorkflowTargetsSelect.vue'
+import { createApp, h, reactive, type App } from 'vue'
 
-import { listDefinitions } from './api.ts'
+import { listDefinitions, searchWorkflowTargetSuggestions, type WorkflowTargetSuggestion } from './api.ts'
 import type { FieldDefinition } from './types/index.ts'
 import {
 	getWorkflowOperatorKeys,
@@ -40,6 +42,21 @@ type WorkflowEmailOperationConfig = {
 
 type WorkflowTargetsOperationConfig = {
 	targets: string
+}
+
+type WorkflowTargetOption = {
+	id: string
+	displayName: string
+	subname?: string
+	user?: string
+	isNoUser?: boolean
+}
+
+type WorkflowTargetsViewState = {
+	disabled: boolean
+	loading: boolean
+	options: WorkflowTargetOption[]
+	selected: WorkflowTargetOption[]
 }
 
 type WorkflowWebhookOperationConfig = {
@@ -91,10 +108,8 @@ type WorkflowEngineRootVm = {
 const workflowCheckClass = 'OCA\\ProfileFields\\Workflow\\UserProfileFieldCheck'
 const workflowOperationClasses = [
 	'OCA\\ProfileFields\\Workflow\\LogProfileFieldChangeOperation',
-	'OCA\\ProfileFields\\Workflow\\NotifyUserProfileFieldChangeOperation',
 	'OCA\\ProfileFields\\Workflow\\EmailUserProfileFieldChangeOperation',
 	'OCA\\ProfileFields\\Workflow\\NotifyAdminsOrGroupsProfileFieldChangeOperation',
-	'OCA\\ProfileFields\\Workflow\\CreateActivityProfileFieldChangeOperation',
 	'OCA\\ProfileFields\\Workflow\\CreateTalkConversationProfileFieldChangeOperation',
 	'OCA\\ProfileFields\\Workflow\\SendWebhookProfileFieldChangeOperation',
 ]
@@ -106,10 +121,8 @@ const targetsOperationElementId = 'oca-profile-fields-targets-operation'
 const webhookOperationElementId = 'oca-profile-fields-webhook-operation'
 const workflowOperationNames = new Set([
 	t('profile_fields', 'Log profile field change'),
-	t('profile_fields', 'Notify affected user'),
 	t('profile_fields', 'Email affected user'),
 	t('profile_fields', 'Notify admins or groups'),
-	t('profile_fields', 'Create activity entry'),
 	t('profile_fields', 'Create Talk conversation'),
 	t('profile_fields', 'Send webhook'),
 ])
@@ -212,14 +225,132 @@ const parseTargetsOperationConfig = (value: string): WorkflowTargetsOperationCon
 }
 
 const serializeTargetsOperationConfig = (config: WorkflowTargetsOperationConfig): string => {
-	if (config.targets.trim() === '') {
+	const targets = config.targets
+		.split(',')
+		.map((target) => target.trim())
+		.filter((target, index, items) => target !== '' && items.indexOf(target) === index)
+
+	if (targets.length === 0) {
 		return ''
 	}
 
 	return JSON.stringify({
-		targets: config.targets,
+		targets: targets.join(','),
 	})
 }
+
+const getWorkflowTargetLabel = (token: string): string => {
+	if (token === 'admin') {
+		return t('profile_fields', 'Administrators')
+	}
+
+	if (token.startsWith('group:')) {
+		return token.slice(6)
+	}
+
+	if (token.startsWith('user:')) {
+		return token.slice(5)
+	}
+
+	return token
+}
+
+const getWorkflowTargetDescription = (token: string): string => {
+	if (token === 'admin') {
+		return t('profile_fields', 'All users in the admin group')
+	}
+
+	if (token.startsWith('group:')) {
+		return t('profile_fields', 'Group: {groupId}', { groupId: token.slice(6) })
+	}
+
+	if (token.startsWith('user:')) {
+		return t('profile_fields', 'User: {userId}', { userId: token.slice(5) })
+	}
+
+	return t('profile_fields', 'Custom target')
+}
+
+const getWorkflowTargetId = (token: string): string => {
+	if (token === 'admin') {
+		return 'special-admin'
+	}
+
+	if (token.startsWith('group:')) {
+		return `group-${token.slice(6)}`
+	}
+
+	if (token.startsWith('user:')) {
+		return `user-${token.slice(5)}`
+	}
+
+	return `custom-${token}`
+}
+
+const toWorkflowTargetOption = (
+	token: string,
+	label = getWorkflowTargetLabel(token),
+	description = getWorkflowTargetDescription(token),
+): WorkflowTargetOption => {
+	if (token === 'admin') {
+		return {
+			id: getWorkflowTargetId(token),
+			displayName: label,
+			subname: description,
+			isNoUser: true,
+		}
+	}
+
+	if (token.startsWith('group:')) {
+		return {
+			id: getWorkflowTargetId(token),
+			displayName: label,
+			subname: description,
+			isNoUser: true,
+		}
+	}
+
+	if (token.startsWith('user:')) {
+		const userId = token.slice(5)
+		return {
+			id: getWorkflowTargetId(token),
+			displayName: label,
+			subname: description,
+			user: userId,
+			isNoUser: false,
+		}
+	}
+
+	return {
+		id: getWorkflowTargetId(token),
+		displayName: label,
+		subname: description,
+		isNoUser: true,
+	}
+}
+
+const normalizeWorkflowTargetToken = (value: string): string | null => {
+	const normalizedValue = value.trim().replace(/,$/, '')
+	if (normalizedValue === '') {
+		return null
+	}
+
+	if (normalizedValue === 'admin') {
+		return normalizedValue
+	}
+
+	if (/^(group|user):[^,\s]+$/i.test(normalizedValue)) {
+		const [scope, identifier] = normalizedValue.split(':', 2)
+		return `${scope.toLowerCase()}:${identifier}`
+	}
+
+	return null
+}
+
+const parseWorkflowTargetTokens = (value: string): string[] => value
+	.split(',')
+	.map((token) => token.trim())
+	.filter((token, index, items) => token !== '' && items.indexOf(token) === index)
 
 const parseWebhookOperationConfig = (value: string): WorkflowWebhookOperationConfig => {
 	if (/^https?:\/\//i.test(value.trim())) {
@@ -695,6 +826,21 @@ class WorkflowEmailOperationElement extends HTMLElement {
 class WorkflowTargetsOperationElement extends HTMLElement {
 	private modelValueInternal = ''
 	private disabledInternal = false
+	private queryInternal = ''
+	private suggestionsInternal: WorkflowTargetOption[] = []
+	private isLoadingInternal = false
+	private searchTimeoutInternal: number | null = null
+	private searchSequenceInternal = 0
+	private knownOptionsInternal = new Map<string, WorkflowTargetOption>()
+	private knownTokensByIdInternal = new Map<string, string>()
+	private appInternal: App<Element> | null = null
+	private mountPointInternal: HTMLDivElement | null = null
+	private viewStateInternal = reactive<WorkflowTargetsViewState>({
+		disabled: false,
+		loading: false,
+		options: [],
+		selected: [],
+	})
 
 	static get observedAttributes(): string[] {
 		return ['model-value', 'disabled']
@@ -702,7 +848,19 @@ class WorkflowTargetsOperationElement extends HTMLElement {
 
 	connectedCallback(): void {
 		this.syncFromAttributes()
-		this.render()
+		this.ensureApp()
+		this.syncViewState()
+	}
+
+	disconnectedCallback(): void {
+		if (this.searchTimeoutInternal !== null) {
+			window.clearTimeout(this.searchTimeoutInternal)
+			this.searchTimeoutInternal = null
+		}
+
+		this.appInternal?.unmount()
+		this.appInternal = null
+		this.mountPointInternal = null
 	}
 
 	attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void {
@@ -716,7 +874,7 @@ class WorkflowTargetsOperationElement extends HTMLElement {
 			this.disabledInternal = newValue === '' || newValue === 'true'
 		}
 
-		this.render()
+		this.syncViewState()
 	}
 
 	private syncFromAttributes(): void {
@@ -724,42 +882,179 @@ class WorkflowTargetsOperationElement extends HTMLElement {
 		this.disabledInternal = this.getAttribute('disabled') === '' || this.getAttribute('disabled') === 'true'
 	}
 
-	private render(): void {
-		const config = parseTargetsOperationConfig(this.modelValueInternal)
+	private get adminOption(): WorkflowTargetOption {
+		return toWorkflowTargetOption(
+			'admin',
+			t('profile_fields', 'Administrators'),
+			t('profile_fields', 'All users in the admin group'),
+		)
+	}
+
+	private get selectedTargets(): string[] {
+		return parseWorkflowTargetTokens(parseTargetsOperationConfig(this.modelValueInternal).targets)
+	}
+
+	private getTargetOption(token: string): WorkflowTargetOption {
+		const existingOption = this.knownOptionsInternal.get(token)
+		if (existingOption !== undefined) {
+			return existingOption
+		}
+
+		return this.registerTargetOption(token, toWorkflowTargetOption(token))
+	}
+
+	private registerTargetOption(token: string, option: WorkflowTargetOption): WorkflowTargetOption {
+		this.knownOptionsInternal.set(token, option)
+		this.knownTokensByIdInternal.set(option.id, token)
+		return option
+	}
+
+	private getTokenForOption(option: WorkflowTargetOption): string | null {
+		return this.knownTokensByIdInternal.get(option.id) ?? null
+	}
+
+	private get visibleOptions(): WorkflowTargetOption[] {
+		const selectedTargets = new Set(this.selectedTargets)
+
+		if (this.queryInternal.trim() === '') {
+			return selectedTargets.has('admin') ? [] : [this.adminOption]
+		}
+
+		return this.suggestionsInternal.filter((option) => {
+			const token = this.getTokenForOption(option)
+			return token === null || !selectedTargets.has(token)
+		})
+	}
+
+	private ensureApp(): void {
+		if (this.appInternal !== null || !this.isConnected) {
+			return
+		}
 
 		this.replaceChildren()
 
 		const style = document.createElement('style')
 		style.textContent = `
 			:host {
-				display: flex;
+				display: grid;
 				flex: 1 1 22rem;
+				gap: .5rem;
 				min-width: 0;
-			}
-
-			input {
-				width: 100%;
-				border: 1px solid var(--color-border-maxcontrast);
-				border-radius: var(--border-radius-element, 6px);
-				background: var(--color-main-background);
-				color: var(--color-main-text);
-				font: inherit;
-				padding: .45rem .6rem;
-				min-height: 2.25rem;
 			}
 		`
 
-		const input = document.createElement('input')
-		input.type = 'text'
-		input.value = config.targets
-		input.disabled = this.disabledInternal
-		input.placeholder = t('profile_fields', 'Targets: admin, group:staff, user:alice')
-		input.addEventListener('input', () => {
-			dispatchModelValue(this, serializeTargetsOperationConfig({ targets: input.value }))
-		})
+		this.mountPointInternal = document.createElement('div')
+		this.append(style, this.mountPointInternal)
 
-		this.append(style, input)
+		this.appInternal = createApp({
+			name: 'WorkflowTargetsOperationSelect',
+			render: () => h(WorkflowTargetsSelect, {
+					modelValue: this.viewStateInternal.selected,
+					disabled: this.viewStateInternal.disabled,
+					options: this.viewStateInternal.options,
+					inputLabel: t('profile_fields', 'Search admins, groups, or users'),
+					helperText: t('profile_fields', 'Search and select target groups or users. If left empty, administrators are used by default.'),
+					loading: this.viewStateInternal.loading,
+					onSearch: (value: string) => this.handleSearch(value),
+					'onUpdate:modelValue': (value: unknown) => this.handleSelection(Array.isArray(value)
+						? value as WorkflowTargetOption[]
+						: [value as WorkflowTargetOption]),
+				}),
+		})
+		this.appInternal.mount(this.mountPointInternal)
+	}
+
+	private syncViewState(): void {
+		this.ensureApp()
+		this.registerTargetOption('admin', this.adminOption)
+		this.viewStateInternal.disabled = this.disabledInternal
+		this.viewStateInternal.loading = this.isLoadingInternal
+		this.viewStateInternal.selected = this.selectedTargets.map((token) => this.getTargetOption(token))
+		this.viewStateInternal.options = this.visibleOptions
 		dispatchValidity(this, true)
+	}
+
+	private updateTargets(targets: string[]): void {
+		this.viewStateInternal.selected = targets.map((token) => this.getTargetOption(token))
+		this.viewStateInternal.options = this.visibleOptions
+		dispatchModelValue(this, serializeTargetsOperationConfig({ targets: targets.join(',') }))
+		dispatchValidity(this, true)
+	}
+
+	private handleSelection(options: WorkflowTargetOption[]): void {
+		this.queryInternal = ''
+		this.suggestionsInternal = []
+		this.isLoadingInternal = false
+
+		const normalizedTargets = options
+			.map((option) => this.getTokenForOption(option))
+			.filter((token): token is string => token !== null)
+			.map((token) => normalizeWorkflowTargetToken(token) ?? token)
+			.filter((token, index, items) => items.indexOf(token) === index)
+
+		this.updateTargets(normalizedTargets)
+	}
+
+	private handleSearch(value: string): void {
+		this.queryInternal = value
+		this.viewStateInternal.options = this.visibleOptions
+		this.scheduleSearch()
+	}
+
+	private scheduleSearch(): void {
+		if (this.searchTimeoutInternal !== null) {
+			window.clearTimeout(this.searchTimeoutInternal)
+		}
+
+		this.searchTimeoutInternal = window.setTimeout(() => {
+			void this.loadSuggestions()
+		}, 150)
+	}
+
+	private async loadSuggestions(): Promise<void> {
+		const query = this.queryInternal.trim()
+		const sequence = ++this.searchSequenceInternal
+
+		if (query === '') {
+			this.isLoadingInternal = false
+			this.suggestionsInternal = []
+			this.syncViewState()
+			return
+		}
+
+		this.isLoadingInternal = true
+		this.syncViewState()
+		try {
+			const suggestions = await searchWorkflowTargetSuggestions(query)
+			if (sequence !== this.searchSequenceInternal) {
+				return
+			}
+
+			const optionMap = new Map<string, WorkflowTargetOption>()
+			if ('administrators'.includes(query.toLowerCase()) || 'admin'.includes(query.toLowerCase())) {
+				optionMap.set('admin', this.registerTargetOption('admin', this.adminOption))
+			}
+
+			for (const suggestion of suggestions) {
+				const option = toWorkflowTargetOption(suggestion.token, suggestion.label, suggestion.description)
+				optionMap.set(suggestion.token, this.registerTargetOption(suggestion.token, option))
+			}
+
+			this.suggestionsInternal = Array.from(optionMap.values())
+		} catch {
+			if (sequence !== this.searchSequenceInternal) {
+				return
+			}
+
+			this.suggestionsInternal = 'administrators'.includes(query.toLowerCase()) || 'admin'.includes(query.toLowerCase())
+				? [this.adminOption]
+				: []
+		} finally {
+			if (sequence === this.searchSequenceInternal) {
+				this.isLoadingInternal = false
+				this.syncViewState()
+			}
+		}
 	}
 }
 
@@ -798,11 +1093,6 @@ const operationPlugins: WorkflowEngineOperatorPlugin[] = [
 		color: 'var(--color-success)',
 	},
 	{
-		id: 'OCA\\ProfileFields\\Workflow\\NotifyUserProfileFieldChangeOperation',
-		operation: '',
-		color: 'var(--color-success)',
-	},
-	{
 		id: 'OCA\\ProfileFields\\Workflow\\EmailUserProfileFieldChangeOperation',
 		operation: '',
 		color: 'var(--color-success)',
@@ -813,11 +1103,6 @@ const operationPlugins: WorkflowEngineOperatorPlugin[] = [
 		operation: '',
 		color: 'var(--color-success)',
 		element: targetsOperationElementId,
-	},
-	{
-		id: 'OCA\\ProfileFields\\Workflow\\CreateActivityProfileFieldChangeOperation',
-		operation: '',
-		color: 'var(--color-success)',
 	},
 	{
 		id: 'OCA\\ProfileFields\\Workflow\\CreateTalkConversationProfileFieldChangeOperation',
