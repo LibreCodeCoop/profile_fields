@@ -36,8 +36,9 @@ Developed with ❤️ by [LibreCode](https://librecode.coop). Help us transform 
 	<bugs>https://github.com/LibreCodeCoop/profile_fields/issues</bugs>
 	<repository type="git">https://github.com/LibreCodeCoop/profile_fields</repository>
 	<screenshot small-thumbnail="https://raw.githubusercontent.com/LibreCodeCoop/profile_fields/main/img/screenshots/admin-catalog-thumb.png">https://raw.githubusercontent.com/LibreCodeCoop/profile_fields/main/img/screenshots/admin-catalog.png</screenshot>
-	<screenshot small-thumbnail="https://raw.githubusercontent.com/LibreCodeCoop/profile_fields/main/img/screenshots/personal-settings-thumb.png">https://raw.githubusercontent.com/LibreCodeCoop/profile_fields/main/img/screenshots/personal-settings.png</screenshot>
 	<screenshot small-thumbnail="https://raw.githubusercontent.com/LibreCodeCoop/profile_fields/main/img/screenshots/user-management-dialog-thumb.png">https://raw.githubusercontent.com/LibreCodeCoop/profile_fields/main/img/screenshots/user-management-dialog.png</screenshot>
+	<screenshot small-thumbnail="https://raw.githubusercontent.com/LibreCodeCoop/profile_fields/main/img/screenshots/personal-settings-thumb.png">https://raw.githubusercontent.com/LibreCodeCoop/profile_fields/main/img/screenshots/personal-settings.png</screenshot>
+	<screenshot small-thumbnail="https://raw.githubusercontent.com/LibreCodeCoop/profile_fields/main/img/screenshots/workflow-notify-admins-thumb.png">https://raw.githubusercontent.com/LibreCodeCoop/profile_fields/main/img/screenshots/workflow-notify-admins.png</screenshot>
 	<donation title="Donate via GitHub Sponsors">https://github.com/sponsors/LibreSign</donation>
 	<dependencies>
 		<nextcloud min-version="32" max-version="34"/>
