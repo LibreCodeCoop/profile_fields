@@ -84,19 +84,30 @@ class NotifyAdminsOrGroupsProfileFieldChangeOperation implements IOperation {
 				}
 
 				foreach ($this->resolveRecipientUids($config['targets']) as $recipientUid) {
+					$subjectText = $this->l10n->t('Profile field updated');
+					$messageText = $this->l10n->t(
+						'%1$s changed %2$s\'s %3$s profile field.',
+						[
+							$subject->getActorUid(),
+							$subject->getUserUid(),
+							$fieldLabel,
+						],
+					);
+
 					$notification = $this->notificationManager->createNotification();
 					$notification
 						->setApp(Application::APP_ID)
 						->setUser($recipientUid)
 						->setObject('profile-field-admin-change', sprintf('%s:%s:%s', (string)($match['id'] ?? 'workflow'), $recipientUid, $fieldDefinition->getFieldKey()))
 						->setDateTime(new \DateTime())
-						->setParsedSubject($this->l10n->t('Profile field updated'))
-						->setParsedMessage(sprintf(
-							$this->l10n->t('%1$s changed %2$s\'s %3$s profile field.'),
+						->setSubject('profile_field_updated')
+						->setMessage('profile_field_updated_message', [
 							$subject->getActorUid(),
 							$subject->getUserUid(),
 							$fieldLabel,
-						))
+						])
+						->setParsedSubject($subjectText)
+						->setParsedMessage($messageText)
 						->setIcon($this->urlGenerator->getAbsoluteURL($this->getIcon()));
 
 					$this->notificationManager->notify($notification);
