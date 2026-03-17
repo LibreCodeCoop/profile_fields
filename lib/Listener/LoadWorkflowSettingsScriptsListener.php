@@ -25,6 +25,7 @@ class LoadWorkflowSettingsScriptsListener implements IEventListener {
 			return;
 		}
 
+		Util::addStyle(Application::APP_ID, 'profile_fields-workflow');
 		Util::addScript(Application::APP_ID, 'profile_fields-workflow', 'workflowengine');
 	}
 }
