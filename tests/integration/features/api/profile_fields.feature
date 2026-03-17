@@ -1,6 +1,7 @@
 Feature: profile fields API
   Background:
     Given user "profileuser" exists
+    And run the command "profile_fields:developer:reset --all" with result code 0
 
   Scenario: unauthenticated users cannot list their own fields
     Given as user ""
@@ -150,7 +151,6 @@ Feature: profile fields API
       | (jq).ocs.data[] \| select(.field_definition_id == <NICKNAME_FIELD_ID>) \| .value.value    | Alpha            |
       | (jq).ocs.data[] \| select(.field_definition_id == <NICKNAME_FIELD_ID>) \| .current_visibility | public       |
       | (jq).ocs.data[] \| select(.field_definition_id == <EMPLOYEE_FIELD_ID>) \| .value.value    | EMP-001          |
-
   Scenario: payroll ETL can resolve a cooperado by cpf and read the other payment fields
     Given as user "admin"
     When sending "post" to ocs "/apps/profile_fields/api/v1/definitions"

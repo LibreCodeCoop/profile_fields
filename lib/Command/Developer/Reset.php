@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace OCA\ProfileFields\Command\Developer;
 
+use OCA\ProfileFields\AppInfo\Application;
 use OCP\IDBConnection;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -65,10 +66,29 @@ class Reset extends Command {
 
 		if ($resetDefinitions) {
 			$this->deleteTable('profile_fields_definitions');
+			$this->deleteWorkflowTables();
+			$this->deleteProfileFieldNotifications();
 		}
 
 		$output->writeln('<info>Profile Fields data reset complete.</info>');
 		return self::SUCCESS;
+	}
+
+	private function deleteWorkflowTables(): void {
+		foreach (['flow_checks', 'flow_operations', 'flow_operations_scope'] as $tableName) {
+			$this->deleteTable($tableName);
+		}
+	}
+
+	private function deleteProfileFieldNotifications(): void {
+		if (!$this->connection->tableExists('notifications')) {
+			return;
+		}
+
+		$query = $this->connection->getQueryBuilder();
+		$query->delete('notifications')
+			->where($query->expr()->eq('app', $query->createNamedParameter(Application::APP_ID)))
+			->executeStatement();
 	}
 
 	private function deleteTable(string $tableName): void {

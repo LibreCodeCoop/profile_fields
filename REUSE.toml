@@ -26,6 +26,7 @@ path = [
   "openapi.json",
   "package-lock.json",
   "package.json",
+  "playwright/fixtures/*.png",
   "psalm.xml",
   "src/types/openapi/*.ts",
   "tests/integration/composer.json",

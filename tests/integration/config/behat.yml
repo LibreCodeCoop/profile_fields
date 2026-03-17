@@ -8,12 +8,14 @@ default:
   suites:
     default:
       contexts:
-        - FeatureContext
-        - Libresign\NextcloudBehat\NextcloudApiContext
+        - MockWebServerContext
+        - LibreSign\Behat\MailpitExtension\Context\MailpitContext
       paths:
         - '%paths.base%/../features'
 
   extensions:
+    LibreSign\Behat\MailpitExtension\ServiceContainer\MailpitExtension:
+      base_url: http://mailpit:8025
     PhpBuiltin\Server:
       workers: 10
     jarnaiz\JUnitFormatter\JUnitFormatterExtension:

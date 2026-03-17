@@ -39,4 +39,14 @@ Notes:
 
 ## Screenshots
 
+### Admin catalog
 ![Admin catalog](img/screenshots/admin-catalog.png)
+
+### User management dialog
+![User management dialog](img/screenshots/user-management-dialog.png)
+
+### Personal settings
+![Personal settings](img/screenshots/personal-settings.png)
+
+### Workflow automation
+![Workflow automation](img/screenshots/workflow-notify-admins.png)

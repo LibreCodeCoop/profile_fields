@@ -10,7 +10,12 @@ declare(strict_types=1);
 namespace OCA\ProfileFields\AppInfo;
 
 use OCA\ProfileFields\Listener\BeforeTemplateRenderedListener;
+use OCA\ProfileFields\Listener\LoadWorkflowSettingsScriptsListener;
+use OCA\ProfileFields\Listener\RegisterWorkflowCheckListener;
+use OCA\ProfileFields\Listener\RegisterWorkflowEntityListener;
+use OCA\ProfileFields\Listener\RegisterWorkflowOperationListener;
 use OCA\ProfileFields\Listener\UserDeletedCleanupListener;
+use OCA\ProfileFields\Notification\Notifier;
 use OCP\AppFramework\App;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
@@ -18,6 +23,10 @@ use OCP\AppFramework\Bootstrap\IRegistrationContext;
 use OCP\IRequest;
 use OCP\User\Events\UserDeletedEvent;
 use OCP\Util;
+use OCP\WorkflowEngine\Events\LoadSettingsScriptsEvent;
+use OCP\WorkflowEngine\Events\RegisterChecksEvent;
+use OCP\WorkflowEngine\Events\RegisterEntitiesEvent;
+use OCP\WorkflowEngine\Events\RegisterOperationsEvent;
 
 /**
  * @codeCoverageIgnore
@@ -32,8 +41,13 @@ class Application extends App implements IBootstrap {
 
 	#[\Override]
 	public function register(IRegistrationContext $context): void {
+		$context->registerNotifierService(Notifier::class);
 		$context->registerEventListener('\\OCA\\Settings\\Events\\BeforeTemplateRenderedEvent', BeforeTemplateRenderedListener::class);
 		$context->registerEventListener(UserDeletedEvent::class, UserDeletedCleanupListener::class);
+		$context->registerEventListener(RegisterEntitiesEvent::class, RegisterWorkflowEntityListener::class);
+		$context->registerEventListener(RegisterOperationsEvent::class, RegisterWorkflowOperationListener::class);
+		$context->registerEventListener(RegisterChecksEvent::class, RegisterWorkflowCheckListener::class);
+		$context->registerEventListener(LoadSettingsScriptsEvent::class, LoadWorkflowSettingsScriptsListener::class);
 	}
 
 	#[\Override]

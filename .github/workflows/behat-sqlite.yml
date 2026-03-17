@@ -50,6 +50,13 @@ jobs:
     env:
       APP_NAME: profile_fields
 
+    services:
+      mailpit:
+        image: axllent/mailpit:v1.27
+        ports:
+          - 1025:1025
+          - 8025:8025
+
     name: SQLite PHP 8.2 Nextcloud master
 
     steps:
@@ -71,7 +78,7 @@ jobs:
         uses: shivammathur/setup-php@accd6127cb78bee3e8082180cb391013d204ef9f # v2.37.0
         with:
           php-version: '8.2'
-          extensions: bz2, ctype, curl, dom, fileinfo, gd, iconv, intl, json, libxml, mbstring, openssl, pcntl, posix, session, simplexml, sqlite, pdo_sqlite, xmlreader, xmlwriter, zip, zlib
+          extensions: bz2, ctype, curl, dom, fileinfo, gd, iconv, intl, json, libxml, mbstring, openssl, pcntl, posix, session, simplexml, sockets, sqlite, pdo_sqlite, xmlreader, xmlwriter, zip, zlib
           coverage: none
           ini-file: development
           ini-values: disable_functions=
@@ -85,6 +92,7 @@ jobs:
 
       - name: Set up Nextcloud
         run: |
+          echo "127.0.0.1 mailpit" | sudo tee -a /etc/hosts
           mkdir data
           ./occ maintenance:install \
             --verbose \
@@ -93,6 +101,12 @@ jobs:
             --admin-user admin \
             --admin-pass admin
           ./occ app:enable --force ${{ env.APP_NAME }}
+          git clone --depth 1 https://github.com/nextcloud/notifications apps/notifications
+          composer --working-dir=apps/notifications install --no-dev
+          ./occ app:enable --force notifications
+          git clone --depth 1 https://github.com/nextcloud/spreed apps/spreed
+          composer --working-dir=apps/spreed install --no-dev
+          ./occ app:enable --force spreed
           ./occ config:system:set auth.bruteforce.protection.enabled --value false --type boolean
           ./occ config:system:set ratelimit.protection.enabled --value false --type boolean
           ./occ config:system:set debug --value true --type boolean
