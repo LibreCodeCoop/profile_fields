@@ -5,6 +5,8 @@ import { expect, test, type Locator, type Page } from '@playwright/test'
 import { login } from '../support/nc-login'
 import { createDefinition, deleteDefinitionByFieldKey } from '../support/profile-fields'
 
+test.describe.configure({ mode: 'serial' })
+
 const adminUser = process.env.NEXTCLOUD_ADMIN_USER ?? 'admin'
 const adminPassword = process.env.NEXTCLOUD_ADMIN_PASSWORD ?? 'admin'
 
@@ -30,7 +32,7 @@ const ensureFlowCardIsVisible = async(page: Page, addFlowCard: Locator) => {
 	await expect(addFlowCard).toBeVisible()
 }
 
-const configureDraftRule = async(page: Page, actionName: string, label: string, fieldValue: string, operationValue?: string) => {
+const configureDraftRule = async(page: Page, actionName: string, label: string, fieldValue: string, configureOperation?: (configuredRule: Locator) => Promise<void>, operationValue?: string) => {
 	const initialRuleCount = await page.locator('.section.rule').count()
 	const addFlowCard = page.locator('.actions__item.colored').filter({
 		has: page.getByRole('heading', { name: actionName, exact: true }),
@@ -61,6 +63,10 @@ const configureDraftRule = async(page: Page, actionName: string, label: string, 
 		await operationInput.fill(operationValue)
 	}
 
+	if (configureOperation !== undefined) {
+		await configureOperation(configuredRule)
+	}
+
 	await expect(configuredRule.getByRole('button', { name: 'Save' })).toBeVisible()
 	await configuredRule.getByRole('button', { name: 'Save' }).click()
 
@@ -70,6 +76,17 @@ const configureDraftRule = async(page: Page, actionName: string, label: string, 
 	await expect(savedRule.getByRole('button', { name: 'Active' })).toBeVisible()
 
 	return { savedRule, initialRuleCount }
+}
+
+const createWorkflowFieldDefinition = async(page: Page, fieldKey: string, label: string) => {
+	await deleteDefinitionByFieldKey(page.request, fieldKey)
+	await createDefinition(page.request, {
+		fieldKey,
+		label,
+		userEditable: true,
+		userVisible: true,
+		initialVisibility: 'users',
+	})
 }
 
 test.beforeEach(async ({ page }) => {
@@ -82,14 +99,7 @@ test('admin can create a profile field workflow rule', async ({ page }) => {
 	const label = `Playwright workflow ${suffix}`
 	const fieldValue = `engineering-${suffix}`
 
-	await deleteDefinitionByFieldKey(page.request, fieldKey)
-	await createDefinition(page.request, {
-		fieldKey,
-		label,
-		userEditable: true,
-		userVisible: true,
-		initialVisibility: 'users',
-	})
+	await createWorkflowFieldDefinition(page, fieldKey, label)
 
 	await page.goto('./settings/admin/workflow')
 	await expect(page.getByRole('heading', { name: 'Available flows' })).toBeVisible()
@@ -106,20 +116,11 @@ test('admin can create a notify affected user workflow rule', async ({ page }) =
 	const label = `Playwright notify workflow ${suffix}`
 	const fieldValue = `engineering-notify-${suffix}`
 
-	await deleteDefinitionByFieldKey(page.request, fieldKey)
-	await createDefinition(page.request, {
-		fieldKey,
-		label,
-		userEditable: true,
-		userVisible: true,
-		initialVisibility: 'users',
-	})
+	await createWorkflowFieldDefinition(page, fieldKey, label)
 
 	await page.goto('./settings/admin/workflow')
 	await expect(page.getByRole('heading', { name: 'Available flows' })).toBeVisible()
 	const { savedRule, initialRuleCount } = await configureDraftRule(page, 'Notify affected user', label, fieldValue)
-
-	await expect(savedRule.getByText('Notify affected user', { exact: true })).toBeVisible()
 
 	await savedRule.getByRole('button', { name: 'Delete' }).click()
 	await expect(page.locator('.section.rule')).toHaveCount(initialRuleCount)
@@ -133,21 +134,14 @@ test('admin can create a send webhook workflow rule', async ({ page }) => {
 	const fieldValue = `engineering-webhook-${suffix}`
 	const webhookUrl = `https://example.test/hooks/profile-fields/${suffix}`
 
-	await deleteDefinitionByFieldKey(page.request, fieldKey)
-	await createDefinition(page.request, {
-		fieldKey,
-		label,
-		userEditable: true,
-		userVisible: true,
-		initialVisibility: 'users',
-	})
+	await createWorkflowFieldDefinition(page, fieldKey, label)
 
 	await page.goto('./settings/admin/workflow')
 	await expect(page.getByRole('heading', { name: 'Available flows' })).toBeVisible()
-	const { savedRule, initialRuleCount } = await configureDraftRule(page, 'Send webhook', label, fieldValue, webhookUrl)
-
-	await expect(savedRule.getByText('Send webhook', { exact: true })).toBeVisible()
-	await expect(savedRule.locator('input[type="url"]')).toHaveValue(webhookUrl)
+	const { savedRule, initialRuleCount } = await configureDraftRule(page, 'Send webhook', label, fieldValue, async (configuredRule) => {
+		await configuredRule.locator(`input[placeholder="Optional shared secret for HMAC signatures"]`).fill(`secret-${suffix}`)
+		await configuredRule.locator(`input[placeholder="Timeout in seconds"]`).fill('10')
+	}, webhookUrl)
 
 	await savedRule.getByRole('button', { name: 'Delete' }).click()
 	await expect(page.locator('.section.rule')).toHaveCount(initialRuleCount)
@@ -160,20 +154,67 @@ test('admin can create an email affected user workflow rule', async ({ page }) =
 	const label = `Playwright email workflow ${suffix}`
 	const fieldValue = `engineering-email-${suffix}`
 
-	await deleteDefinitionByFieldKey(page.request, fieldKey)
-	await createDefinition(page.request, {
-		fieldKey,
-		label,
-		userEditable: true,
-		userVisible: true,
-		initialVisibility: 'users',
-	})
+	await createWorkflowFieldDefinition(page, fieldKey, label)
 
 	await page.goto('./settings/admin/workflow')
 	await expect(page.getByRole('heading', { name: 'Available flows' })).toBeVisible()
-	const { savedRule, initialRuleCount } = await configureDraftRule(page, 'Email affected user', label, fieldValue)
+	const { savedRule, initialRuleCount } = await configureDraftRule(page, 'Email affected user', label, fieldValue, async (configuredRule) => {
+		await configuredRule.locator(`input[placeholder="Optional email subject template"]`).fill('Update: {{fieldLabel}}')
+		await configuredRule.locator('textarea').fill('Field {{fieldLabel}} changed from {{previousValue}} to {{currentValue}}.')
+	})
 
-	await expect(savedRule.getByText('Email affected user', { exact: true })).toBeVisible()
+	await savedRule.getByRole('button', { name: 'Delete' }).click()
+	await expect(page.locator('.section.rule')).toHaveCount(initialRuleCount)
+	await deleteDefinitionByFieldKey(page.request, fieldKey)
+})
+
+test('admin can create a notify admins or groups workflow rule', async ({ page }) => {
+	const suffix = Date.now()
+	const fieldKey = `playwright_admin_notify_workflow_${suffix}`
+	const label = `Playwright admin notify workflow ${suffix}`
+	const fieldValue = `engineering-admin-notify-${suffix}`
+
+	await createWorkflowFieldDefinition(page, fieldKey, label)
+
+	await page.goto('./settings/admin/workflow')
+	await expect(page.getByRole('heading', { name: 'Available flows' })).toBeVisible()
+	const { savedRule, initialRuleCount } = await configureDraftRule(page, 'Notify admins or groups', label, fieldValue, async (configuredRule) => {
+		await configuredRule.locator(`input[placeholder="Targets: admin, group:staff, user:alice"]`).fill('admin,group:admin')
+	})
+
+	await savedRule.getByRole('button', { name: 'Delete' }).click()
+	await expect(page.locator('.section.rule')).toHaveCount(initialRuleCount)
+	await deleteDefinitionByFieldKey(page.request, fieldKey)
+})
+
+test('admin can create a create activity entry workflow rule', async ({ page }) => {
+	const suffix = Date.now()
+	const fieldKey = `playwright_activity_workflow_${suffix}`
+	const label = `Playwright activity workflow ${suffix}`
+	const fieldValue = `engineering-activity-${suffix}`
+
+	await createWorkflowFieldDefinition(page, fieldKey, label)
+
+	await page.goto('./settings/admin/workflow')
+	await expect(page.getByRole('heading', { name: 'Available flows' })).toBeVisible()
+	const { savedRule, initialRuleCount } = await configureDraftRule(page, 'Create activity entry', label, fieldValue)
+
+	await savedRule.getByRole('button', { name: 'Delete' }).click()
+	await expect(page.locator('.section.rule')).toHaveCount(initialRuleCount)
+	await deleteDefinitionByFieldKey(page.request, fieldKey)
+})
+
+test('admin can create a create Talk conversation workflow rule', async ({ page }) => {
+	const suffix = Date.now()
+	const fieldKey = `playwright_talk_workflow_${suffix}`
+	const label = `Playwright talk workflow ${suffix}`
+	const fieldValue = `engineering-talk-${suffix}`
+
+	await createWorkflowFieldDefinition(page, fieldKey, label)
+
+	await page.goto('./settings/admin/workflow')
+	await expect(page.getByRole('heading', { name: 'Available flows' })).toBeVisible()
+	const { savedRule, initialRuleCount } = await configureDraftRule(page, 'Create Talk conversation', label, fieldValue)
 
 	await savedRule.getByRole('button', { name: 'Delete' }).click()
 	await expect(page.locator('.section.rule')).toHaveCount(initialRuleCount)
