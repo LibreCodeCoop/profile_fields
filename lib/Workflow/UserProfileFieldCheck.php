@@ -16,7 +16,6 @@ use OCA\ProfileFields\Db\FieldValue;
 use OCA\ProfileFields\Enum\FieldType;
 use OCA\ProfileFields\Service\FieldDefinitionService;
 use OCA\ProfileFields\Service\FieldValueService;
-use OCA\ProfileFields\Workflow\ProfileFieldValueSubjectContext;
 use OCP\IL10N;
 use OCP\IUser;
 use OCP\IUserSession;
