@@ -92,7 +92,11 @@ jobs:
             --database-name=nextcloud \
             --admin-user admin \
             --admin-pass admin
+          ./occ app:enable --force workflowengine
           ./occ app:enable --force ${{ env.APP_NAME }}
+          git clone --depth 1 -b master https://github.com/nextcloud/notifications apps/notifications
+          composer --working-dir=apps/notifications install --no-dev
+          ./occ app:enable --force notifications
           ./occ config:system:set auth.bruteforce.protection.enabled --value false --type boolean
           ./occ config:system:set ratelimit.protection.enabled --value false --type boolean
           ./occ config:system:set debug --value true --type boolean
