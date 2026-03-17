@@ -14,7 +14,6 @@ use OCA\ProfileFields\Listener\LoadWorkflowSettingsScriptsListener;
 use OCA\ProfileFields\Listener\RegisterWorkflowCheckListener;
 use OCA\ProfileFields\Listener\RegisterWorkflowEntityListener;
 use OCA\ProfileFields\Listener\RegisterWorkflowOperationListener;
-use OCA\ProfileFields\Notification\ProfileFieldWorkflowNotifier;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
 use OCP\IRequest;
@@ -35,9 +34,6 @@ class ApplicationTest extends TestCase {
 			->willReturnCallback(static function (string $event, string $listener, int $priority = 0) use (&$registrations): void {
 				$registrations[] = [$event, $listener, $priority];
 			});
-		$registrationContext->expects($this->once())
-			->method('registerNotifierService')
-			->with(ProfileFieldWorkflowNotifier::class);
 
 		$application = new Application();
 		$application->register($registrationContext);
