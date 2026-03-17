@@ -1,6 +1,7 @@
 Feature: profile fields API
   Background:
     Given user "profileuser" exists
+    And run the command "profile_fields:developer:reset --all" with result code 0
 
   Scenario: unauthenticated users cannot list their own fields
     Given as user ""
