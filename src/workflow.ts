@@ -30,6 +30,7 @@ type WorkflowEngineOperatorPlugin = {
 	id: string
 	operation: string
 	color: string
+	element?: string
 }
 
 type WorkflowEngineApi = {
@@ -74,13 +75,16 @@ const workflowCheckClass = 'OCA\\ProfileFields\\Workflow\\UserProfileFieldCheck'
 const workflowOperationClasses = [
 	'OCA\\ProfileFields\\Workflow\\LogProfileFieldChangeOperation',
 	'OCA\\ProfileFields\\Workflow\\NotifyUserProfileFieldChangeOperation',
+	'OCA\\ProfileFields\\Workflow\\SendWebhookProfileFieldChangeOperation',
 ]
 const workflowEntityClass = 'OCA\\ProfileFields\\Workflow\\ProfileFieldValueEntity'
 const workflowUpdatedEventClass = 'OCA\\ProfileFields\\Workflow\\Event\\ProfileFieldValueUpdatedEvent'
 const workflowElementId = 'oca-profile-fields-check-user-profile-field'
+const webhookOperationElementId = 'oca-profile-fields-webhook-operation'
 const workflowOperationNames = new Set([
 	t('profile_fields', 'Log profile field change'),
 	t('profile_fields', 'Notify affected user'),
+	t('profile_fields', 'Send webhook'),
 ])
 const workflowCardClassName = 'profile-fields-workflow-card'
 const workflowItemClassName = 'profile-fields-workflow-item'
@@ -318,8 +322,105 @@ class WorkflowProfileFieldElement extends HTMLElement {
 	}
 }
 
+class WorkflowWebhookOperationElement extends HTMLElement {
+	private modelValueInternal = ''
+	private disabledInternal = false
+
+	static get observedAttributes(): string[] {
+		return ['model-value', 'disabled']
+	}
+
+	connectedCallback(): void {
+		this.syncFromAttributes()
+		this.render()
+	}
+
+	attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void {
+		if (oldValue === newValue) {
+			return
+		}
+
+		if (name === 'model-value') {
+			this.modelValueInternal = newValue ?? ''
+		} else if (name === 'disabled') {
+			this.disabledInternal = newValue === '' || newValue === 'true'
+		}
+
+		this.render()
+	}
+
+	set modelValue(value: string | null | undefined) {
+		this.modelValueInternal = typeof value === 'string' ? value : ''
+		this.render()
+	}
+
+	get modelValue(): string {
+		return this.modelValueInternal
+	}
+
+	set disabled(value: boolean | string | null | undefined) {
+		this.disabledInternal = value === '' || value === true || value === 'true'
+		this.render()
+	}
+
+	get disabled(): boolean {
+		return this.disabledInternal
+	}
+
+	private syncFromAttributes(): void {
+		this.modelValueInternal = this.getAttribute('model-value') ?? this.modelValueInternal
+		this.disabledInternal = this.getAttribute('disabled') === '' || this.getAttribute('disabled') === 'true'
+	}
+
+	private render(): void {
+		const isValid = /^https?:\/\/.+/i.test(this.modelValueInternal.trim())
+
+		this.replaceChildren()
+
+		const style = document.createElement('style')
+		style.textContent = `
+			:host {
+				display: flex;
+				flex: 1 1 22rem;
+				min-width: 0;
+			}
+
+			input {
+				width: 100%;
+				border: 1px solid var(--color-border-maxcontrast);
+				border-radius: var(--border-radius-element, 6px);
+				background: var(--color-main-background);
+				color: var(--color-main-text);
+				font: inherit;
+				padding: .45rem .6rem;
+				min-height: 2.25rem;
+			}
+
+			input.invalid {
+				border-color: var(--color-error);
+			}
+		`
+
+		const input = document.createElement('input')
+		input.type = 'url'
+		input.value = this.modelValueInternal
+		input.disabled = this.disabledInternal
+		input.placeholder = t('profile_fields', 'Enter a webhook URL')
+		input.className = this.modelValueInternal === '' || isValid ? '' : 'invalid'
+		input.addEventListener('input', () => {
+			dispatchModelValue(this, input.value)
+		})
+
+		this.append(style, input)
+	}
+}
+
 if (!window.customElements.get(workflowElementId)) {
 	window.customElements.define(workflowElementId, WorkflowProfileFieldElement)
+}
+
+if (!window.customElements.get(webhookOperationElementId)) {
+	window.customElements.define(webhookOperationElementId, WorkflowWebhookOperationElement)
 }
 
 const buildOperators = (check: { value?: string | null }): WorkflowOperator[] => getWorkflowOperatorKeys(check.value ?? null, definitions).map((operator) => ({
@@ -334,11 +435,24 @@ const plugin: WorkflowEnginePlugin = {
 	element: workflowElementId,
 }
 
-const operationPlugins: WorkflowEngineOperatorPlugin[] = workflowOperationClasses.map((id) => ({
-	id,
-	operation: '',
-	color: 'var(--color-success)',
-}))
+const operationPlugins: WorkflowEngineOperatorPlugin[] = [
+	{
+		id: 'OCA\\ProfileFields\\Workflow\\LogProfileFieldChangeOperation',
+		operation: '',
+		color: 'var(--color-success)',
+	},
+	{
+		id: 'OCA\\ProfileFields\\Workflow\\NotifyUserProfileFieldChangeOperation',
+		operation: '',
+		color: 'var(--color-success)',
+	},
+	{
+		id: 'OCA\\ProfileFields\\Workflow\\SendWebhookProfileFieldChangeOperation',
+		operation: '',
+		color: 'var(--color-success)',
+		element: webhookOperationElementId,
+	},
+]
 
 const ensureWorkflowCardThemeStyle = (): void => {
 	if (document.getElementById(workflowCardThemeStyleId) !== null) {
