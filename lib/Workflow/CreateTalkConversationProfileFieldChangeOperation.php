@@ -89,11 +89,14 @@ class CreateTalkConversationProfileFieldChangeOperation implements IOperation {
 				return;
 			}
 
-			$this->broker->createConversation(sprintf(
-				$this->l10n->t('Profile field change: %1$s for %2$s'),
-				$fieldLabel,
-				$subject->getUserUid(),
-			), array_values($moderators), null);
+			$this->broker->createConversation(
+				$this->l10n->t('Profile field change: %1$s for %2$s', [
+					$fieldLabel,
+					$subject->getUserUid(),
+				]),
+				array_values($moderators),
+				null,
+			);
 		} finally {
 			$this->workflowSubjectContext->clear();
 		}
