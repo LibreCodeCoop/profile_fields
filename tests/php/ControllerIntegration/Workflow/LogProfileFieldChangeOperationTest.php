@@ -226,7 +226,7 @@ class LogProfileFieldChangeOperationTest extends TestCase {
 		$this->insertValueForUser($this->definition, $userId, 'finance');
 
 		$this->operationLogger->expects($this->once())
-			->method('notice')
+			->method('warning')
 			->with(
 				'Profile field workflow rule matched',
 				$this->callback(static function (array $context) use ($userId): bool {
