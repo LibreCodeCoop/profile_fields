@@ -16,6 +16,12 @@ import type {
 	UpsertOwnValuePayload,
 } from './types'
 
+export type WorkflowTargetSuggestion = {
+	token: string
+	label: string
+	description: string
+}
+
 const jsonHeaders = {
 	'OCS-APIRequest': 'true',
 	Accept: 'application/json',
@@ -87,4 +93,32 @@ export const upsertAdminUserValue = async(userUid: string, fieldDefinitionId: nu
 		headers: jsonHeaders,
 	})
 	return response.data.ocs.data
+}
+
+export const searchWorkflowTargetSuggestions = async(search: string, limit = 5): Promise<WorkflowTargetSuggestion[]> => {
+	const trimmedSearch = search.trim()
+	const [groupsResponse, usersResponse] = await Promise.all([
+		axios.get<{ ocs: { data: { groups?: Array<{ id: string, displayname?: string }> } } }>(
+			generateOcsUrl('/cloud/groups/details?search={search}&offset={offset}&limit={limit}', { search: trimmedSearch, offset: 0, limit }),
+			{ headers: { 'OCS-APIRequest': 'true' } },
+		),
+		axios.get<{ ocs: { data: { users?: Record<string, { id?: string, displayname?: string }> } } }>(
+			generateOcsUrl('/cloud/users/details?offset={offset}&limit={limit}&search={search}', { offset: 0, limit, search: trimmedSearch }),
+			{ headers: { 'OCS-APIRequest': 'true' } },
+		),
+	])
+
+	const groups = (groupsResponse.data.ocs?.data?.groups ?? []).map((group) => ({
+		token: `group:${group.id}`,
+		label: group.displayname?.trim() || group.id,
+		description: `Group: ${group.id}`,
+	}))
+
+	const users = Object.entries(usersResponse.data.ocs?.data?.users ?? {}).map(([uid, user]) => ({
+		token: `user:${uid}`,
+		label: user.displayname?.trim() || uid,
+		description: `User: ${uid}`,
+	}))
+
+	return [...groups, ...users]
 }
