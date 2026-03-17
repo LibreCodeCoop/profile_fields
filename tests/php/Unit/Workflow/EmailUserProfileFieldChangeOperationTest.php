@@ -52,9 +52,14 @@ class EmailUserProfileFieldChangeOperationTest extends TestCase {
 
 	public function testValidateOperationRejectsCustomConfiguration(): void {
 		$this->expectException(\UnexpectedValueException::class);
-		$this->expectExceptionMessage('This workflow operation does not accept custom configuration');
+		$this->expectExceptionMessage('A valid email template configuration is required');
 
 		$this->operation->validateOperation('email-user', [], 'custom');
+	}
+
+	public function testValidateOperationAcceptsTemplateConfiguration(): void {
+		$this->operation->validateOperation('email-user', [], '{"subjectTemplate":"Profile update: {{fieldLabel}}","bodyTemplate":"Field {{fieldLabel}} changed from {{previousValue}} to {{currentValue}}."}');
+		$this->assertTrue(true);
 	}
 
 	public function testOnEventSendsMailToAffectedUser(): void {
@@ -87,7 +92,11 @@ class EmailUserProfileFieldChangeOperationTest extends TestCase {
 			->method('getFlows')
 			->with(false)
 			->willReturn([
-				['id' => 17, 'name' => 'email-user'],
+				[
+					'id' => 17,
+					'name' => 'email-user',
+					'operation' => '{"subjectTemplate":"Update: {{fieldLabel}}","bodyTemplate":"Field {{fieldLabel}} changed from {{previousValue}} to {{currentValue}} by {{actorUid}}."}',
+				],
 			]);
 
 		$user = $this->createMock(IUser::class);
@@ -97,14 +106,12 @@ class EmailUserProfileFieldChangeOperationTest extends TestCase {
 
 		$message = $this->createMock(IMessage::class);
 		$message->expects($this->once())->method('setTo')->with(['alice@example.test' => 'Alice'])->willReturnSelf();
-		$message->expects($this->once())->method('setSubject')->with('Your profile field was updated')->willReturnSelf();
+		$message->expects($this->once())->method('setSubject')->with('Update: Department')->willReturnSelf();
 		$message->expects($this->once())
 			->method('setPlainBody')
 			->with($this->callback(function (string $body): bool {
-				$this->assertStringContainsString('Department', $body);
+				$this->assertSame('Field Department changed from finance to engineering by admin.', $body);
 				$this->assertStringContainsString('admin', $body);
-				$this->assertStringContainsString('finance', $body);
-				$this->assertStringContainsString('engineering', $body);
 				return true;
 			}))
 			->willReturnSelf();
@@ -145,7 +152,7 @@ class EmailUserProfileFieldChangeOperationTest extends TestCase {
 			->method('getFlows')
 			->with(false)
 			->willReturn([
-				['id' => 17, 'name' => 'email-user'],
+				['id' => 17, 'name' => 'email-user', 'operation' => ''],
 			]);
 
 		$user = $this->createMock(IUser::class);
