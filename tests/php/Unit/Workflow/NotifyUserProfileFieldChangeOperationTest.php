@@ -37,17 +37,17 @@ class NotifyUserProfileFieldChangeOperationTest extends TestCase {
 		$l10n->method('t')->willReturnArgument(0);
 		$urlGenerator = $this->createMock(IURLGenerator::class);
 		$urlGenerator->method('imagePath')
-			->with('core', 'actions/profile.svg')
-			->willReturn('/core/img/actions/profile.svg');
+			->with('core', 'actions/comment.svg')
+			->willReturn('/core/img/actions/comment.svg');
 		$urlGenerator->method('getAbsoluteURL')
-			->with('/core/img/actions/profile.svg')
-			->willReturn('https://localhost/core/img/actions/profile.svg');
+			->with('/core/img/actions/comment.svg')
+			->willReturn('https://localhost/core/img/actions/comment.svg');
 
 		$this->operation = new NotifyUserProfileFieldChangeOperation($this->notificationManager, $l10n, $urlGenerator, new ProfileFieldValueSubjectContext());
 	}
 
-	public function testGetIconReturnsProfileIcon(): void {
-		$this->assertSame('/core/img/actions/profile.svg', $this->operation->getIcon());
+	public function testGetIconReturnsCommentIcon(): void {
+		$this->assertSame('/core/img/actions/comment.svg', $this->operation->getIcon());
 	}
 
 	public function testOnEventCreatesNotificationForAffectedUser(): void {
@@ -94,7 +94,7 @@ class NotifyUserProfileFieldChangeOperationTest extends TestCase {
 			])
 			->willReturnSelf();
 		$notification->expects($this->once())->method('setDateTime')->with($this->isInstanceOf(\DateTime::class))->willReturnSelf();
-		$notification->expects($this->once())->method('setIcon')->with('https://localhost/core/img/actions/profile.svg')->willReturnSelf();
+		$notification->expects($this->once())->method('setIcon')->with('https://localhost/core/img/actions/comment.svg')->willReturnSelf();
 
 		$this->notificationManager->expects($this->once())
 			->method('createNotification')
