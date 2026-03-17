@@ -9,7 +9,6 @@ default:
     default:
       contexts:
         - FeatureContext
-        - Libresign\NextcloudBehat\NextcloudApiContext
       paths:
         - '%paths.base%/../features'
 
