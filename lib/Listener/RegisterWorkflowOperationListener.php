@@ -9,8 +9,11 @@ declare(strict_types=1);
 
 namespace OCA\ProfileFields\Listener;
 
+use OCA\ProfileFields\Workflow\CreateActivityProfileFieldChangeOperation;
+use OCA\ProfileFields\Workflow\CreateTalkConversationProfileFieldChangeOperation;
 use OCA\ProfileFields\Workflow\EmailUserProfileFieldChangeOperation;
 use OCA\ProfileFields\Workflow\LogProfileFieldChangeOperation;
+use OCA\ProfileFields\Workflow\NotifyAdminsOrGroupsProfileFieldChangeOperation;
 use OCA\ProfileFields\Workflow\NotifyUserProfileFieldChangeOperation;
 use OCA\ProfileFields\Workflow\SendWebhookProfileFieldChangeOperation;
 use OCP\EventDispatcher\Event;
@@ -25,6 +28,9 @@ class RegisterWorkflowOperationListener implements IEventListener {
 		private LogProfileFieldChangeOperation $operation,
 		private NotifyUserProfileFieldChangeOperation $notifyUserOperation,
 		private EmailUserProfileFieldChangeOperation $emailUserOperation,
+		private NotifyAdminsOrGroupsProfileFieldChangeOperation $notifyAdminsOrGroupsOperation,
+		private CreateActivityProfileFieldChangeOperation $createActivityOperation,
+		private CreateTalkConversationProfileFieldChangeOperation $createTalkConversationOperation,
 		private SendWebhookProfileFieldChangeOperation $sendWebhookOperation,
 	) {
 	}
@@ -38,6 +44,9 @@ class RegisterWorkflowOperationListener implements IEventListener {
 		$event->registerOperation($this->operation);
 		$event->registerOperation($this->notifyUserOperation);
 		$event->registerOperation($this->emailUserOperation);
+		$event->registerOperation($this->notifyAdminsOrGroupsOperation);
+		$event->registerOperation($this->createActivityOperation);
+		$event->registerOperation($this->createTalkConversationOperation);
 		$event->registerOperation($this->sendWebhookOperation);
 	}
 }
