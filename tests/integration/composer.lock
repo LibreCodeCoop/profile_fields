@@ -872,16 +872,16 @@
         },
         {
             "name": "libresign/nextcloud-behat",
-            "version": "v1.4.2",
+            "version": "v1.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/LibreSign/nextcloud-behat.git",
-                "reference": "7876b05d451d751e448a5560aad89a9cb224b710"
+                "reference": "5a2c0e41db13769a06e58fc872debc424b9e5209"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/LibreSign/nextcloud-behat/zipball/7876b05d451d751e448a5560aad89a9cb224b710",
-                "reference": "7876b05d451d751e448a5560aad89a9cb224b710",
+                "url": "https://api.github.com/repos/LibreSign/nextcloud-behat/zipball/5a2c0e41db13769a06e58fc872debc424b9e5209",
+                "reference": "5a2c0e41db13769a06e58fc872debc424b9e5209",
                 "shasum": ""
             },
             "require": {
@@ -926,9 +926,9 @@
             ],
             "support": {
                 "issues": "https://github.com/LibreSign/nextcloud-behat/issues",
-                "source": "https://github.com/LibreSign/nextcloud-behat/tree/v1.4.2"
+                "source": "https://github.com/LibreSign/nextcloud-behat/tree/v1.5.0"
             },
-            "time": "2026-02-16T21:51:37+00:00"
+            "time": "2026-03-17T16:37:29+00:00"
         },
         {
             "name": "myclabs/deep-copy",
