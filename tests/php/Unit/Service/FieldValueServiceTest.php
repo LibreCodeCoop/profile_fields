@@ -15,17 +15,23 @@ use OCA\ProfileFields\Db\FieldValue;
 use OCA\ProfileFields\Db\FieldValueMapper;
 use OCA\ProfileFields\Enum\FieldType;
 use OCA\ProfileFields\Service\FieldValueService;
+use OCA\ProfileFields\Workflow\Event\ProfileFieldValueCreatedEvent;
+use OCA\ProfileFields\Workflow\Event\ProfileFieldValueUpdatedEvent;
+use OCA\ProfileFields\Workflow\Event\ProfileFieldVisibilityUpdatedEvent;
+use OCP\EventDispatcher\IEventDispatcher;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class FieldValueServiceTest extends TestCase {
 	private FieldValueMapper&MockObject $fieldValueMapper;
+	private IEventDispatcher&MockObject $eventDispatcher;
 	private FieldValueService $service;
 
 	protected function setUp(): void {
 		parent::setUp();
 		$this->fieldValueMapper = $this->createMock(FieldValueMapper::class);
-		$this->service = new FieldValueService($this->fieldValueMapper);
+		$this->eventDispatcher = $this->createMock(IEventDispatcher::class);
+		$this->service = new FieldValueService($this->fieldValueMapper, $this->eventDispatcher);
 	}
 
 	public function testNormalizeNumberValue(): void {
@@ -45,6 +51,7 @@ class FieldValueServiceTest extends TestCase {
 	public function testUpsertPersistsSerializedValue(): void {
 		$definition = $this->buildDefinition(FieldType::NUMBER->value);
 		$definition->setId(3);
+		$definition->setFieldKey('score');
 		$definition->setInitialVisibility('users');
 
 		$this->fieldValueMapper
@@ -65,6 +72,17 @@ class FieldValueServiceTest extends TestCase {
 				return true;
 			}))
 			->willReturnCallback(static fn (FieldValue $value): FieldValue => $value);
+		$this->eventDispatcher->expects($this->once())
+			->method('dispatchTyped')
+			->with($this->callback(function (object $event): bool {
+				$this->assertInstanceOf(ProfileFieldValueCreatedEvent::class, $event);
+				$this->assertSame('alice', $event->getWorkflowSubject()->getUserUid());
+				$this->assertSame('admin', $event->getWorkflowSubject()->getActorUid());
+				$this->assertSame('score', $event->getWorkflowSubject()->getFieldDefinition()->getFieldKey());
+				$this->assertSame(9.5, $event->getWorkflowSubject()->getCurrentValue());
+				$this->assertNull($event->getWorkflowSubject()->getPreviousValue());
+				return true;
+			}));
 
 		$stored = $this->service->upsert($definition, 'alice', '9.5', 'admin');
 
@@ -74,6 +92,7 @@ class FieldValueServiceTest extends TestCase {
 	public function testUpsertPreservesImportedUpdatedAt(): void {
 		$definition = $this->buildDefinition(FieldType::TEXT->value);
 		$definition->setId(3);
+		$definition->setFieldKey('department');
 		$definition->setInitialVisibility('users');
 
 		$this->fieldValueMapper
@@ -89,6 +108,9 @@ class FieldValueServiceTest extends TestCase {
 				return true;
 			}))
 			->willReturnCallback(static fn (FieldValue $value): FieldValue => $value);
+		$this->eventDispatcher->expects($this->once())
+			->method('dispatchTyped')
+			->with($this->isInstanceOf(ProfileFieldValueCreatedEvent::class));
 
 		$stored = $this->service->upsert(
 			$definition,
@@ -100,6 +122,40 @@ class FieldValueServiceTest extends TestCase {
 		);
 
 		$this->assertSame('2026-03-12T14:00:00+00:00', $stored->getUpdatedAt()->format(DATE_ATOM));
+	}
+
+	public function testUpsertDispatchesUpdatedEventWhenExistingValueChanges(): void {
+		$definition = $this->buildDefinition(FieldType::TEXT->value);
+		$definition->setId(3);
+		$definition->setFieldKey('department');
+		$definition->setInitialVisibility('users');
+
+		$existing = new FieldValue();
+		$existing->setId(10);
+		$existing->setFieldDefinitionId(3);
+		$existing->setUserUid('alice');
+		$existing->setValueJson('{"value":"finance"}');
+		$existing->setCurrentVisibility('users');
+		$existing->setUpdatedByUid('alice');
+		$existing->setUpdatedAt(new \DateTime());
+
+		$this->fieldValueMapper->expects($this->once())
+			->method('findByFieldDefinitionIdAndUserUid')
+			->with(3, 'alice')
+			->willReturn($existing);
+		$this->fieldValueMapper->expects($this->once())
+			->method('update')
+			->willReturnCallback(static fn (FieldValue $value): FieldValue => $value);
+		$this->eventDispatcher->expects($this->once())
+			->method('dispatchTyped')
+			->with($this->callback(function (object $event): bool {
+				$this->assertInstanceOf(ProfileFieldValueUpdatedEvent::class, $event);
+				$this->assertSame('finance', $event->getWorkflowSubject()->getPreviousValue());
+				$this->assertSame('engineering', $event->getWorkflowSubject()->getCurrentValue());
+				return true;
+			}));
+
+		$this->service->upsert($definition, 'alice', 'engineering', 'admin');
 	}
 
 	public function testSerializeForResponseReturnsDecodedPayload(): void {
@@ -142,6 +198,7 @@ class FieldValueServiceTest extends TestCase {
 	public function testUpdateVisibilityUpdatesExistingValue(): void {
 		$definition = $this->buildDefinition(FieldType::TEXT->value);
 		$definition->setId(3);
+		$definition->setFieldKey('department');
 		$value = new FieldValue();
 		$value->setId(10);
 		$value->setFieldDefinitionId(3);
@@ -164,6 +221,14 @@ class FieldValueServiceTest extends TestCase {
 				return true;
 			}))
 			->willReturnCallback(static fn (FieldValue $updated): FieldValue => $updated);
+		$this->eventDispatcher->expects($this->once())
+			->method('dispatchTyped')
+			->with($this->callback(function (object $event): bool {
+				$this->assertInstanceOf(ProfileFieldVisibilityUpdatedEvent::class, $event);
+				$this->assertSame('private', $event->getWorkflowSubject()->getPreviousVisibility());
+				$this->assertSame('users', $event->getWorkflowSubject()->getCurrentVisibility());
+				return true;
+			}));
 
 		$updated = $this->service->updateVisibility($definition, 'alice', 'admin', 'users');
 
