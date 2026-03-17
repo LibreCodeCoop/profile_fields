@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace OCA\ProfileFields\Listener;
 
+use OCA\ProfileFields\Workflow\EmailUserProfileFieldChangeOperation;
 use OCA\ProfileFields\Workflow\LogProfileFieldChangeOperation;
 use OCA\ProfileFields\Workflow\NotifyUserProfileFieldChangeOperation;
 use OCA\ProfileFields\Workflow\SendWebhookProfileFieldChangeOperation;
@@ -23,6 +24,7 @@ class RegisterWorkflowOperationListener implements IEventListener {
 	public function __construct(
 		private LogProfileFieldChangeOperation $operation,
 		private NotifyUserProfileFieldChangeOperation $notifyUserOperation,
+		private EmailUserProfileFieldChangeOperation $emailUserOperation,
 		private SendWebhookProfileFieldChangeOperation $sendWebhookOperation,
 	) {
 	}
@@ -35,6 +37,7 @@ class RegisterWorkflowOperationListener implements IEventListener {
 
 		$event->registerOperation($this->operation);
 		$event->registerOperation($this->notifyUserOperation);
+		$event->registerOperation($this->emailUserOperation);
 		$event->registerOperation($this->sendWebhookOperation);
 	}
 }
