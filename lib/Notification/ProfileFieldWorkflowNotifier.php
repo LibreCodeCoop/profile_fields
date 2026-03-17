@@ -10,12 +10,12 @@ declare(strict_types=1);
 namespace OCA\ProfileFields\Notification;
 
 use OCA\ProfileFields\AppInfo\Application;
+use OCP\IURLGenerator;
+use OCP\IUserManager;
 use OCP\L10N\IFactory;
 use OCP\Notification\INotification;
 use OCP\Notification\INotifier;
 use OCP\Notification\UnknownNotificationException;
-use OCP\IURLGenerator;
-use OCP\IUserManager;
 
 class ProfileFieldWorkflowNotifier implements INotifier {
 	public function __construct(
