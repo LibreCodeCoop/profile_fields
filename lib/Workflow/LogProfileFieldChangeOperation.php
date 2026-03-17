@@ -68,7 +68,7 @@ class LogProfileFieldChangeOperation implements IOperation {
 
 			$subject = $event->getWorkflowSubject();
 			foreach ($matches as $match) {
-				$this->logger->notice('Profile field workflow rule matched', [
+				$this->logger->warning('Profile field workflow rule matched', [
 					'app' => 'profile_fields',
 					'rule_id' => $match['id'] ?? null,
 					'rule_name' => $match['name'] ?? null,
