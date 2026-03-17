@@ -39,7 +39,9 @@ class CreateTalkConversationProfileFieldChangeOperationTest extends TestCase {
 		$this->groupManager = $this->createMock(IGroupManager::class);
 		$this->userManager = $this->createMock(IUserManager::class);
 		$l10n = $this->createMock(IL10N::class);
-		$l10n->method('t')->willReturnArgument(0);
+		$l10n->method('t')->willReturnCallback(static function (string $text, array $parameters = []): string {
+			return $parameters === [] ? $text : vsprintf($text, $parameters);
+		});
 		$urlGenerator = $this->createMock(IURLGenerator::class);
 		$urlGenerator->method('imagePath')
 			->with('core', 'actions/comment.svg')
@@ -84,7 +86,7 @@ class CreateTalkConversationProfileFieldChangeOperationTest extends TestCase {
 		$this->broker->expects($this->once())
 			->method('createConversation')
 			->with(
-				$this->stringContains('Department'),
+				'Profile field change: Department for alice',
 				$this->callback(function (array $moderators): bool {
 					$this->assertCount(2, $moderators);
 					return true;
