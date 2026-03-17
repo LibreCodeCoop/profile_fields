@@ -35,14 +35,14 @@ class LogProfileFieldChangeOperationTest extends TestCase {
 		$l10n->method('t')->willReturnArgument(0);
 		$urlGenerator = $this->createMock(IURLGenerator::class);
 		$urlGenerator->method('imagePath')
-			->with('core', 'actions/profile.svg')
-			->willReturn('/core/img/actions/profile.svg');
+			->with('core', 'actions/history.svg')
+			->willReturn('/core/img/actions/history.svg');
 
 		$this->operation = new LogProfileFieldChangeOperation($this->logger, $l10n, $urlGenerator, new ProfileFieldValueSubjectContext());
 	}
 
-	public function testGetIconReturnsProfileIcon(): void {
-		$this->assertSame('/core/img/actions/profile.svg', $this->operation->getIcon());
+	public function testGetIconReturnsHistoryIcon(): void {
+		$this->assertSame('/core/img/actions/history.svg', $this->operation->getIcon());
 	}
 
 	public function testOnEventLogsEveryMatchingRule(): void {
