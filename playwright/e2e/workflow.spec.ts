@@ -17,7 +17,7 @@ const selectNcOption = async(page: Page, combobox: Locator, optionName: string) 
 	}).first().click()
 }
 
-const configureDraftRule = async(page: Page, actionName: string, label: string, fieldValue: string) => {
+const configureDraftRule = async(page: Page, actionName: string, label: string, fieldValue: string, operationValue?: string) => {
 	const initialRuleCount = await page.locator('.section.rule').count()
 	const addFlowCard = page.locator('.actions__item.colored').filter({
 		has: page.getByRole('heading', { name: actionName, exact: true }),
@@ -41,6 +41,12 @@ const configureDraftRule = async(page: Page, actionName: string, label: string, 
 	await expect(checkEditor).toBeVisible()
 	await checkEditor.locator('select').selectOption({ label })
 	await checkEditor.locator('input').fill(fieldValue)
+
+	if (operationValue !== undefined) {
+		const operationInput = configuredRule.locator('input[type="url"]')
+		await expect(operationInput).toBeVisible()
+		await operationInput.fill(operationValue)
+	}
 
 	await expect(configuredRule.getByRole('button', { name: 'Save' })).toBeVisible()
 	await configuredRule.getByRole('button', { name: 'Save' }).click()
@@ -101,6 +107,34 @@ test('admin can create a notify affected user workflow rule', async ({ page }) =
 	const { savedRule, initialRuleCount } = await configureDraftRule(page, 'Notify affected user', label, fieldValue)
 
 	await expect(savedRule.getByText('Notify affected user', { exact: true })).toBeVisible()
+
+	await savedRule.getByRole('button', { name: 'Delete' }).click()
+	await expect(page.locator('.section.rule')).toHaveCount(initialRuleCount)
+	await deleteDefinitionByFieldKey(page.request, fieldKey)
+})
+
+test('admin can create a send webhook workflow rule', async ({ page }) => {
+	const suffix = Date.now()
+	const fieldKey = `playwright_webhook_workflow_${suffix}`
+	const label = `Playwright webhook workflow ${suffix}`
+	const fieldValue = `engineering-webhook-${suffix}`
+	const webhookUrl = `https://example.test/hooks/profile-fields/${suffix}`
+
+	await deleteDefinitionByFieldKey(page.request, fieldKey)
+	await createDefinition(page.request, {
+		fieldKey,
+		label,
+		userEditable: true,
+		userVisible: true,
+		initialVisibility: 'users',
+	})
+
+	await page.goto('./settings/admin/workflow')
+	await expect(page.getByRole('heading', { name: 'Available flows' })).toBeVisible()
+	const { savedRule, initialRuleCount } = await configureDraftRule(page, 'Send webhook', label, fieldValue, webhookUrl)
+
+	await expect(savedRule.getByText('Send webhook', { exact: true })).toBeVisible()
+	await expect(savedRule.locator('input[type="url"]')).toHaveValue(webhookUrl)
 
 	await savedRule.getByRole('button', { name: 'Delete' }).click()
 	await expect(page.locator('.section.rule')).toHaveCount(initialRuleCount)
