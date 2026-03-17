@@ -64,6 +64,11 @@ class SendWebhookProfileFieldChangeOperationTest extends TestCase {
 		$this->operation->validateOperation('send-webhook', [], 'ftp://example.test/hook');
 	}
 
+	public function testValidateOperationAcceptsJsonConfiguration(): void {
+		$this->operation->validateOperation('send-webhook', [], '{"url":"https://example.test/hooks/profile-fields","secret":"shared-secret","timeout":10,"retries":2,"headers":{"X-Environment":"test"}}');
+		$this->assertTrue(true);
+	}
+
 	public function testOnEventPostsStructuredWebhookPayload(): void {
 		$definition = new FieldDefinition();
 		$definition->setId(7);
@@ -97,7 +102,7 @@ class SendWebhookProfileFieldChangeOperationTest extends TestCase {
 				[
 					'id' => 12,
 					'name' => 'send-webhook',
-					'operation' => 'https://example.test/hooks/profile-fields',
+					'operation' => '{"url":"https://example.test/hooks/profile-fields","secret":"shared-secret","timeout":10,"retries":2,"headers":{"X-Environment":"test"}}',
 				],
 			]);
 
@@ -108,7 +113,10 @@ class SendWebhookProfileFieldChangeOperationTest extends TestCase {
 				$this->callback(function (array $options): bool {
 					$this->assertSame('application/json', $options['headers']['Content-Type'] ?? null);
 					$this->assertSame('application/json', $options['headers']['Accept'] ?? null);
-					$this->assertSame(IClient::DEFAULT_REQUEST_TIMEOUT, $options['timeout'] ?? null);
+					$this->assertSame('test', $options['headers']['X-Environment'] ?? null);
+					$this->assertSame(10, $options['timeout'] ?? null);
+					$this->assertStringStartsWith('sha256=', $options['headers']['X-Profile-Fields-Signature'] ?? '');
+					$this->assertNotSame('', $options['headers']['X-Profile-Fields-Timestamp'] ?? '');
 					$this->assertIsString($options['body'] ?? null);
 
 					$payload = json_decode($options['body'], true, 512, JSON_THROW_ON_ERROR);
