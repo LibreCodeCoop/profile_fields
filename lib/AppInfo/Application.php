@@ -23,10 +23,10 @@ use OCP\AppFramework\Bootstrap\IRegistrationContext;
 use OCP\IRequest;
 use OCP\User\Events\UserDeletedEvent;
 use OCP\Util;
-use OCP\WorkflowEngine\Events\RegisterEntitiesEvent;
-use OCP\WorkflowEngine\Events\RegisterOperationsEvent;
 use OCP\WorkflowEngine\Events\LoadSettingsScriptsEvent;
 use OCP\WorkflowEngine\Events\RegisterChecksEvent;
+use OCP\WorkflowEngine\Events\RegisterEntitiesEvent;
+use OCP\WorkflowEngine\Events\RegisterOperationsEvent;
 
 /**
  * @codeCoverageIgnore
