@@ -79,7 +79,7 @@ class LogProfileFieldChangeOperationTest extends TestCase {
 			]);
 
 		$this->logger->expects($this->once())
-			->method('info')
+			->method('notice')
 			->with(
 				'Profile field workflow rule matched',
 				$this->callback(function (array $context): bool {
@@ -100,7 +100,7 @@ class LogProfileFieldChangeOperationTest extends TestCase {
 	public function testOnEventIgnoresUnsupportedEvents(): void {
 		$ruleMatcher = $this->createMock(IRuleMatcher::class);
 		$ruleMatcher->expects($this->never())->method('getFlows');
-		$this->logger->expects($this->never())->method('info');
+		$this->logger->expects($this->never())->method('notice');
 
 		$this->operation->onEvent('unsupported', new Event(), $ruleMatcher);
 	}
