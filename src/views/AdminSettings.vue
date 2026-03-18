@@ -124,6 +124,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 							<div class="profile-fields-admin__field">
 								<label for="profile-fields-admin-type">Type</label>
 								<NcSelect
+									data-testid="profile-fields-admin-type-select"
 									input-id="profile-fields-admin-type"
 									v-model="selectedTypeOption"
 									input-label="Type"
@@ -157,35 +158,80 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 						<div class="profile-fields-admin__section-heading">
 							<h4>Options</h4>
 							<p>Define the values users and admins can pick from this field.</p>
+							<p class="profile-fields-admin__section-hint">Press Enter to create the next option. Empty rows are reused, removed on blur, and Backspace or Delete removes an empty row. Use Add multiple options to paste one option per line.</p>
 						</div>
 
-						<div class="profile-fields-admin__options-editor">
-							<div
-								v-for="(option, index) in form.options"
-								:key="index"
-								class="profile-fields-admin__option-row">
-								<NcInputField
-									:model-value="option"
-									label="Option value"
-									label-outside
-									:placeholder="`Option ${index + 1}`"
-									:error="isOptionDuplicate(index)"
-									:helper-text="isOptionDuplicate(index) ? 'Duplicate option' : ''"
-									@update:model-value="updateOption(index, $event)"
-									@keydown.enter.prevent="addOption"
-								/>
-								<NcButton
-									variant="tertiary-no-background"
-									:aria-label="`Remove option ${option || String(index + 1)}`"
-									@click.prevent="removeOption(index)">
-									<template #icon>
-										<NcIconSvgWrapper :path="mdiClose" :size="20" />
-									</template>
-								</NcButton>
-							</div>
+						<Draggable
+							v-model="form.options"
+							class="profile-fields-admin__options-editor"
+							data-testid="profile-fields-admin-options-editor"
+							item-key="id"
+							handle=".profile-fields-admin__option-handle"
+							ghost-class="profile-fields-admin__option-row--ghost"
+							chosen-class="profile-fields-admin__option-row--chosen"
+							:animation="180"
+							:disabled="isSaving">
+							<template #item="{ element, index }">
+								<div class="profile-fields-admin__option-row" :data-testid="`profile-fields-admin-option-row-${index}`">
+									<div class="profile-fields-admin__option-leading">
+										<NcActions
+											v-if="hasOptionValue(index)"
+											class="profile-fields-admin__option-handle"
+											:data-testid="`profile-fields-admin-option-handle-${index}`"
+											variant="tertiary-no-background"
+											size="small"
+											:aria-label="`Reorder option ${element.value}`">
+											<template #icon>
+												<NcIconSvgWrapper :path="mdiDragVertical" :size="18" />
+											</template>
+											<NcActionButton :disabled="!canMoveOptionUp(index) || isSaving" @click="moveOption(index, -1)">
+												<template #icon>
+													<NcIconSvgWrapper :path="mdiArrowUp" :size="18" />
+												</template>
+												Move up
+											</NcActionButton>
+											<NcActionButton :disabled="!canMoveOptionDown(index) || isSaving" @click="moveOption(index, 1)">
+												<template #icon>
+													<NcIconSvgWrapper :path="mdiArrowDown" :size="18" />
+												</template>
+												Move down
+											</NcActionButton>
+										</NcActions>
+										<div v-else class="profile-fields-admin__option-handle-spacer" aria-hidden="true" />
+									</div>
+									<NcInputField
+										:model-value="element.value"
+										label="Option value"
+										label-outside
+										:placeholder="`Option ${index + 1}`"
+										:error="isOptionDuplicate(index)"
+										:helper-text="isOptionDuplicate(index) ? 'Duplicate option' : ''"
+										@update:model-value="updateOption(index, $event)"
+										@keydown.enter.prevent="addOptionFromEnter(index, $event)"
+										@keydown.backspace="removeEmptyOptionFromKeyboard(index, $event)"
+										@keydown.delete="removeEmptyOptionFromKeyboard(index, $event)"
+										@blur="cleanupEmptyOptionOnBlur(element.id)"
+									/>
+									<div class="profile-fields-admin__option-actions">
+										<NcButton
+											variant="tertiary-no-background"
+											:aria-label="`Remove option ${element.value || String(index + 1)}`"
+											@click.prevent="removeOption(index)">
+											<template #icon>
+												<NcIconSvgWrapper :path="mdiClose" :size="20" />
+											</template>
+										</NcButton>
+									</div>
+								</div>
+							</template>
+						</Draggable>
 
-							<NcButton variant="secondary" @click.prevent="addOption">
+						<div class="profile-fields-admin__option-toolbar">
+							<NcButton variant="secondary" data-testid="profile-fields-admin-add-option" @click.prevent="addOption">
 								Add option
+							</NcButton>
+							<NcButton variant="secondary" data-testid="profile-fields-admin-add-multiple-options" @click.prevent="openBulkOptionsDialog">
+								Add multiple options
 							</NcButton>
 						</div>
 					</section>
@@ -243,16 +289,55 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 				</div>
 			</div>
 		</div>
+
+		<NcDialog
+			:open="isBulkOptionsDialogOpen"
+			name="Add multiple options"
+			content-classes="profile-fields-admin__bulk-options-dialog"
+			size="normal"
+			@update:open="updateBulkOptionsDialogOpen">
+			<div class="profile-fields-admin__bulk-options-content">
+				<NcTextArea
+					data-testid="profile-fields-admin-bulk-options-input"
+					:model-value="bulkOptionInput"
+					label="Add multiple options (one per line)"
+					placeholder="Add multiple options (one per line)"
+					resize="vertical"
+					rows="10"
+					@update:model-value="bulkOptionInput = $event" />
+				<p class="profile-fields-admin__bulk-options-summary">
+					{{ bulkOptionValues.length === 1 ? '1 option ready to add.' : `${bulkOptionValues.length} options ready to add.` }}
+				</p>
+			</div>
+
+			<template #actions>
+				<NcButton @click="closeBulkOptionsDialog">
+					Cancel
+				</NcButton>
+				<NcButton
+					variant="primary"
+					data-testid="profile-fields-admin-bulk-options-submit"
+					:disabled="bulkOptionValues.length === 0"
+					@click="applyBulkOptions">
+					Add options
+				</NcButton>
+			</template>
+		</NcDialog>
 	</section>
 </template>
 
 <script setup lang="ts">
-import { mdiClose } from '@mdi/js'
-import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { NcButton, NcCheckboxRadioSwitch, NcEmptyContent, NcIconSvgWrapper, NcInputField, NcLoadingIcon, NcNoteCard, NcSelect } from '@nextcloud/vue'
+import { mdiArrowDown, mdiArrowUp, mdiClose, mdiDragVertical } from '@mdi/js'
+import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
+import NcDialog from '@nextcloud/vue/components/NcDialog'
+import NcTextArea from '@nextcloud/vue/components/NcTextArea'
+import Draggable from 'vuedraggable'
+import { NcActionButton, NcActions, NcButton, NcCheckboxRadioSwitch, NcEmptyContent, NcIconSvgWrapper, NcInputField, NcLoadingIcon, NcNoteCard, NcSelect } from '@nextcloud/vue'
 import { createDefinition, deleteDefinition, listDefinitions, updateDefinition } from '../api'
 import type { FieldDefinition, FieldType, FieldVisibility } from '../types'
 import { buildFieldOrderUpdates } from '../utils/fieldOrder.js'
+import { createEditableSelectOptions, extractEditableSelectOptionValues, moveEditableSelectOption, normalizeEditableSelectOptionValue, parseEditableSelectOptionValues } from '../utils/selectFieldOptions.js'
+import type { EditableSelectOption } from '../utils/selectFieldOptions.js'
 import { visibilityOptions } from '../utils/visibilityOptions.js'
 
 const fieldTypeOptions: Array<{ value: FieldType, label: string }> = [
@@ -268,6 +353,11 @@ const errorMessage = ref('')
 const successMessage = ref('')
 const selectedId = ref<number | null>(null)
 const isCreatingNew = ref(false)
+const isBulkOptionsDialogOpen = ref(false)
+const bulkOptionInput = ref('')
+let nextOptionId = 0
+
+const createOptionId = () => `option-${nextOptionId++}`
 
 const form = reactive({
 	fieldKey: '',
@@ -279,7 +369,7 @@ const form = reactive({
 	initialVisibility: 'private' as FieldVisibility,
 	sortOrder: 0,
 	active: true,
-	options: [] as string[],
+	options: createEditableSelectOptions([], createOptionId),
 })
 
 
@@ -313,7 +403,7 @@ const buildFormState = () => ({
 	initialVisibility: form.initialVisibility,
 	sortOrder: Number(form.sortOrder),
 	active: form.active,
-	options: form.type === 'select' ? form.options.filter((o: string) => o.trim() !== '') : [],
+	options: form.type === 'select' ? extractEditableSelectOptionValues(form.options).filter((optionValue: string) => optionValue.trim() !== '') : [],
 })
 
 const buildDefinitionState = (definition: FieldDefinition | null) => {
@@ -351,16 +441,16 @@ const isFormDirty = computed(() => JSON.stringify(buildFormState()) !== JSON.str
 const duplicateOptionIndices = computed(() => {
 	const seen = new Map<string, number>()
 	const duplicates = new Set<number>()
-	form.options.forEach((option: string, index: number) => {
-		const trimmed = option.trim()
-		if (trimmed === '') {
+	form.options.forEach((option: EditableSelectOption, index: number) => {
+		const normalized = normalizeEditableSelectOptionValue(option.value)
+		if (normalized === '') {
 			return
 		}
-		if (seen.has(trimmed)) {
-			duplicates.add(seen.get(trimmed) as number)
+		if (seen.has(normalized)) {
+			duplicates.add(seen.get(normalized) as number)
 			duplicates.add(index)
 		} else {
-			seen.set(trimmed, index)
+			seen.set(normalized, index)
 		}
 	})
 	return duplicates
@@ -368,6 +458,20 @@ const duplicateOptionIndices = computed(() => {
 
 const isOptionDuplicate = (index: number) => duplicateOptionIndices.value.has(index)
 const hasDuplicateOptions = computed(() => duplicateOptionIndices.value.size > 0)
+const hasOptionValue = (index: number) => form.options[index]?.value.trim() !== ''
+const canMoveOptionUp = (index: number) => index > 0
+const canMoveOptionDown = (index: number) => index < form.options.length - 1
+const bulkOptionValues = computed(() => parseEditableSelectOptionValues(bulkOptionInput.value))
+
+const focusOptionInput = async(index: number) => {
+	await nextTick()
+	requestAnimationFrame(() => {
+		const input = document.querySelector<HTMLInputElement>(`[data-testid="profile-fields-admin-option-row-${index}"] input`)
+		input?.focus()
+	})
+}
+
+const firstEmptyOptionIndex = () => form.options.findIndex((option: EditableSelectOption) => option.value.trim() === '')
 
 const selectedTypeOption = computed({
 	get: () => fieldTypeOptions.find((option) => option.value === form.type) ?? fieldTypeOptions[0],
@@ -397,7 +501,7 @@ const resetForm = () => {
 	form.initialVisibility = 'private'
 	form.sortOrder = definitions.value.length
 	form.active = true
-	form.options = []
+	form.options = createEditableSelectOptions([], createOptionId)
 }
 
 const startCreatingField = () => {
@@ -417,7 +521,9 @@ const populateForm = (definition: FieldDefinition) => {
 	form.initialVisibility = definition.initial_visibility
 	form.sortOrder = definition.sort_order
 	form.active = definition.active
-	form.options = definition.type === 'select' ? [...(definition.options ?? [])] : []
+	form.options = definition.type === 'select'
+		? createEditableSelectOptions(definition.options ?? [], createOptionId)
+		: createEditableSelectOptions([], createOptionId)
 }
 
 const loadDefinitions = async() => {
@@ -456,7 +562,9 @@ const persistDefinition = async() => {
 		initialVisibility: form.initialVisibility,
 		sortOrder: Number(form.sortOrder),
 		active: form.active,
-		...(form.type === 'select' ? { options: form.options.filter((o: string) => o.trim() !== '') } : {}),
+		...(form.type === 'select'
+			? { options: extractEditableSelectOptionValues(form.options).filter((optionValue: string) => optionValue.trim() !== '') }
+			: {}),
 	}
 
 	try {
@@ -555,12 +663,102 @@ const moveDefinition = async(direction: -1 | 1) => {
 	}
 }
 
-const addOption = () => {
-	form.options.push('')
+const addOption = async() => {
+	const existingEmptyIndex = firstEmptyOptionIndex()
+	if (existingEmptyIndex !== -1) {
+		await focusOptionInput(existingEmptyIndex)
+		return
+	}
+
+	form.options.push({
+		id: createOptionId(),
+		value: '',
+	})
+
+	await focusOptionInput(form.options.length - 1)
 }
 
 const updateOption = (index: number, value: string) => {
-	form.options[index] = value
+	if (form.options[index] === undefined) {
+		return
+	}
+
+	form.options[index].value = value
+}
+
+const addOptionFromEnter = async(index: number, event: KeyboardEvent) => {
+	const input = event.target instanceof HTMLInputElement ? event.target : null
+	if (input !== null) {
+		updateOption(index, input.value)
+	}
+
+	await addOption()
+}
+
+const cleanupEmptyOptionOnBlur = (optionId: string) => {
+	window.setTimeout(() => {
+		const index = form.options.findIndex((option: EditableSelectOption) => option.id === optionId)
+		if (index === -1) {
+			return
+		}
+
+		if (form.options[index].value.trim() !== '') {
+			return
+		}
+
+		const hasNonEmptySibling = form.options.some((option: EditableSelectOption, optionIndex: number) => optionIndex !== index && option.value.trim() !== '')
+		if (!hasNonEmptySibling) {
+			return
+		}
+
+		removeOption(index)
+	}, 0)
+}
+
+const openBulkOptionsDialog = () => {
+	bulkOptionInput.value = ''
+	isBulkOptionsDialogOpen.value = true
+}
+
+const closeBulkOptionsDialog = () => {
+	bulkOptionInput.value = ''
+	isBulkOptionsDialogOpen.value = false
+}
+
+const updateBulkOptionsDialogOpen = (open: boolean) => {
+	isBulkOptionsDialogOpen.value = open
+	if (!open) {
+		bulkOptionInput.value = ''
+	}
+}
+
+const applyBulkOptions = async() => {
+	if (bulkOptionValues.value.length === 0) {
+		return
+	}
+
+	form.options = [
+		...form.options.filter((option: EditableSelectOption) => option.value.trim() !== ''),
+		...createEditableSelectOptions(bulkOptionValues.value, createOptionId),
+	]
+
+	closeBulkOptionsDialog()
+	await addOption()
+}
+
+const removeEmptyOptionFromKeyboard = async(index: number, event: KeyboardEvent) => {
+	const input = event.target instanceof HTMLInputElement ? event.target : null
+	if (input === null || input.value !== '' || form.options.length <= 1) {
+		return
+	}
+
+	event.preventDefault()
+	removeOption(index)
+	await focusOptionInput(Math.max(0, index - 1))
+}
+
+const moveOption = (index: number, direction: -1 | 1) => {
+	form.options = moveEditableSelectOption(form.options, index, direction)
 }
 
 const removeOption = (index: number) => {
@@ -568,8 +766,15 @@ const removeOption = (index: number) => {
 }
 
 watch(() => form.type, (newType: FieldType) => {
+	if (newType === 'select') {
+		if (form.options.length === 0) {
+			void addOption()
+		}
+		return
+	}
+
 	if (newType !== 'select') {
-		form.options = []
+		form.options = createEditableSelectOptions([], createOptionId)
 	}
 })
 
@@ -796,6 +1001,22 @@ onMounted(loadDefinitions)
 		}
 	}
 
+	&__section-hint {
+		font-size: 12px;
+		line-height: 1.4;
+	}
+
+	&__bulk-options-content {
+		display: grid;
+		gap: 12px;
+	}
+
+	&__bulk-options-summary {
+		margin: 0;
+		font-size: 13px;
+		color: var(--color-text-maxcontrast);
+	}
+
 	&__form label {
 		display: grid;
 		gap: 8px;
@@ -872,6 +1093,12 @@ onMounted(loadDefinitions)
 		padding-top: 4px;
 	}
 
+	&__option-toolbar {
+		display: flex;
+		gap: 10px;
+		flex-wrap: wrap;
+	}
+
 	&__options-editor {
 		display: grid;
 		gap: 8px;
@@ -879,13 +1106,57 @@ onMounted(loadDefinitions)
 
 	&__option-row {
 		display: flex;
-		align-items: center;
+		align-items: flex-start;
 		gap: 8px;
+		padding: 10px 12px;
+		border-radius: 14px;
+		border: 1px solid color-mix(in srgb, var(--color-border-default) 84%, transparent);
+		background: color-mix(in srgb, var(--color-main-background) 94%, var(--color-background-hover) 6%);
 
 		:deep(.input-field) {
 			flex: 1;
 			margin-bottom: 0;
 		}
+	}
+
+	&__option-leading,
+	&__option-actions {
+		display: flex;
+		align-items: flex-start;
+		flex: 0 0 auto;
+	}
+
+	&__option-leading {
+		min-width: 42px;
+	}
+
+	&__option-handle,
+	&__option-handle-spacer {
+		width: 42px;
+	}
+
+	&__option-handle {
+		:deep(.action-item),
+		:deep(.action-item__wrapper) {
+			width: 100%;
+		}
+
+		:deep(.button-vue) {
+			width: 100%;
+			cursor: grab;
+		}
+	}
+
+	&__option-handle-spacer {
+		height: 34px;
+	}
+
+	&__option-row--ghost {
+		opacity: 0.45;
+	}
+
+	&__option-row--chosen {
+		box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary-element) 22%, transparent);
 	}
 
 	&__empty-editor {
