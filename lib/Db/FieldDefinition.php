@@ -95,7 +95,7 @@ class FieldDefinition extends Entity {
 			'initial_visibility' => $this->getInitialVisibility(),
 			'sort_order' => $this->getSortOrder(),
 			'active' => $this->getActive(),
-			'options' => $rawOptions !== null ? json_decode($rawOptions, true) : null,
+			'options' => $rawOptions !== null ? (json_decode($rawOptions, true) ?? null) : null,
 			'created_at' => $this->getCreatedAt()->format(DATE_ATOM),
 			'updated_at' => $this->getUpdatedAt()->format(DATE_ATOM),
 		];
