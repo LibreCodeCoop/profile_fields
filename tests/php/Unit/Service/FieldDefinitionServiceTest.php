@@ -149,6 +149,70 @@ class FieldDefinitionServiceTest extends TestCase {
 		]);
 	}
 
+	public function testCreateSelectFieldPersistsOptions(): void {
+		$this->fieldDefinitionMapper
+			->method('findByFieldKey')
+			->willReturn(null);
+
+		$this->fieldDefinitionMapper
+			->expects($this->once())
+			->method('insert')
+			->with($this->callback(function (FieldDefinition $definition): bool {
+				$this->assertSame(FieldType::SELECT->value, $definition->getType());
+				$this->assertSame('["CLT","PJ","Cooperado"]', $definition->getOptions());
+				return true;
+			}))
+			->willReturnCallback(static fn (FieldDefinition $definition): FieldDefinition => $definition);
+
+		$this->service->create([
+			'field_key' => 'contract_type',
+			'label' => 'Contract Type',
+			'type' => FieldType::SELECT->value,
+			'options' => ['CLT', 'PJ', 'Cooperado'],
+		]);
+	}
+
+	public function testJsonSerializeSelectIncludesOptions(): void {
+		$definition = new FieldDefinition();
+		$definition->setId(1);
+		$definition->setFieldKey('contract_type');
+		$definition->setLabel('Contract Type');
+		$definition->setType(FieldType::SELECT->value);
+		$definition->setAdminOnly(false);
+		$definition->setUserEditable(true);
+		$definition->setUserVisible(true);
+		$definition->setInitialVisibility('private');
+		$definition->setSortOrder(0);
+		$definition->setActive(true);
+		$definition->setOptions('["CLT","PJ"]');
+		$definition->setCreatedAt(new \DateTime('2026-01-01T00:00:00+00:00'));
+		$definition->setUpdatedAt(new \DateTime('2026-01-01T00:00:00+00:00'));
+
+		$serialized = $definition->jsonSerialize();
+
+		$this->assertSame(['CLT', 'PJ'], $serialized['options']);
+	}
+
+	public function testJsonSerializeTextHasNullOptions(): void {
+		$definition = new FieldDefinition();
+		$definition->setId(1);
+		$definition->setFieldKey('cpf');
+		$definition->setLabel('CPF');
+		$definition->setType(FieldType::TEXT->value);
+		$definition->setAdminOnly(false);
+		$definition->setUserEditable(false);
+		$definition->setUserVisible(false);
+		$definition->setInitialVisibility('private');
+		$definition->setSortOrder(0);
+		$definition->setActive(true);
+		$definition->setCreatedAt(new \DateTime('2026-01-01T00:00:00+00:00'));
+		$definition->setUpdatedAt(new \DateTime('2026-01-01T00:00:00+00:00'));
+
+		$serialized = $definition->jsonSerialize();
+
+		$this->assertNull($serialized['options']);
+	}
+
 	public function testUpdatePreservesImportedUpdatedAt(): void {
 		$existing = new FieldDefinition();
 		$existing->setId(7);
