@@ -26,6 +26,7 @@ describe('pedroPotiPersona', () => {
 			'Community',
 			'Letter alias',
 			'Leadership role',
+			'Council channel',
 			'Council rank',
 		])
 
@@ -34,5 +35,6 @@ describe('pedroPotiPersona', () => {
 		expect(showcaseValueByKey.get('showcase_product_specialty')).toBe('Tupi correspondence')
 		expect(showcaseValueByKey.get('showcase_customer_segment')).toBe('Potiguara communities')
 		expect(showcaseValueByKey.get('showcase_incident_role')).toBe('Regedor of Paraiba')
+		expect(showcaseValueByKey.get('showcase_council_channel')).toBe('Village assembly')
 	})
 })
