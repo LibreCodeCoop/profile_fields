@@ -44,6 +44,7 @@ class FieldDefinitionService {
 		$entity->setInitialVisibility($validated['initial_visibility']);
 		$entity->setSortOrder($validated['sort_order']);
 		$entity->setActive($validated['active']);
+		$entity->setOptions(isset($validated['options']) ? json_encode($validated['options']) : null);
 		$entity->setCreatedAt($createdAt);
 		$entity->setUpdatedAt($updatedAt);
 
@@ -71,6 +72,7 @@ class FieldDefinitionService {
 		$existing->setInitialVisibility($validated['initial_visibility']);
 		$existing->setSortOrder($validated['sort_order']);
 		$existing->setActive($validated['active']);
+		$existing->setOptions(isset($validated['options']) ? json_encode($validated['options']) : null);
 		$existing->setUpdatedAt($this->parseImportedDate($definition['updated_at'] ?? null) ?? new DateTime());
 
 		return $this->fieldDefinitionMapper->update($existing);
