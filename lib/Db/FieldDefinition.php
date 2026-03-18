@@ -76,11 +76,14 @@ class FieldDefinition extends Entity {
 	 *     initial_visibility: string,
 	 *     sort_order: int,
 	 *     active: bool,
+	 *     options: list<string>|null,
 	 *     created_at: string,
 	 *     updated_at: string,
 	 * }
 	 */
 	public function jsonSerialize(): array {
+		$rawOptions = $this->getOptions();
+
 		return [
 			'id' => $this->getId(),
 			'field_key' => $this->getFieldKey(),
@@ -92,6 +95,7 @@ class FieldDefinition extends Entity {
 			'initial_visibility' => $this->getInitialVisibility(),
 			'sort_order' => $this->getSortOrder(),
 			'active' => $this->getActive(),
+			'options' => $rawOptions !== null ? json_decode($rawOptions, true) : null,
 			'created_at' => $this->getCreatedAt()->format(DATE_ATOM),
 			'updated_at' => $this->getUpdatedAt()->format(DATE_ATOM),
 		];
