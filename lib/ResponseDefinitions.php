@@ -22,6 +22,7 @@ namespace OCA\ProfileFields;
  *     initial_visibility?: string,
  *     sort_order?: int,
  *     active?: bool,
+ *     options?: list<string>,
  * }
  * @psalm-type ProfileFieldsDefinition = array{
  *     id: int,
