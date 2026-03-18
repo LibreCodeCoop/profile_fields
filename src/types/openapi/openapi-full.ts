@@ -232,6 +232,7 @@ export interface components {
             /** Format: int64 */
             sort_order?: number;
             active?: boolean;
+            options?: string[];
         };
         EditableField: {
             definition: components["schemas"]["Definition"];

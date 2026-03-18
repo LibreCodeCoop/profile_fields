@@ -117,6 +117,12 @@
                     },
                     "active": {
                         "type": "boolean"
+                    },
+                    "options": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
                     }
                 }
             },
