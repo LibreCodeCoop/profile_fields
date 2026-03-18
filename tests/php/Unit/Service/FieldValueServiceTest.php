@@ -371,6 +371,24 @@ class FieldValueServiceTest extends TestCase {
 		$this->service->normalizeValue($definition, ['CLT']);
 	}
 
+	public function testNormalizeSelectValueRejectsInteger(): void {
+		$definition = $this->buildSelectDefinition(['1', '2']);
+
+		$this->expectException(InvalidArgumentException::class);
+		$this->expectExceptionMessage('select fields expect a string value');
+
+		$this->service->normalizeValue($definition, 1);
+	}
+
+	public function testNormalizeSelectValueRejectsFloat(): void {
+		$definition = $this->buildSelectDefinition(['1.5', '2.5']);
+
+		$this->expectException(InvalidArgumentException::class);
+		$this->expectExceptionMessage('select fields expect a string value');
+
+		$this->service->normalizeValue($definition, 1.5);
+	}
+
 	private function buildDefinition(string $type): FieldDefinition {
 		$definition = new FieldDefinition();
 		$definition->setType($type);
