@@ -25,17 +25,19 @@ class FieldDefinitionValidator {
 	 *     initial_visibility?: string,
 	 *     sort_order?: int,
 	 *     active?: bool,
+	 *     options?: list<string>,
 	 * } $definition
 	 * @return array{
 	 *     field_key: non-empty-string,
 	 *     label: non-empty-string,
-	 *     type: 'text'|'number',
+	 *     type: 'text'|'number'|'select',
 	 *     admin_only: bool,
 	 *     user_editable: bool,
 	 *     user_visible: bool,
 	 *     initial_visibility: 'private'|'users'|'public',
 	 *     sort_order: int,
 	 *     active: bool,
+	 *     options: list<string>|null,
 	 * }
 	 */
 	public function validate(array $definition): array {
@@ -65,6 +67,8 @@ class FieldDefinitionValidator {
 			throw new InvalidArgumentException('user_editable cannot be enabled when the field is hidden from users');
 		}
 
+		$options = $this->validateOptions($type, $definition['options'] ?? null);
+
 		return [
 			'field_key' => $fieldKey,
 			'label' => $label,
@@ -75,7 +79,30 @@ class FieldDefinitionValidator {
 			'initial_visibility' => $visibility,
 			'sort_order' => (int)($definition['sort_order'] ?? 0),
 			'active' => (bool)($definition['active'] ?? true),
+			'options' => $options,
 		];
+	}
+
+	/**
+	 * @param mixed $options
+	 * @return list<string>|null
+	 */
+	private function validateOptions(string $type, mixed $options): ?array {
+		if ($type !== FieldType::SELECT->value) {
+			return null;
+		}
+
+		if (!is_array($options) || count($options) === 0) {
+			throw new InvalidArgumentException('select fields require at least one option');
+		}
+
+		foreach ($options as $option) {
+			if (!is_string($option) || trim($option) === '') {
+				throw new InvalidArgumentException('each option must be a non-empty string');
+			}
+		}
+
+		return array_values($options);
 	}
 
 	/**
