@@ -159,24 +159,30 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 							<p>Define the values users and admins can pick from this field.</p>
 						</div>
 
-						<ul v-if="form.options.length > 0" class="profile-fields-admin__options-list">
-							<li v-for="(option, index) in form.options" :key="index" class="profile-fields-admin__option-item">
-								<span>{{ option }}</span>
-								<NcButton variant="tertiary-no-background" :aria-label="`Remove option ${option}`" @click.prevent="removeOption(index)">
-									&times;
+						<div class="profile-fields-admin__options-editor">
+							<div
+								v-for="(option, index) in form.options"
+								:key="index"
+								class="profile-fields-admin__option-row">
+								<NcInputField
+									:model-value="option"
+									label="Option value"
+									label-outside
+									:placeholder="`Option ${index + 1}`"
+									@update:model-value="updateOption(index, $event)"
+									@keydown.enter.prevent="addOption"
+								/>
+								<NcButton
+									variant="tertiary-no-background"
+									:aria-label="`Remove option ${option || String(index + 1)}`"
+									@click.prevent="removeOption(index)">
+									<template #icon>
+										<NcIconSvgWrapper :path="mdiClose" :size="20" />
+									</template>
 								</NcButton>
-							</li>
-						</ul>
+							</div>
 
-						<div class="profile-fields-admin__options-add">
-							<NcInputField
-								v-model="newOptionInput"
-								label="New option"
-								label-outside
-								placeholder="Enter option value"
-								@keydown.enter.prevent="addOption"
-							/>
-							<NcButton variant="secondary" :disabled="newOptionInput.trim() === ''" @click.prevent="addOption">
+							<NcButton variant="secondary" @click.prevent="addOption">
 								Add option
 							</NcButton>
 						</div>
@@ -239,8 +245,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 </template>
 
 <script setup lang="ts">
+import { mdiClose } from '@mdi/js'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { NcButton, NcCheckboxRadioSwitch, NcEmptyContent, NcInputField, NcLoadingIcon, NcNoteCard, NcSelect } from '@nextcloud/vue'
+import { NcButton, NcCheckboxRadioSwitch, NcEmptyContent, NcIconSvgWrapper, NcInputField, NcLoadingIcon, NcNoteCard, NcSelect } from '@nextcloud/vue'
 import { createDefinition, deleteDefinition, listDefinitions, updateDefinition } from '../api'
 import type { FieldDefinition, FieldType, FieldVisibility } from '../types'
 import { buildFieldOrderUpdates } from '../utils/fieldOrder.js'
@@ -273,7 +280,6 @@ const form = reactive({
 	options: [] as string[],
 })
 
-const newOptionInput = ref('')
 
 const userVisibleDescription = computed(() => form.userVisible
 	? 'Show the field in admin and personal user-facing settings.'
@@ -305,7 +311,7 @@ const buildFormState = () => ({
 	initialVisibility: form.initialVisibility,
 	sortOrder: Number(form.sortOrder),
 	active: form.active,
-	options: form.type === 'select' ? [...form.options] : [],
+	options: form.type === 'select' ? form.options.filter((o: string) => o.trim() !== '') : [],
 })
 
 const buildDefinitionState = (definition: FieldDefinition | null) => {
@@ -369,7 +375,6 @@ const resetForm = () => {
 	form.sortOrder = definitions.value.length
 	form.active = true
 	form.options = []
-	newOptionInput.value = ''
 }
 
 const startCreatingField = () => {
@@ -390,7 +395,6 @@ const populateForm = (definition: FieldDefinition) => {
 	form.sortOrder = definition.sort_order
 	form.active = definition.active
 	form.options = definition.type === 'select' ? [...(definition.options ?? [])] : []
-	newOptionInput.value = ''
 }
 
 const loadDefinitions = async() => {
@@ -429,7 +433,7 @@ const persistDefinition = async() => {
 		initialVisibility: form.initialVisibility,
 		sortOrder: Number(form.sortOrder),
 		active: form.active,
-		...(form.type === 'select' ? { options: [...form.options] } : {}),
+		...(form.type === 'select' ? { options: form.options.filter((o: string) => o.trim() !== '') } : {}),
 	}
 
 	try {
@@ -529,12 +533,11 @@ const moveDefinition = async(direction: -1 | 1) => {
 }
 
 const addOption = () => {
-	const trimmed = newOptionInput.value.trim()
-	if (trimmed === '' || form.options.includes(trimmed)) {
-		return
-	}
-	form.options.push(trimmed)
-	newOptionInput.value = ''
+	form.options.push('')
+}
+
+const updateOption = (index: number, value: string) => {
+	form.options[index] = value
 }
 
 const removeOption = (index: number) => {
@@ -544,7 +547,6 @@ const removeOption = (index: number) => {
 watch(() => form.type, (newType: FieldType) => {
 	if (newType !== 'select') {
 		form.options = []
-		newOptionInput.value = ''
 	}
 })
 
@@ -845,6 +847,22 @@ onMounted(loadDefinitions)
 		gap: 10px;
 		justify-content: flex-end;
 		padding-top: 4px;
+	}
+
+	&__options-editor {
+		display: grid;
+		gap: 8px;
+	}
+
+	&__option-row {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+
+		:deep(.input-field) {
+			flex: 1;
+			margin-bottom: 0;
+		}
 	}
 
 	&__empty-editor {
