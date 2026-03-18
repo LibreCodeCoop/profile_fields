@@ -81,6 +81,7 @@ export interface components {
             /** Format: int64 */
             sort_order: number;
             active: boolean;
+            options: string[] | null;
             created_at: string;
             updated_at: string;
         };
@@ -97,7 +98,7 @@ export interface components {
             itemsperpage?: string;
         };
         /** @enum {string} */
-        Type: "text" | "number";
+        Type: "text" | "number" | "select";
         ValuePayload: {
             value: Record<string, never>;
         };
