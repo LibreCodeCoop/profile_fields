@@ -116,6 +116,7 @@ class FieldDefinitionValidator {
 	 *     initial_visibility?: string,
 	 *     sort_order?: int,
 	 *     active?: bool,
+	 *     options?: list<string>,
 	 * } $definition
 	 */
 	private function requireString(array $definition, string $key): string {
