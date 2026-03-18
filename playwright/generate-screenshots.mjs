@@ -6,6 +6,7 @@ import { mkdir, readFile, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { chromium, request } from '@playwright/test'
+import { pedroPotiPersona } from '../src/utils/pedroPotiPersona.js'
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'https://localhost'
 const adminUser = process.env.NEXTCLOUD_ADMIN_USER ?? 'admin'
@@ -17,87 +18,8 @@ const demoAvatarPath = 'playwright/fixtures/pedro-poti-avatar.png'
 
 const legacyDemoUserIds = ['amina_okafor_demo', 'araci_potira_demo']
 
-const demoUser = {
-	id: 'pedro_poti_demo',
-	password: 'PedroDemoPass123!',
-	displayName: 'Pedro Poti',
-	email: 'pedro.poti@example.net',
-}
-
-const showcaseFields = [
-	{
-		fieldKey: 'showcase_support_region',
-		label: 'Support region',
-		type: 'text',
-		adminOnly: false,
-		userEditable: true,
-		userVisible: true,
-		initialVisibility: 'users',
-		sortOrder: 10,
-		adminValue: { value: 'Northern Europe', currentVisibility: 'users' },
-		demoValue: { value: 'East Africa', currentVisibility: 'users' },
-	},
-	{
-		fieldKey: 'showcase_product_specialty',
-		label: 'Product specialty',
-		type: 'text',
-		adminOnly: false,
-		userEditable: true,
-		userVisible: true,
-		initialVisibility: 'public',
-		sortOrder: 20,
-		adminValue: { value: 'Contract automation', currentVisibility: 'public' },
-		demoValue: { value: 'Identity operations', currentVisibility: 'public' },
-	},
-	{
-		fieldKey: 'showcase_customer_segment',
-		label: 'Customer segment',
-		type: 'text',
-		adminOnly: false,
-		userEditable: true,
-		userVisible: true,
-		initialVisibility: 'users',
-		sortOrder: 30,
-		adminValue: { value: 'Public sector', currentVisibility: 'users' },
-		demoValue: { value: 'Financial services', currentVisibility: 'users' },
-	},
-	{
-		fieldKey: 'showcase_escalation_alias',
-		label: 'Escalation alias',
-		type: 'text',
-		adminOnly: false,
-		userEditable: true,
-		userVisible: true,
-		initialVisibility: 'private',
-		sortOrder: 40,
-		adminValue: { value: 'north-eu-escalations', currentVisibility: 'private' },
-		demoValue: { value: 'east-africa-escalations', currentVisibility: 'private' },
-	},
-	{
-		fieldKey: 'showcase_incident_role',
-		label: 'Incident response role',
-		type: 'text',
-		adminOnly: false,
-		userEditable: true,
-		userVisible: true,
-		initialVisibility: 'users',
-		sortOrder: 50,
-		adminValue: { value: 'Communications lead', currentVisibility: 'users' },
-		demoValue: { value: 'Regional coordinator', currentVisibility: 'users' },
-	},
-	{
-		fieldKey: 'showcase_on_call_tier',
-		label: 'On-call tier',
-		type: 'number',
-		adminOnly: true,
-		userEditable: false,
-		userVisible: true,
-		initialVisibility: 'private',
-		sortOrder: 60,
-		adminValue: { value: 2, currentVisibility: 'private' },
-		demoValue: { value: 1, currentVisibility: 'private' },
-	},
-]
+const demoUser = pedroPotiPersona.user
+const showcaseFields = pedroPotiPersona.showcaseFields
 
 const showcaseKeys = new Set(showcaseFields.map((field) => field.fieldKey))
 const showcaseLabels = new Set(showcaseFields.map((field) => field.label))
@@ -297,6 +219,25 @@ const hideNonShowcaseDialogFields = async(page) => {
 	}, { labels: [...showcaseLabels], demoUserId: demoUser.id })
 }
 
+const fillAccountField = async(page, label, value) => {
+	const textboxes = page.getByRole('textbox', { name: label, exact: true })
+	const input = await textboxes.count() > 0
+		? textboxes.first()
+		: page.locator(`input[aria-label="${label}"], textarea[aria-label="${label}"]`).first()
+	await input.waitFor({ state: 'visible', timeout: 60_000 })
+	await input.fill(value)
+	await input.blur()
+	await page.waitForTimeout(250)
+}
+
+const seedPedroPotiAccountProfile = async(page) => {
+	for (const field of pedroPotiPersona.accountFields) {
+		await fillAccountField(page, field.label, field.value)
+	}
+
+	await page.waitForTimeout(800)
+}
+
 const prepareWorkflowScreenshot = async(page) => {
 	await page.goto('./settings/admin/workflow')
 	await page.getByRole('heading', { name: 'Available flows' }).waitFor({ state: 'visible', timeout: 60_000 })
@@ -305,7 +246,7 @@ const prepareWorkflowScreenshot = async(page) => {
 	if (await showMoreButton.count() > 0) {
 		await showMoreButton.click()
 	}
-	await page.getByRole('heading', { name: 'Create Talk conversation', exact: true }).waitFor({ state: 'visible', timeout: 60_000 })
+	await page.getByRole('heading', { name: 'Create Talk conversation', exact: true }).first().waitFor({ state: 'visible', timeout: 60_000 })
 
 	await page.evaluate(() => {
 		document.querySelector('header')?.setAttribute('style', 'display:none')
@@ -407,6 +348,7 @@ const run = async() => {
 		const personalPage = await demoContext.newPage()
 		await personalPage.goto('./settings/user/personal-info')
 		await personalPage.getByTestId('profile-fields-personal-field-showcase_support_region').waitFor({ state: 'visible', timeout: 60_000 })
+		await seedPedroPotiAccountProfile(personalPage)
 		await hideNonShowcasePersonalFields(personalPage)
 		await personalPage.locator('main').screenshot({ path: join(screenshotDir, 'personal-settings.png'), type: 'png' })
 
