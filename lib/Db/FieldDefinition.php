@@ -32,6 +32,8 @@ use OCP\AppFramework\Db\Entity;
  * @method void setSortOrder(int $value)
  * @method bool getActive()
  * @method void setActive(bool $value)
+ * @method string|null getOptions()
+ * @method void setOptions(?string $value)
  * @method \DateTimeInterface getCreatedAt()
  * @method void setCreatedAt(\DateTimeInterface $value)
  * @method \DateTimeInterface getUpdatedAt()
@@ -47,6 +49,7 @@ class FieldDefinition extends Entity {
 	protected $initialVisibility;
 	protected $sortOrder;
 	protected $active;
+	protected $options;
 	protected $createdAt;
 	protected $updatedAt;
 
