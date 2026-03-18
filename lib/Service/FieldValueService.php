@@ -237,11 +237,11 @@ class FieldValueService {
 	 * @return array{value: string}
 	 */
 	private function normalizeSelectValue(array|string|int|float|bool $rawValue, FieldDefinition $definition): array {
-		if (is_array($rawValue) || is_bool($rawValue)) {
+		if (!is_string($rawValue)) {
 			throw new InvalidArgumentException('select fields expect a string value');
 		}
 
-		$value = trim((string)$rawValue);
+		$value = trim($rawValue);
 		$options = json_decode($definition->getOptions() ?? '[]', true);
 		if (!in_array($value, $options, true)) {
 			throw new InvalidArgumentException(sprintf('"%s" is not a valid option for this field', $value));
