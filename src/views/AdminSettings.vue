@@ -153,6 +153,35 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 						</div>
 					</section>
 
+					<section v-if="form.type === 'select'" class="profile-fields-admin__form-section">
+						<div class="profile-fields-admin__section-heading">
+							<h4>Options</h4>
+							<p>Define the values users and admins can pick from this field.</p>
+						</div>
+
+						<ul v-if="form.options.length > 0" class="profile-fields-admin__options-list">
+							<li v-for="(option, index) in form.options" :key="index" class="profile-fields-admin__option-item">
+								<span>{{ option }}</span>
+								<NcButton variant="tertiary-no-background" :aria-label="`Remove option ${option}`" @click.prevent="removeOption(index)">
+									&times;
+								</NcButton>
+							</li>
+						</ul>
+
+						<div class="profile-fields-admin__options-add">
+							<NcInputField
+								v-model="newOptionInput"
+								label="New option"
+								label-outside
+								placeholder="Enter option value"
+								@keydown.enter.prevent="addOption"
+							/>
+							<NcButton variant="secondary" :disabled="newOptionInput.trim() === ''" @click.prevent="addOption">
+								Add option
+							</NcButton>
+						</div>
+					</section>
+
 					<section class="profile-fields-admin__form-section">
 						<div class="profile-fields-admin__section-heading">
 							<h4>Permissions</h4>
@@ -220,6 +249,7 @@ import { visibilityOptions } from '../utils/visibilityOptions.js'
 const fieldTypeOptions: Array<{ value: FieldType, label: string }> = [
 	{ value: 'text', label: 'Text' },
 	{ value: 'number', label: 'Number' },
+	{ value: 'select', label: 'Select' },
 ]
 
 const definitions = ref<FieldDefinition[]>([])
@@ -240,7 +270,10 @@ const form = reactive({
 	initialVisibility: 'private' as FieldVisibility,
 	sortOrder: 0,
 	active: true,
+	options: [] as string[],
 })
+
+const newOptionInput = ref('')
 
 const userVisibleDescription = computed(() => form.userVisible
 	? 'Show the field in admin and personal user-facing settings.'
@@ -272,6 +305,7 @@ const buildFormState = () => ({
 	initialVisibility: form.initialVisibility,
 	sortOrder: Number(form.sortOrder),
 	active: form.active,
+	options: form.type === 'select' ? [...form.options] : [],
 })
 
 const buildDefinitionState = (definition: FieldDefinition | null) => {
@@ -286,6 +320,7 @@ const buildDefinitionState = (definition: FieldDefinition | null) => {
 			initialVisibility: 'private' as FieldVisibility,
 			sortOrder: definitions.value.length,
 			active: true,
+			options: [],
 		}
 	}
 
@@ -299,6 +334,7 @@ const buildDefinitionState = (definition: FieldDefinition | null) => {
 		initialVisibility: definition.initial_visibility,
 		sortOrder: definition.sort_order,
 		active: definition.active,
+		options: definition.type === 'select' ? (definition.options ?? []) : [],
 	}
 }
 
@@ -332,6 +368,8 @@ const resetForm = () => {
 	form.initialVisibility = 'private'
 	form.sortOrder = definitions.value.length
 	form.active = true
+	form.options = []
+	newOptionInput.value = ''
 }
 
 const startCreatingField = () => {
@@ -351,6 +389,8 @@ const populateForm = (definition: FieldDefinition) => {
 	form.initialVisibility = definition.initial_visibility
 	form.sortOrder = definition.sort_order
 	form.active = definition.active
+	form.options = definition.type === 'select' ? [...(definition.options ?? [])] : []
+	newOptionInput.value = ''
 }
 
 const loadDefinitions = async() => {
@@ -389,6 +429,7 @@ const persistDefinition = async() => {
 		initialVisibility: form.initialVisibility,
 		sortOrder: Number(form.sortOrder),
 		active: form.active,
+		...(form.type === 'select' ? { options: [...form.options] } : {}),
 	}
 
 	try {
@@ -406,6 +447,7 @@ const persistDefinition = async() => {
 				initialVisibility: payload.initialVisibility,
 				sortOrder: payload.sortOrder,
 				active: payload.active,
+				...(payload.type === 'select' ? { options: payload.options } : {}),
 			})
 			successMessage.value = 'Field definition updated.'
 		}
@@ -469,6 +511,7 @@ const moveDefinition = async(direction: -1 | 1) => {
 				initialVisibility: definition.initial_visibility,
 				sortOrder,
 				active: definition.active,
+				...(definition.type === 'select' ? { options: definition.options ?? [] } : {}),
 			})
 		}))
 
@@ -484,6 +527,26 @@ const moveDefinition = async(direction: -1 | 1) => {
 		isSaving.value = false
 	}
 }
+
+const addOption = () => {
+	const trimmed = newOptionInput.value.trim()
+	if (trimmed === '' || form.options.includes(trimmed)) {
+		return
+	}
+	form.options.push(trimmed)
+	newOptionInput.value = ''
+}
+
+const removeOption = (index: number) => {
+	form.options.splice(index, 1)
+}
+
+watch(() => form.type, (newType: FieldType) => {
+	if (newType !== 'select') {
+		form.options = []
+		newOptionInput.value = ''
+	}
+})
 
 watch(() => form.userVisible, (userVisible: boolean) => {
 	if (!userVisible) {
