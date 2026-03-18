@@ -96,13 +96,20 @@ class FieldDefinitionValidator {
 			throw new InvalidArgumentException('select fields require at least one option');
 		}
 
+		$normalized = [];
 		foreach ($options as $option) {
 			if (!is_string($option) || trim($option) === '') {
 				throw new InvalidArgumentException('each option must be a non-empty string');
 			}
+			$normalized[] = trim($option);
 		}
 
-		return array_values($options);
+		$deduplicated = array_values(array_unique($normalized));
+		if (count($deduplicated) !== count($normalized)) {
+			throw new InvalidArgumentException('options must not contain duplicate values');
+		}
+
+		return $deduplicated;
 	}
 
 	/**
