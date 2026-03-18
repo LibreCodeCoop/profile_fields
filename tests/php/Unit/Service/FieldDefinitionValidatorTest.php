@@ -48,15 +48,61 @@ class FieldDefinitionValidatorTest extends TestCase {
 		]);
 	}
 
-	public function testRejectSelectTypeBecauseEnumerablesAreOutOfMvp(): void {
+	public function testValidateSelectFieldDefinition(): void {
+		$validated = $this->validator->validate([
+			'field_key' => 'contract_type',
+			'label' => 'Contract Type',
+			'type' => FieldType::SELECT->value,
+			'options' => ['CLT', 'PJ', 'Cooperado'],
+		]);
+
+		$this->assertSame(FieldType::SELECT->value, $validated['type']);
+		$this->assertSame(['CLT', 'PJ', 'Cooperado'], $validated['options']);
+	}
+
+	public function testRejectSelectWithNoOptions(): void {
 		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage('type is not supported');
+		$this->expectExceptionMessage('select fields require at least one option');
 
 		$this->validator->validate([
-			'field_key' => 'department',
-			'label' => 'Department',
-			'type' => 'select',
+			'field_key' => 'contract_type',
+			'label' => 'Contract Type',
+			'type' => FieldType::SELECT->value,
+			'options' => [],
 		]);
+	}
+
+	public function testRejectSelectWithMissingOptions(): void {
+		$this->expectException(InvalidArgumentException::class);
+		$this->expectExceptionMessage('select fields require at least one option');
+
+		$this->validator->validate([
+			'field_key' => 'contract_type',
+			'label' => 'Contract Type',
+			'type' => FieldType::SELECT->value,
+		]);
+	}
+
+	public function testRejectSelectWithBlankOption(): void {
+		$this->expectException(InvalidArgumentException::class);
+		$this->expectExceptionMessage('each option must be a non-empty string');
+
+		$this->validator->validate([
+			'field_key' => 'contract_type',
+			'label' => 'Contract Type',
+			'type' => FieldType::SELECT->value,
+			'options' => ['CLT', '  ', 'PJ'],
+		]);
+	}
+
+	public function testNonSelectTypesDoNotRequireOptions(): void {
+		$validated = $this->validator->validate([
+			'field_key' => 'cpf',
+			'label' => 'CPF',
+			'type' => FieldType::TEXT->value,
+		]);
+
+		$this->assertNull($validated['options']);
 	}
 
 	public function testRejectAdminOnlyAndUserEditableCombination(): void {

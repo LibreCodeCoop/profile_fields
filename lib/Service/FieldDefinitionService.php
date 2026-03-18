@@ -11,6 +11,7 @@ namespace OCA\ProfileFields\Service;
 
 use DateTime;
 use InvalidArgumentException;
+use JsonException;
 use OCA\ProfileFields\Db\FieldDefinition;
 use OCA\ProfileFields\Db\FieldDefinitionMapper;
 use OCA\ProfileFields\Db\FieldValueMapper;
@@ -44,6 +45,11 @@ class FieldDefinitionService {
 		$entity->setInitialVisibility($validated['initial_visibility']);
 		$entity->setSortOrder($validated['sort_order']);
 		$entity->setActive($validated['active']);
+		try {
+			$entity->setOptions(isset($validated['options']) ? json_encode($validated['options'], JSON_THROW_ON_ERROR) : null);
+		} catch (JsonException $e) {
+			throw new InvalidArgumentException('options could not be encoded: ' . $e->getMessage(), 0, $e);
+		}
 		$entity->setCreatedAt($createdAt);
 		$entity->setUpdatedAt($updatedAt);
 
@@ -71,6 +77,11 @@ class FieldDefinitionService {
 		$existing->setInitialVisibility($validated['initial_visibility']);
 		$existing->setSortOrder($validated['sort_order']);
 		$existing->setActive($validated['active']);
+		try {
+			$existing->setOptions(isset($validated['options']) ? json_encode($validated['options'], JSON_THROW_ON_ERROR) : null);
+		} catch (JsonException $e) {
+			throw new InvalidArgumentException('options could not be encoded: ' . $e->getMessage(), 0, $e);
+		}
 		$existing->setUpdatedAt($this->parseImportedDate($definition['updated_at'] ?? null) ?? new DateTime());
 
 		return $this->fieldDefinitionMapper->update($existing);

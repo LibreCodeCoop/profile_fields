@@ -43,6 +43,12 @@ class UserProfileFieldCheck implements ICheck {
 		'greater',
 		'!less',
 	];
+	private const SELECT_OPERATORS = [
+		self::OPERATOR_IS_SET,
+		self::OPERATOR_IS_NOT_SET,
+		'is',
+		'!is',
+	];
 
 	public function __construct(
 		private IUserSession $userSession,
@@ -156,6 +162,7 @@ class UserProfileFieldCheck implements ICheck {
 		$operators = match (FieldType::from($definition->getType())) {
 			FieldType::TEXT => self::TEXT_OPERATORS,
 			FieldType::NUMBER => self::NUMBER_OPERATORS,
+			FieldType::SELECT => self::SELECT_OPERATORS,
 		};
 
 		return in_array($operator, $operators, true);
@@ -192,7 +199,8 @@ class UserProfileFieldCheck implements ICheck {
 		$expectedValue = $normalizedExpected['value'] ?? null;
 
 		return match (FieldType::from($definition->getType())) {
-			FieldType::TEXT => $this->evaluateTextOperator($operator, (string)$expectedValue, (string)$actualValue),
+			FieldType::TEXT,
+			FieldType::SELECT => $this->evaluateTextOperator($operator, (string)$expectedValue, (string)$actualValue),
 			FieldType::NUMBER => $this->evaluateNumberOperator(
 				$operator,
 				$this->normalizeNumericComparisonOperand($expectedValue),

@@ -217,6 +217,7 @@ export interface components {
             /** Format: int64 */
             sort_order: number;
             active: boolean;
+            options: string[] | null;
             created_at: string;
             updated_at: string;
         };
@@ -231,6 +232,7 @@ export interface components {
             /** Format: int64 */
             sort_order?: number;
             active?: boolean;
+            options?: string[];
         };
         EditableField: {
             definition: components["schemas"]["Definition"];
@@ -274,7 +276,7 @@ export interface components {
             };
         };
         /** @enum {string} */
-        Type: "text" | "number";
+        Type: "text" | "number" | "select";
         ValuePayload: {
             value: Record<string, never>;
         };
@@ -378,6 +380,11 @@ export interface operations {
                      * @default true
                      */
                     active?: boolean;
+                    /**
+                     * @description Allowed values for select fields (ignored for other types)
+                     * @default []
+                     */
+                    options?: string[];
                 };
             };
         };
@@ -465,6 +472,11 @@ export interface operations {
                      * @default true
                      */
                     active?: boolean;
+                    /**
+                     * @description Allowed values for select fields (ignored for other types)
+                     * @default []
+                     */
+                    options?: string[];
                 };
             };
         };

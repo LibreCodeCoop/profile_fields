@@ -69,7 +69,23 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 					</div>
 
 					<div v-if="field.can_edit" class="profile-fields-personal__embedded-content">
+						<NcSelect
+							v-if="field.definition.type === 'select'"
+							:data-testid="`profile-fields-personal-input-${field.definition.field_key}`"
+							:input-id="fieldInputId(field.definition.id)"
+							class="profile-fields-personal__input-control profile-fields-personal__input-control--embedded"
+							:model-value="selectOptionFor(field)"
+							:input-label="field.definition.label"
+							label-outside
+							:clearable="true"
+							:searchable="false"
+							:options="selectOptionsFor(field.definition)"
+							label="label"
+							:placeholder="placeholderForField(field)"
+							@update:model-value="updateSelectValue(field.definition.id, $event)"
+						/>
 						<NcInputField
+							v-else
 							:data-testid="`profile-fields-personal-input-${field.definition.field_key}`"
 							:id="fieldInputId(field.definition.id)"
 							class="profile-fields-personal__input-control profile-fields-personal__input-control--embedded"
@@ -201,21 +217,23 @@ const embeddedVisibilityAnchorReady = ref(false)
 const draftValues = reactive<Record<number, string>>({})
 const draftVisibilities = reactive<Record<number, FieldVisibility>>({})
 
-const inputModesByType = {
+const inputModesByType: Record<FieldType, 'text' | 'decimal'> = {
 	text: 'text',
 	number: 'decimal',
-} as const
+	select: 'text',
+}
 
-const inputModeForType = (type: FieldType): 'text' | 'decimal' | 'numeric' => {
+const inputModeForType = (type: FieldType): 'text' | 'decimal' => {
 	return inputModesByType[type]
 }
 
 const fieldInputId = (fieldId: number) => `profile-fields-personal-value-${fieldId}`
 
-const componentInputTypesByType = {
+const componentInputTypesByType: Record<FieldType, 'text' | 'number'> = {
 	text: 'text',
 	number: 'number',
-} as const
+	select: 'text',
+}
 
 const componentInputTypeForType = (type: FieldType): 'text' | 'number' => {
 	return componentInputTypesByType[type]
@@ -228,6 +246,10 @@ const placeholderForField = (field: EditableField) => {
 
 	if (field.definition.type === 'number') {
 		return 'Enter a number'
+	}
+
+	if (field.definition.type === 'select') {
+		return 'Choose a value'
 	}
 
 	return 'Enter a value'
@@ -326,7 +348,7 @@ const canAutosaveField = (field: EditableField) => {
 		return true
 	}
 
-	if (field.definition.type === 'text') {
+	if (field.definition.type === 'text' || field.definition.type === 'select') {
 		return true
 	}
 
@@ -418,6 +440,18 @@ const buildPayload = (field: EditableField) => {
 		value: rawValue === '' ? null : rawValue,
 		currentVisibility,
 	}
+}
+
+const selectOptionsFor = (definition: { options: string[] | null }) =>
+	(definition.options ?? []).map((opt: string) => ({ value: opt, label: opt }))
+
+const selectOptionFor = (field: EditableField) => {
+	const value = draftValues[field.definition.id]
+	return value ? { value, label: value } : null
+}
+
+const updateSelectValue = (fieldId: number, option: { value: string, label: string } | null) => {
+	updateDraftValue(fieldId, option?.value ?? '')
 }
 
 const saveField = async(field: EditableField) => {

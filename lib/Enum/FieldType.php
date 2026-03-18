@@ -12,6 +12,7 @@ namespace OCA\ProfileFields\Enum;
 enum FieldType: string {
 	case TEXT = 'text';
 	case NUMBER = 'number';
+	case SELECT = 'select';
 
 	/**
 	 * @return list<string>
@@ -20,6 +21,7 @@ enum FieldType: string {
 		return [
 			self::TEXT->value,
 			self::NUMBER->value,
+			self::SELECT->value,
 		];
 	}
 

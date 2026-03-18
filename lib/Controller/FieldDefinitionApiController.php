@@ -61,6 +61,7 @@ class FieldDefinitionApiController extends OCSController {
 	 * @param string $initialVisibility Initial visibility applied to new values
 	 * @param int $sortOrder Display order used in admin and profile forms
 	 * @param bool $active Whether the definition is currently active
+	 * @param list<string> $options Allowed values for select fields (ignored for other types)
 	 * @return DataResponse<Http::STATUS_CREATED, ProfileFieldsDefinition, array{}>|DataResponse<Http::STATUS_BAD_REQUEST, array{message: string}, array{}>
 	 *
 	 * 201: Field definition created successfully
@@ -77,9 +78,10 @@ class FieldDefinitionApiController extends OCSController {
 		string $initialVisibility = 'private',
 		int $sortOrder = 0,
 		bool $active = true,
+		array $options = [],
 	): DataResponse {
 		try {
-			$definition = $this->fieldDefinitionService->create([
+			$payload = [
 				'field_key' => $fieldKey,
 				'label' => $label,
 				'type' => $type,
@@ -89,7 +91,11 @@ class FieldDefinitionApiController extends OCSController {
 				'initial_visibility' => $initialVisibility,
 				'sort_order' => $sortOrder,
 				'active' => $active,
-			]);
+			];
+			if ($options !== []) {
+				$payload['options'] = $options;
+			}
+			$definition = $this->fieldDefinitionService->create($payload);
 
 			return new DataResponse($definition->jsonSerialize(), Http::STATUS_CREATED);
 		} catch (InvalidArgumentException $exception) {
@@ -111,6 +117,7 @@ class FieldDefinitionApiController extends OCSController {
 	 * @param string $initialVisibility Initial visibility applied to new values
 	 * @param int $sortOrder Display order used in admin and profile forms
 	 * @param bool $active Whether the definition is currently active
+	 * @param list<string> $options Allowed values for select fields (ignored for other types)
 	 * @return DataResponse<Http::STATUS_OK, ProfileFieldsDefinition, array{}>|DataResponse<Http::STATUS_BAD_REQUEST|Http::STATUS_NOT_FOUND, array{message: string}, array{}>
 	 *
 	 * 200: Field definition updated successfully
@@ -128,6 +135,7 @@ class FieldDefinitionApiController extends OCSController {
 		string $initialVisibility = 'private',
 		int $sortOrder = 0,
 		bool $active = true,
+		array $options = [],
 	): DataResponse {
 		$existing = $this->fieldDefinitionService->findById($id);
 		if ($existing === null) {
@@ -135,7 +143,7 @@ class FieldDefinitionApiController extends OCSController {
 		}
 
 		try {
-			$definition = $this->fieldDefinitionService->update($existing, [
+			$payload = [
 				'label' => $label,
 				'type' => $type,
 				'admin_only' => $adminOnly,
@@ -144,7 +152,11 @@ class FieldDefinitionApiController extends OCSController {
 				'initial_visibility' => $initialVisibility,
 				'sort_order' => $sortOrder,
 				'active' => $active,
-			]);
+			];
+			if ($options !== []) {
+				$payload['options'] = $options;
+			}
+			$definition = $this->fieldDefinitionService->update($existing, $payload);
 
 			return new DataResponse($definition->jsonSerialize(), Http::STATUS_OK);
 		} catch (InvalidArgumentException $exception) {

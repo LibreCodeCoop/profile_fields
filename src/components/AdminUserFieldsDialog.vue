@@ -46,7 +46,21 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 					</div>
 
 					<div class="profile-fields-user-dialog__row-body">
+						<NcSelect
+							v-if="field.definition.type === 'select'"
+							class="profile-fields-user-dialog__input"
+							:input-id="`profile-fields-user-dialog-value-${field.definition.id}`"
+							:model-value="selectOptionFor(field.definition.id)"
+							:aria-label="field.definition.label"
+							:clearable="true"
+							:searchable="false"
+							:options="selectOptionsFor(field.definition)"
+							label="label"
+							:placeholder="placeholderForField(field.definition.type)"
+							@update:model-value="updateSelectValue(field.definition.id, $event)"
+						/>
 						<NcInputField
+							v-else
 							class="profile-fields-user-dialog__input"
 							:id="`profile-fields-user-dialog-value-${field.definition.id}`"
 							v-model="userDraftValues[field.definition.id]"
@@ -159,22 +173,38 @@ export default defineComponent({
 			})
 		}
 
-		const descriptionForType = (type: FieldType) => ({
+		const descriptionForType = (type: FieldType): string => ({
 			text: 'Free text stored as a scalar value.',
 			number: 'Only numeric values are accepted.',
-		}[type])
+			select: 'Choose one of the predefined options.',
+		} as Record<FieldType, string>)[type]
 
-		const placeholderForField = (type: FieldType) => ({
+		const placeholderForField = (type: FieldType): string => ({
 			text: 'Free text stored as a scalar value.',
 			number: 'Enter a number',
-		}[type])
+			select: 'Choose a value',
+		} as Record<FieldType, string>)[type]
 
 		const plainNumberPattern = /^-?\d+(\.\d+)?$/
 
-		const inputModeForField = (type: FieldType) => ({
+		const inputModeForField = (type: FieldType): string => ({
 			text: 'text',
 			number: 'decimal',
-		}[type])
+			select: 'text',
+		} as Record<FieldType, string>)[type]
+
+		const selectOptionsFor = (definition: FieldDefinition) =>
+			(definition.options ?? []).map((opt: string) => ({ value: opt, label: opt }))
+
+		const selectOptionFor = (fieldId: number) => {
+			const value = userDraftValues[fieldId]?.trim()
+			return value ? { value, label: value } : null
+		}
+
+		const updateSelectValue = (fieldId: number, option: { value: string, label: string } | null) => {
+			userDraftValues[fieldId] = option?.value ?? ''
+			clearFieldError(fieldId)
+		}
 
 		const rawDraftValueFor = (fieldId: number) => userDraftValues[fieldId]?.trim() ?? ''
 
@@ -187,6 +217,13 @@ export default defineComponent({
 
 			if (field.definition.type === 'number' && !plainNumberPattern.test(rawValue)) {
 				return `${field.definition.label} must be a plain numeric value.`
+			}
+
+			if (field.definition.type === 'select') {
+				const options = field.definition.options ?? []
+				if (!options.includes(rawValue)) {
+					return `${field.definition.label} must be one of the allowed options.`
+				}
 			}
 
 			return null
@@ -268,7 +305,7 @@ export default defineComponent({
 				'text fields expect a scalar value': `${field.definition.label} must be plain text.`,
 				'number fields expect a numeric value': `${field.definition.label} must be a numeric value.`,
 				'current_visibility is not supported': 'The selected visibility is not supported.',
-			}[message] ?? `${field.definition.label}: ${message}`)
+			}[message] ?? (message.includes('is not a valid option') ? `${field.definition.label}: invalid option selected.` : `${field.definition.label}: ${message}`))
 		}
 
 		const extractApiMessage = (error: unknown) => {
@@ -322,6 +359,7 @@ export default defineComponent({
 				visibility: userDraftVisibilities[field.definition.id],
 			}
 		}
+
 
 		const currentPayload = (field: AdminEditableField) => {
 			return {
@@ -451,6 +489,9 @@ export default defineComponent({
 			userValueErrors,
 			visibilityOptionFor,
 			visibilityOptions,
+			selectOptionsFor,
+			selectOptionFor,
+			updateSelectValue,
 		}
 	},
 })

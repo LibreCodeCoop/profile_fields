@@ -10,7 +10,7 @@ declare(strict_types=1);
 namespace OCA\ProfileFields;
 
 /**
- * @psalm-type ProfileFieldsType = 'text'|'number'
+ * @psalm-type ProfileFieldsType = 'text'|'number'|'select'
  * @psalm-type ProfileFieldsVisibility = 'private'|'users'|'public'
  * @psalm-type ProfileFieldsDefinitionInput = array{
  *     field_key?: string,
@@ -22,6 +22,7 @@ namespace OCA\ProfileFields;
  *     initial_visibility?: string,
  *     sort_order?: int,
  *     active?: bool,
+ *     options?: list<string>,
  * }
  * @psalm-type ProfileFieldsDefinition = array{
  *     id: int,
@@ -34,6 +35,7 @@ namespace OCA\ProfileFields;
  *     initial_visibility: ProfileFieldsVisibility,
  *     sort_order: int,
  *     active: bool,
+ *     options: list<string>|null,
  *     created_at: string,
  *     updated_at: string,
  * }

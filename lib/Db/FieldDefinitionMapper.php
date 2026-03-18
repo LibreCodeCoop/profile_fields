@@ -33,6 +33,7 @@ class FieldDefinitionMapper extends QBMapper {
 			'initial_visibility',
 			'sort_order',
 			'active',
+			'options',
 			'created_at',
 			'updated_at',
 		)
@@ -59,6 +60,7 @@ class FieldDefinitionMapper extends QBMapper {
 			'initial_visibility',
 			'sort_order',
 			'active',
+			'options',
 			'created_at',
 			'updated_at',
 		)
@@ -88,6 +90,7 @@ class FieldDefinitionMapper extends QBMapper {
 			'initial_visibility',
 			'sort_order',
 			'active',
+			'options',
 			'created_at',
 			'updated_at',
 		)
@@ -114,6 +117,7 @@ class FieldDefinitionMapper extends QBMapper {
 			'initial_visibility',
 			'sort_order',
 			'active',
+			'options',
 			'created_at',
 			'updated_at',
 		)

@@ -3,7 +3,7 @@
 
 import type { APIRequestContext } from '@playwright/test'
 
-type FieldType = 'text' | 'number'
+type FieldType = 'text' | 'number' | 'select'
 type FieldVisibility = 'private' | 'users' | 'public'
 
 type FieldDefinition = {
@@ -11,6 +11,7 @@ type FieldDefinition = {
 	field_key: string
 	label: string
 	type: FieldType
+	options: string[] | null
 	admin_only: boolean
 	user_editable: boolean
 	user_visible: boolean
@@ -36,6 +37,7 @@ type DefinitionPayload = {
 	fieldKey: string
 	label: string
 	type?: FieldType
+	options?: string[]
 	adminOnly?: boolean
 	userEditable?: boolean
 	userVisible?: boolean
@@ -102,6 +104,7 @@ export async function createDefinition(
 		fieldKey: payload.fieldKey,
 		label: payload.label,
 		type: payload.type ?? 'text',
+		...(payload.type === 'select' ? { options: payload.options ?? [] } : {}),
 		adminOnly: payload.adminOnly ?? false,
 		userEditable: payload.userEditable ?? true,
 		userVisible: payload.userVisible ?? true,

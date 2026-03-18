@@ -33,6 +33,7 @@
                     "initial_visibility",
                     "sort_order",
                     "active",
+                    "options",
                     "created_at",
                     "updated_at"
                 ],
@@ -70,6 +71,13 @@
                     },
                     "active": {
                         "type": "boolean"
+                    },
+                    "options": {
+                        "type": "array",
+                        "nullable": true,
+                        "items": {
+                            "type": "string"
+                        }
                     },
                     "created_at": {
                         "type": "string"
@@ -181,7 +189,8 @@
                 "type": "string",
                 "enum": [
                     "text",
-                    "number"
+                    "number",
+                    "select"
                 ]
             },
             "ValuePayload": {
@@ -376,6 +385,14 @@
                                         "type": "boolean",
                                         "default": true,
                                         "description": "Whether the definition is currently active"
+                                    },
+                                    "options": {
+                                        "type": "array",
+                                        "default": [],
+                                        "description": "Allowed values for select fields (ignored for other types)",
+                                        "items": {
+                                            "type": "string"
+                                        }
                                     }
                                 }
                             }
@@ -531,6 +548,14 @@
                                         "type": "boolean",
                                         "default": true,
                                         "description": "Whether the definition is currently active"
+                                    },
+                                    "options": {
+                                        "type": "array",
+                                        "default": [],
+                                        "description": "Allowed values for select fields (ignored for other types)",
+                                        "items": {
+                                            "type": "string"
+                                        }
                                     }
                                 }
                             }

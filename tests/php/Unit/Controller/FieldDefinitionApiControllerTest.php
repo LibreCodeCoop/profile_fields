@@ -79,6 +79,40 @@ class FieldDefinitionApiControllerTest extends TestCase {
 		$this->assertSame($definition->jsonSerialize(), $response->getData());
 	}
 
+	public function testCreateSelectFieldForwardsOptions(): void {
+		$definition = $this->buildDefinition(6, 'contract_type');
+		$this->service->expects($this->once())
+			->method('create')
+			->with([
+				'field_key' => 'contract_type',
+				'label' => 'Contract Type',
+				'type' => FieldType::SELECT->value,
+				'admin_only' => false,
+				'user_editable' => true,
+				'user_visible' => true,
+				'initial_visibility' => FieldVisibility::PRIVATE->value,
+				'sort_order' => 0,
+				'active' => true,
+				'options' => ['CLT', 'PJ', 'Cooperado'],
+			])
+			->willReturn($definition);
+
+		$response = $this->controller->create(
+			'contract_type',
+			'Contract Type',
+			FieldType::SELECT->value,
+			false,
+			true,
+			true,
+			FieldVisibility::PRIVATE->value,
+			0,
+			true,
+			['CLT', 'PJ', 'Cooperado'],
+		);
+
+		$this->assertSame(Http::STATUS_CREATED, $response->getStatus());
+	}
+
 	public function testCreateReturnsBadRequestOnValidationFailure(): void {
 		$this->service->expects($this->once())
 			->method('create')
@@ -98,6 +132,46 @@ class FieldDefinitionApiControllerTest extends TestCase {
 
 		$this->assertSame(Http::STATUS_BAD_REQUEST, $response->getStatus());
 		$this->assertSame(['message' => 'field_key already exists'], $response->getData());
+	}
+
+	public function testUpdateSelectFieldForwardsOptions(): void {
+		$existing = $this->buildDefinition(6, 'contract_type');
+		$updated = $this->buildDefinition(6, 'contract_type');
+
+		$this->service->expects($this->once())
+			->method('findById')
+			->with(6)
+			->willReturn($existing);
+
+		$this->service->expects($this->once())
+			->method('update')
+			->with($existing, [
+				'label' => 'Contract Type',
+				'type' => FieldType::SELECT->value,
+				'admin_only' => false,
+				'user_editable' => true,
+				'user_visible' => true,
+				'initial_visibility' => FieldVisibility::PRIVATE->value,
+				'sort_order' => 0,
+				'active' => true,
+				'options' => ['CLT', 'PJ'],
+			])
+			->willReturn($updated);
+
+		$response = $this->controller->update(
+			6,
+			'Contract Type',
+			FieldType::SELECT->value,
+			false,
+			true,
+			true,
+			FieldVisibility::PRIVATE->value,
+			0,
+			true,
+			['CLT', 'PJ'],
+		);
+
+		$this->assertSame(Http::STATUS_OK, $response->getStatus());
 	}
 
 	public function testUpdateReturnsNotFoundWhenDefinitionDoesNotExist(): void {

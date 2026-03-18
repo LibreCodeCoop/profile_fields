@@ -103,6 +103,7 @@ class FieldValueService {
 		return match ($type) {
 			FieldType::TEXT => $this->normalizeTextValue($rawValue),
 			FieldType::NUMBER => $this->normalizeNumberValue($rawValue),
+			FieldType::SELECT => $this->normalizeSelectValue($rawValue, $definition),
 		};
 	}
 
@@ -229,6 +230,24 @@ class FieldValueService {
 		}
 
 		return ['value' => trim((string)$rawValue)];
+	}
+
+	/**
+	 * @param array<string, mixed>|scalar $rawValue
+	 * @return array{value: string}
+	 */
+	private function normalizeSelectValue(array|string|int|float|bool $rawValue, FieldDefinition $definition): array {
+		if (!is_string($rawValue)) {
+			throw new InvalidArgumentException('select fields expect a string value');
+		}
+
+		$value = trim($rawValue);
+		$options = json_decode($definition->getOptions() ?? '[]', true);
+		if (!in_array($value, $options, true)) {
+			throw new InvalidArgumentException(sprintf('"%s" is not a valid option for this field', $value));
+		}
+
+		return ['value' => $value];
 	}
 
 	/**

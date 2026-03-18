@@ -33,6 +33,7 @@
                     "initial_visibility",
                     "sort_order",
                     "active",
+                    "options",
                     "created_at",
                     "updated_at"
                 ],
@@ -70,6 +71,13 @@
                     },
                     "active": {
                         "type": "boolean"
+                    },
+                    "options": {
+                        "type": "array",
+                        "nullable": true,
+                        "items": {
+                            "type": "string"
+                        }
                     },
                     "created_at": {
                         "type": "string"
@@ -127,7 +135,8 @@
                 "type": "string",
                 "enum": [
                     "text",
-                    "number"
+                    "number",
+                    "select"
                 ]
             },
             "ValuePayload": {

@@ -245,8 +245,11 @@ const prepareWorkflowScreenshot = async(page) => {
 	const showMoreButton = page.getByRole('button', { name: 'Show more', exact: true })
 	if (await showMoreButton.count() > 0) {
 		await showMoreButton.click()
+		await page.getByRole('button', { name: 'Show less', exact: true }).waitFor({ state: 'visible', timeout: 60_000 })
 	}
+
 	await page.getByRole('heading', { name: 'Create Talk conversation', exact: true }).first().waitFor({ state: 'visible', timeout: 60_000 })
+	await page.waitForTimeout(800)
 
 	await page.evaluate(() => {
 		document.querySelector('header')?.setAttribute('style', 'display:none')
@@ -307,6 +310,7 @@ const run = async() => {
 				fieldKey: field.fieldKey,
 				label: field.label,
 				type: field.type,
+				...(field.type === 'select' ? { options: field.options ?? [] } : {}),
 				adminOnly: field.adminOnly,
 				userEditable: field.userEditable,
 				userVisible: field.userVisible,
@@ -342,7 +346,7 @@ const run = async() => {
 		await adminPage.goto('./settings/admin/profile_fields')
 		await adminPage.getByTestId('profile-fields-admin-definition-showcase_support_region').waitFor({ state: 'visible', timeout: 60_000 })
 		await hideNonShowcaseAdminDefinitions(adminPage)
-		await adminPage.getByTestId('profile-fields-admin-definition-showcase_support_region').click()
+		await adminPage.getByTestId('profile-fields-admin-definition-showcase_council_channel').click()
 		await adminPage.locator('[data-testid="profile-fields-admin"]').screenshot({ path: join(screenshotDir, 'admin-catalog.png'), type: 'png' })
 
 		const personalPage = await demoContext.newPage()

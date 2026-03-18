@@ -337,10 +337,71 @@ class FieldValueServiceTest extends TestCase {
 		$this->service->searchByDefinition($definition, 'starts_with', 'lat', 50, 0);
 	}
 
+	public function testNormalizeSelectValueAcceptsValidOption(): void {
+		$definition = $this->buildSelectDefinition(['CLT', 'PJ', 'Cooperado']);
+
+		$normalized = $this->service->normalizeValue($definition, 'PJ');
+
+		$this->assertSame(['value' => 'PJ'], $normalized);
+	}
+
+	public function testNormalizeSelectValueRejectsValueOutsideOptions(): void {
+		$definition = $this->buildSelectDefinition(['CLT', 'PJ', 'Cooperado']);
+
+		$this->expectException(InvalidArgumentException::class);
+		$this->expectExceptionMessage('"Freelancer" is not a valid option for this field');
+
+		$this->service->normalizeValue($definition, 'Freelancer');
+	}
+
+	public function testNormalizeSelectValueAcceptsNull(): void {
+		$definition = $this->buildSelectDefinition(['CLT', 'PJ']);
+
+		$normalized = $this->service->normalizeValue($definition, null);
+
+		$this->assertSame(['value' => null], $normalized);
+	}
+
+	public function testNormalizeSelectValueRejectsArray(): void {
+		$definition = $this->buildSelectDefinition(['CLT', 'PJ']);
+
+		$this->expectException(InvalidArgumentException::class);
+		$this->expectExceptionMessage('select fields expect a string value');
+
+		$this->service->normalizeValue($definition, ['CLT']);
+	}
+
+	public function testNormalizeSelectValueRejectsInteger(): void {
+		$definition = $this->buildSelectDefinition(['1', '2']);
+
+		$this->expectException(InvalidArgumentException::class);
+		$this->expectExceptionMessage('select fields expect a string value');
+
+		$this->service->normalizeValue($definition, 1);
+	}
+
+	public function testNormalizeSelectValueRejectsFloat(): void {
+		$definition = $this->buildSelectDefinition(['1.5', '2.5']);
+
+		$this->expectException(InvalidArgumentException::class);
+		$this->expectExceptionMessage('select fields expect a string value');
+
+		$this->service->normalizeValue($definition, 1.5);
+	}
+
 	private function buildDefinition(string $type): FieldDefinition {
 		$definition = new FieldDefinition();
 		$definition->setType($type);
 		$definition->setInitialVisibility('private');
+		return $definition;
+	}
+
+	/**
+	 * @param list<string> $options
+	 */
+	private function buildSelectDefinition(array $options): FieldDefinition {
+		$definition = $this->buildDefinition(FieldType::SELECT->value);
+		$definition->setOptions(json_encode($options));
 		return $definition;
 	}
 }

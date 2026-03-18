@@ -61,6 +61,10 @@ class Version1000Date20260309120000 extends SimpleMigrationStep {
 			$table->addColumn('active', Types::BOOLEAN, [
 				'default' => true,
 			]);
+			$table->addColumn('options', Types::TEXT, [
+				'notnull' => false,
+				'default' => null,
+			]);
 			$table->addColumn('created_at', Types::DATETIME, []);
 			$table->addColumn('updated_at', Types::DATETIME, []);
 

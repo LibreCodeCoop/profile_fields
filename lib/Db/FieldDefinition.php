@@ -32,6 +32,8 @@ use OCP\AppFramework\Db\Entity;
  * @method void setSortOrder(int $value)
  * @method bool getActive()
  * @method void setActive(bool $value)
+ * @method string|null getOptions()
+ * @method void setOptions(?string $value)
  * @method \DateTimeInterface getCreatedAt()
  * @method void setCreatedAt(\DateTimeInterface $value)
  * @method \DateTimeInterface getUpdatedAt()
@@ -47,6 +49,7 @@ class FieldDefinition extends Entity {
 	protected $initialVisibility;
 	protected $sortOrder;
 	protected $active;
+	protected $options;
 	protected $createdAt;
 	protected $updatedAt;
 
@@ -73,11 +76,14 @@ class FieldDefinition extends Entity {
 	 *     initial_visibility: string,
 	 *     sort_order: int,
 	 *     active: bool,
+	 *     options: list<string>|null,
 	 *     created_at: string,
 	 *     updated_at: string,
 	 * }
 	 */
 	public function jsonSerialize(): array {
+		$rawOptions = $this->getOptions();
+
 		return [
 			'id' => $this->getId(),
 			'field_key' => $this->getFieldKey(),
@@ -89,6 +95,7 @@ class FieldDefinition extends Entity {
 			'initial_visibility' => $this->getInitialVisibility(),
 			'sort_order' => $this->getSortOrder(),
 			'active' => $this->getActive(),
+			'options' => $rawOptions !== null ? (json_decode($rawOptions, true) ?? null) : null,
 			'created_at' => $this->getCreatedAt()->format(DATE_ATOM),
 			'updated_at' => $this->getUpdatedAt()->format(DATE_ATOM),
 		];
