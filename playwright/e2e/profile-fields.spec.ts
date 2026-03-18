@@ -8,6 +8,22 @@ import { createDefinition, deleteDefinitionByFieldKey } from '../support/profile
 const adminUser = process.env.NEXTCLOUD_ADMIN_USER ?? 'admin'
 const adminPassword = process.env.NEXTCLOUD_ADMIN_PASSWORD ?? 'admin'
 
+const optionInput = (page, index: number) => page.getByTestId(`profile-fields-admin-option-row-${index}`).locator('input')
+
+const chooseFieldType = async(page, label: 'Text' | 'Number' | 'Select') => {
+	await page.getByTestId('profile-fields-admin-type-select').click()
+	await page.getByRole('option', { name: label, exact: true }).click()
+}
+
+const openSelectDefinitionEditor = async(page, fieldKey: string, label: string) => {
+	await page.goto('./settings/admin/profile_fields')
+	await expect(page.getByTestId('profile-fields-admin')).toBeVisible()
+
+	await page.getByTestId(`profile-fields-admin-definition-${fieldKey}`).click()
+	await expect(page.locator('#profile-fields-admin-label')).toHaveValue(label)
+	await expect(page.getByTestId('profile-fields-admin-option-row-0')).toBeVisible()
+}
+
 const collectEmbeddedLayoutMetrics = async(page, fieldKey: string) => {
 	const aboutInput = page.getByRole('textbox', { name: 'About' })
 	const customField = page.getByTestId(`profile-fields-personal-field-${fieldKey}`)
@@ -93,6 +109,207 @@ test('admin can create, update, and delete a field definition', async ({ page })
 	await expect(page.getByTestId('profile-fields-admin-success')).toContainText('Field definition deleted.')
 	await expect(page.getByTestId(`profile-fields-admin-definition-${fieldKey}`)).toHaveCount(0)
 	await deleteDefinitionByFieldKey(page.request, fieldKey)
+})
+
+test('admin gets an initial select option row and can remove empty rows by keyboard', async ({ page }) => {
+	const suffix = Date.now()
+	const fieldKey = `playwright_select_create_${suffix}`
+	const label = `Playwright select create ${suffix}`
+
+	await deleteDefinitionByFieldKey(page.request, fieldKey)
+
+	await page.goto('./settings/admin/profile_fields')
+	await expect(page.getByTestId('profile-fields-admin')).toBeVisible()
+
+	await page.getByTestId('profile-fields-admin-new-field').click()
+	await page.locator('#profile-fields-admin-field-key').fill(fieldKey)
+	await page.locator('#profile-fields-admin-label').fill(label)
+	await chooseFieldType(page, 'Select')
+
+	await expect(page.getByTestId('profile-fields-admin-option-row-0')).toBeVisible()
+	await expect(optionInput(page, 0)).toBeFocused()
+	await expect(optionInput(page, 0)).toHaveValue('')
+	await expect(page.locator('[data-testid^="profile-fields-admin-option-handle-"]')).toHaveCount(0)
+
+	await optionInput(page, 0).fill('Alpha')
+	await optionInput(page, 0).press('Enter')
+	await expect(page.getByTestId('profile-fields-admin-option-row-1')).toBeVisible()
+	await expect(optionInput(page, 1)).toBeFocused()
+
+	await page.locator('#profile-fields-admin-label').click()
+	await expect(page.getByTestId('profile-fields-admin-option-row-1')).toHaveCount(0)
+
+	await optionInput(page, 0).press('Enter')
+	await expect(page.getByTestId('profile-fields-admin-option-row-1')).toBeVisible()
+	await expect(optionInput(page, 1)).toBeFocused()
+
+	await optionInput(page, 1).press('Backspace')
+	await expect(page.getByTestId('profile-fields-admin-option-row-1')).toHaveCount(0)
+	await expect(optionInput(page, 0)).toBeFocused()
+	await expect(page.getByTestId('profile-fields-admin-option-handle-0')).toBeVisible()
+
+	await page.getByTestId('profile-fields-admin-save').click()
+	await expect(page.getByTestId('profile-fields-admin-success')).toContainText('Field definition created.')
+
+	await deleteDefinitionByFieldKey(page.request, fieldKey)
+})
+
+test('admin can bulk add select options from multiple lines', async ({ page }) => {
+	const suffix = Date.now()
+	const fieldKey = `playwright_select_bulk_${suffix}`
+	const label = `Playwright select bulk ${suffix}`
+
+	await deleteDefinitionByFieldKey(page.request, fieldKey)
+
+	await page.goto('./settings/admin/profile_fields')
+	await expect(page.getByTestId('profile-fields-admin')).toBeVisible()
+
+	await page.getByTestId('profile-fields-admin-new-field').click()
+	await page.locator('#profile-fields-admin-field-key').fill(fieldKey)
+	await page.locator('#profile-fields-admin-label').fill(label)
+	await chooseFieldType(page, 'Select')
+
+	await page.getByTestId('profile-fields-admin-add-multiple-options').click()
+	await page.getByTestId('profile-fields-admin-bulk-options-input').fill('Alpha\n\n Beta \nGamma')
+	await page.getByTestId('profile-fields-admin-bulk-options-submit').click()
+
+	await expect(optionInput(page, 0)).toHaveValue('Alpha')
+	await expect(optionInput(page, 1)).toHaveValue('Beta')
+	await expect(optionInput(page, 2)).toHaveValue('Gamma')
+	await expect(page.locator('[data-testid^="profile-fields-admin-option-handle-"]')).toHaveCount(3)
+
+	const continuationRow = page.getByTestId('profile-fields-admin-option-row-3')
+	if (await continuationRow.count()) {
+		await expect(continuationRow.locator('input')).toHaveValue('')
+	}
+
+	await page.getByTestId('profile-fields-admin-save').click()
+	await expect(page.getByTestId('profile-fields-admin-success')).toContainText('Field definition created.')
+
+	await deleteDefinitionByFieldKey(page.request, fieldKey)
+})
+
+test('admin reuses the empty select option row on repeated Enter', async ({ page }) => {
+	const suffix = Date.now()
+	const fieldKey = `playwright_select_${suffix}`
+	const label = `Playwright select ${suffix}`
+
+	await deleteDefinitionByFieldKey(page.request, fieldKey)
+	await createDefinition(page.request, {
+		fieldKey,
+		label,
+		type: 'select',
+		options: ['Alpha', 'Beta', 'Gamma'],
+	})
+
+	try {
+		await openSelectDefinitionEditor(page, fieldKey, label)
+		await expect(optionInput(page, 0)).toHaveValue('Alpha')
+		await expect(optionInput(page, 1)).toHaveValue('Beta')
+		await expect(optionInput(page, 2)).toHaveValue('Gamma')
+
+		await optionInput(page, 2).press('Enter')
+		await expect(page.getByTestId('profile-fields-admin-option-row-3')).toBeVisible()
+		await expect(optionInput(page, 3)).toHaveValue('')
+		await expect(optionInput(page, 3)).toBeFocused()
+		await expect(page.locator('[data-testid^="profile-fields-admin-option-handle-"]')).toHaveCount(3)
+
+		await optionInput(page, 3).fill('Delta')
+		await expect(page.getByTestId('profile-fields-admin-option-handle-3')).toBeVisible()
+		await expect(page.locator('[data-testid^="profile-fields-admin-option-handle-"]')).toHaveCount(4)
+
+		await optionInput(page, 3).press('Enter')
+		await expect(page.getByTestId('profile-fields-admin-option-row-4')).toBeVisible()
+		await expect(optionInput(page, 4)).toHaveValue('')
+		await expect(optionInput(page, 4)).toBeFocused()
+		await expect(page.getByTestId('profile-fields-admin-option-handle-3')).toBeVisible()
+		await expect(page.locator('[data-testid^="profile-fields-admin-option-handle-"]')).toHaveCount(4)
+
+		await optionInput(page, 4).press('Enter')
+		await expect(page.getByTestId('profile-fields-admin-option-row-4')).toBeVisible()
+		await expect(page.getByTestId('profile-fields-admin-option-row-5')).toHaveCount(0)
+		await expect(optionInput(page, 4)).toBeFocused()
+		await expect(page.locator('[data-testid^="profile-fields-admin-option-handle-"]')).toHaveCount(4)
+
+		await page.getByTestId('profile-fields-admin-option-handle-3').click()
+		await page.getByRole('menuitem', { name: 'Move up' }).click()
+
+		await expect(optionInput(page, 0)).toHaveValue('Alpha')
+		await expect(optionInput(page, 1)).toHaveValue('Beta')
+		await expect(optionInput(page, 2)).toHaveValue('Delta')
+		await expect(optionInput(page, 3)).toHaveValue('Gamma')
+
+		await page.getByTestId('profile-fields-admin-option-handle-2').dragTo(page.getByTestId('profile-fields-admin-option-handle-1'))
+
+		await expect(optionInput(page, 0)).toHaveValue('Alpha')
+		await expect(optionInput(page, 1)).toHaveValue('Delta')
+		await expect(optionInput(page, 2)).toHaveValue('Beta')
+		await expect(optionInput(page, 3)).toHaveValue('Gamma')
+		await expect(page.getByTestId('profile-fields-admin-option-row-4')).toHaveCount(0)
+
+		await page.getByTestId('profile-fields-admin-save').click()
+		await expect(page.getByTestId('profile-fields-admin-success')).toContainText('Field definition updated.')
+
+		await page.reload()
+		await openSelectDefinitionEditor(page, fieldKey, label)
+		await expect(optionInput(page, 0)).toHaveValue('Alpha')
+		await expect(optionInput(page, 1)).toHaveValue('Delta')
+		await expect(optionInput(page, 2)).toHaveValue('Beta')
+		await expect(optionInput(page, 3)).toHaveValue('Gamma')
+		await expect(page.getByTestId('profile-fields-admin-option-row-4')).toHaveCount(0)
+	} finally {
+		await deleteDefinitionByFieldKey(page.request, fieldKey)
+	}
+})
+
+test('admin can reorder select options from the handle menu and drag handle', async ({ page }) => {
+	const suffix = Date.now()
+	const fieldKey = `playwright_reorder_${suffix}`
+	const label = `Playwright reorder ${suffix}`
+
+	await deleteDefinitionByFieldKey(page.request, fieldKey)
+	await createDefinition(page.request, {
+		fieldKey,
+		label,
+		type: 'select',
+		options: ['Alpha', 'Beta', 'Gamma', 'Delta'],
+	})
+
+	try {
+		await openSelectDefinitionEditor(page, fieldKey, label)
+		await expect(optionInput(page, 0)).toHaveValue('Alpha')
+		await expect(optionInput(page, 1)).toHaveValue('Beta')
+		await expect(optionInput(page, 2)).toHaveValue('Gamma')
+		await expect(optionInput(page, 3)).toHaveValue('Delta')
+		await expect(page.locator('[data-testid^="profile-fields-admin-option-handle-"]')).toHaveCount(4)
+
+		await page.getByTestId('profile-fields-admin-option-handle-3').click()
+		await page.getByRole('menuitem', { name: 'Move up' }).click()
+
+		await expect(optionInput(page, 0)).toHaveValue('Alpha')
+		await expect(optionInput(page, 1)).toHaveValue('Beta')
+		await expect(optionInput(page, 2)).toHaveValue('Delta')
+		await expect(optionInput(page, 3)).toHaveValue('Gamma')
+
+		await page.getByTestId('profile-fields-admin-option-handle-2').dragTo(page.getByTestId('profile-fields-admin-option-handle-1'))
+
+		await expect(optionInput(page, 0)).toHaveValue('Alpha')
+		await expect(optionInput(page, 1)).toHaveValue('Delta')
+		await expect(optionInput(page, 2)).toHaveValue('Beta')
+		await expect(optionInput(page, 3)).toHaveValue('Gamma')
+
+		await page.getByTestId('profile-fields-admin-save').click()
+		await expect(page.getByTestId('profile-fields-admin-success')).toContainText('Field definition updated.')
+
+		await page.reload()
+		await openSelectDefinitionEditor(page, fieldKey, label)
+		await expect(optionInput(page, 0)).toHaveValue('Alpha')
+		await expect(optionInput(page, 1)).toHaveValue('Delta')
+		await expect(optionInput(page, 2)).toHaveValue('Beta')
+		await expect(optionInput(page, 3)).toHaveValue('Gamma')
+	} finally {
+		await deleteDefinitionByFieldKey(page.request, fieldKey)
+	}
 })
 
 test('embedded personal settings autosave a user-visible field', async ({ page }) => {
