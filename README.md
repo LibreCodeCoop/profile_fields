@@ -15,6 +15,15 @@ Profile fields lets teams add organization-specific profile data that does not f
 
 This makes the app useful for internal directories, support operations, partner programs and other corporate deployments that need richer account metadata without leaving Nextcloud.
 
+## Features
+
+- Central field catalog for organization-specific profile data.
+- Per-field governance for admin-managed and self-service updates.
+- Per-value visibility controls for public, authenticated-user, and private exposure.
+- User administration tools for reviewing and updating profile field values.
+- Workflow integration based on custom profile metadata.
+- Global search results built only from fields and values exposed to the current user.
+
 ## API documentation
 
 The public API contract for this app is published as [openapi-full.json](https://github.com/LibreCodeCoop/profile_fields/blob/main/openapi-full.json).
