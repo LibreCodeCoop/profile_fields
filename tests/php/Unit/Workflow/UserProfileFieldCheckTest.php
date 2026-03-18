@@ -188,6 +188,59 @@ class UserProfileFieldCheckTest extends TestCase {
 		$this->assertTrue($this->check->executeCheck('is', $this->encodeConfig('region', 'LATAM')));
 	}
 
+	public function testExecuteCheckMatchesSelectExactValue(): void {
+		$definition = $this->buildDefinition(7, 'contract_type', FieldType::SELECT->value);
+		$definition->setOptions(json_encode(['CLT', 'PJ', 'Cooperado']));
+		$value = $this->buildStoredValue(7, 'alice', '{"value":"PJ"}');
+
+		$this->fieldDefinitionService->expects($this->once())
+			->method('findByFieldKey')
+			->with('contract_type')
+			->willReturn($definition);
+		$this->fieldValueMapper->expects($this->once())
+			->method('findByFieldDefinitionIdAndUserUid')
+			->with(7, 'alice')
+			->willReturn($value);
+
+		$this->userSession->method('getUser')->willReturn($this->buildUser('alice'));
+
+		$this->assertTrue($this->check->executeCheck('is', $this->encodeConfig('contract_type', 'PJ')));
+	}
+
+	public function testExecuteCheckDoesNotMatchSelectDifferentValue(): void {
+		$definition = $this->buildDefinition(7, 'contract_type', FieldType::SELECT->value);
+		$definition->setOptions(json_encode(['CLT', 'PJ', 'Cooperado']));
+		$value = $this->buildStoredValue(7, 'alice', '{"value":"PJ"}');
+
+		$this->fieldDefinitionService->expects($this->once())
+			->method('findByFieldKey')
+			->with('contract_type')
+			->willReturn($definition);
+		$this->fieldValueMapper->expects($this->once())
+			->method('findByFieldDefinitionIdAndUserUid')
+			->with(7, 'alice')
+			->willReturn($value);
+
+		$this->userSession->method('getUser')->willReturn($this->buildUser('alice'));
+
+		$this->assertFalse($this->check->executeCheck('is', $this->encodeConfig('contract_type', 'CLT')));
+	}
+
+	public function testValidateCheckRejectsContainsForSelectField(): void {
+		$definition = $this->buildDefinition(7, 'contract_type', FieldType::SELECT->value);
+		$definition->setOptions(json_encode(['CLT', 'PJ']));
+
+		$this->fieldDefinitionService->expects($this->once())
+			->method('findByFieldKey')
+			->with('contract_type')
+			->willReturn($definition);
+
+		$this->expectException(\UnexpectedValueException::class);
+		$this->expectExceptionMessage('The selected operator is not supported for this profile field');
+
+		$this->check->validateCheck('contains', $this->encodeConfig('contract_type', 'CL'));
+	}
+
 	private function buildDefinition(int $id, string $fieldKey, string $type): FieldDefinition {
 		$definition = new FieldDefinition();
 		$definition->setId($id);
