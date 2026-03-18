@@ -169,6 +169,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 									label="Option value"
 									label-outside
 									:placeholder="`Option ${index + 1}`"
+									:error="isOptionDuplicate(index)"
+									:helper-text="isOptionDuplicate(index) ? 'Duplicate option' : ''"
 									@update:model-value="updateOption(index, $event)"
 									@keydown.enter.prevent="addOption"
 								/>
@@ -223,7 +225,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 					</section>
 
 					<div class="profile-fields-admin__submit-row">
-						<NcButton type="submit" variant="primary" data-testid="profile-fields-admin-save" :disabled="isSaving || !isFormDirty">
+						<NcButton type="submit" variant="primary" data-testid="profile-fields-admin-save" :disabled="isSaving || !isFormDirty || hasDuplicateOptions">
 							{{ isSaving ? 'Saving...' : (isEditing ? 'Save changes' : 'Create field') }}
 						</NcButton>
 						<NcButton v-if="isEditing" variant="error" data-testid="profile-fields-admin-delete" :disabled="isSaving" @click.prevent="removeDefinition">
@@ -345,6 +347,27 @@ const buildDefinitionState = (definition: FieldDefinition | null) => {
 }
 
 const isFormDirty = computed(() => JSON.stringify(buildFormState()) !== JSON.stringify(buildDefinitionState(selectedDefinition.value)))
+
+const duplicateOptionIndices = computed(() => {
+	const seen = new Map<string, number>()
+	const duplicates = new Set<number>()
+	form.options.forEach((option: string, index: number) => {
+		const trimmed = option.trim()
+		if (trimmed === '') {
+			return
+		}
+		if (seen.has(trimmed)) {
+			duplicates.add(seen.get(trimmed) as number)
+			duplicates.add(index)
+		} else {
+			seen.set(trimmed, index)
+		}
+	})
+	return duplicates
+})
+
+const isOptionDuplicate = (index: number) => duplicateOptionIndices.value.has(index)
+const hasDuplicateOptions = computed(() => duplicateOptionIndices.value.size > 0)
 
 const selectedTypeOption = computed({
 	get: () => fieldTypeOptions.find((option) => option.value === form.type) ?? fieldTypeOptions[0],
