@@ -33,10 +33,8 @@ class ImportPayloadValidator {
 	 *         field_key: non-empty-string,
 	 *         label: non-empty-string,
 	 *         type: 'text'|'number',
-	 *         admin_only: bool,
-	 *         user_editable: bool,
-	 *         user_visible: bool,
-	 *         initial_visibility: 'private'|'users'|'public',
+	 *         edit_policy: 'admins'|'users',
+	 *         exposure_policy: 'hidden'|'private'|'users'|'public',
 	 *         sort_order: int,
 	 *         active: bool,
 	 *         created_at?: non-empty-string,
@@ -74,10 +72,8 @@ class ImportPayloadValidator {
 	 *     field_key: non-empty-string,
 	 *     label: non-empty-string,
 	 *     type: 'text'|'number',
-	 *     admin_only: bool,
-	 *     user_editable: bool,
-	 *     user_visible: bool,
-	 *     initial_visibility: 'private'|'users'|'public',
+	 *     edit_policy: 'admins'|'users',
+	 *     exposure_policy: 'hidden'|'private'|'users'|'public',
 	 *     sort_order: int,
 	 *     active: bool,
 	 *     created_at?: non-empty-string,
@@ -124,10 +120,8 @@ class ImportPayloadValidator {
 	 *     field_key: non-empty-string,
 	 *     label: non-empty-string,
 	 *     type: 'text'|'number',
-	 *     admin_only: bool,
-	 *     user_editable: bool,
-	 *     user_visible: bool,
-	 *     initial_visibility: 'private'|'users'|'public',
+	 *     edit_policy: 'admins'|'users',
+	 *     exposure_policy: 'hidden'|'private'|'users'|'public',
 	 *     sort_order: int,
 	 *     active: bool,
 	 *     created_at?: non-empty-string,
@@ -262,19 +256,15 @@ class ImportPayloadValidator {
 	 *     field_key: non-empty-string,
 	 *     label: non-empty-string,
 	 *     type: 'text'|'number',
-	 *     admin_only: bool,
-	 *     user_editable: bool,
-	 *     user_visible: bool,
-	 *     initial_visibility: 'private'|'users'|'public',
+	 *     edit_policy: 'admins'|'users',
+	 *     exposure_policy: 'hidden'|'private'|'users'|'public',
 	 *     sort_order: int,
 	 *     active: bool,
 	 * } $definition
 	 */
 	private function isCompatibleDefinition(FieldDefinition $existingDefinition, array $definition): bool {
 		return $existingDefinition->getType() === $definition['type']
-			&& $existingDefinition->getAdminOnly() === $definition['admin_only']
-			&& $existingDefinition->getUserEditable() === $definition['user_editable']
-			&& $existingDefinition->getUserVisible() === $definition['user_visible']
-			&& $existingDefinition->getInitialVisibility() === $definition['initial_visibility'];
+			&& $existingDefinition->getEditPolicy() === $definition['edit_policy']
+			&& $existingDefinition->getExposurePolicy() === $definition['exposure_policy'];
 	}
 }
