@@ -11,10 +11,8 @@ Feature: profile field workflows
       | fieldKey          | workflow_notify_department |
       | label             | Workflow Notify Department |
       | type              | text                       |
-      | adminOnly         | false                      |
-      | userEditable      | true                       |
-      | userVisible       | true                       |
-      | initialVisibility | users                      |
+      | editPolicy        | users                      |
+      | exposurePolicy    | users                      |
       | sortOrder         | 10                         |
       | active            | true                       |
     Then the response should have a status code 201
@@ -22,10 +20,8 @@ Feature: profile field workflows
     When sending "put" to ocs "/apps/profile_fields/api/v1/definitions/<WORKFLOW_NOTIFY_FIELD_ID>"
       | label             | Workflow Notify Department <WORKFLOW_NOTIFY_FIELD_ID> |
       | type              | text                                                  |
-      | adminOnly         | false                                                 |
-      | userEditable      | true                                                  |
-      | userVisible       | true                                                  |
-      | initialVisibility | users                                                 |
+      | editPolicy        | users                                                 |
+      | exposurePolicy    | users                                                 |
       | sortOrder         | 10                                                    |
       | active            | true                                                  |
     Then the response should have a status code 200
@@ -72,10 +68,8 @@ Feature: profile field workflows
       | fieldKey          | workflow_log_department |
       | label             | Workflow Log Department |
       | type              | text                    |
-      | adminOnly         | false                   |
-      | userEditable      | true                    |
-      | userVisible       | true                    |
-      | initialVisibility | users                   |
+      | editPolicy        | users                   |
+      | exposurePolicy    | users                   |
       | sortOrder         | 20                      |
       | active            | true                    |
     Then the response should have a status code 201
@@ -135,10 +129,8 @@ Feature: profile field workflows
       | fieldKey          | workflow_webhook_department |
       | label             | Workflow Webhook Department |
       | type              | text                        |
-      | adminOnly         | false                       |
-      | userEditable      | true                        |
-      | userVisible       | true                        |
-      | initialVisibility | users                       |
+      | editPolicy        | users                       |
+      | exposurePolicy    | users                       |
       | sortOrder         | 30                          |
       | active            | true                        |
     Then the response should have a status code 201
@@ -222,10 +214,8 @@ Feature: profile field workflows
       | fieldKey          | workflow_email_department |
       | label             | Workflow Email Department |
       | type              | text                      |
-      | adminOnly         | false                     |
-      | userEditable      | true                      |
-      | userVisible       | true                      |
-      | initialVisibility | users                     |
+      | editPolicy        | users                     |
+      | exposurePolicy    | users                     |
       | sortOrder         | 40                        |
       | active            | true                      |
     Then the response should have a status code 201
@@ -269,10 +259,8 @@ Feature: profile field workflows
       | fieldKey          | workflow_talk_department |
       | label             | Workflow Talk Department |
       | type              | text                     |
-      | adminOnly         | false                    |
-      | userEditable      | true                     |
-      | userVisible       | true                     |
-      | initialVisibility | users                    |
+      | editPolicy        | users                    |
+      | exposurePolicy    | users                    |
       | sortOrder         | 50                       |
       | active            | true                     |
     Then the response should have a status code 201
@@ -280,10 +268,8 @@ Feature: profile field workflows
     When sending "put" to ocs "/apps/profile_fields/api/v1/definitions/<WORKFLOW_TALK_FIELD_ID>"
       | label             | Workflow Talk Department <WORKFLOW_TALK_FIELD_ID> |
       | type              | text                                               |
-      | adminOnly         | false                                              |
-      | userEditable      | true                                               |
-      | userVisible       | true                                               |
-      | initialVisibility | users                                              |
+      | editPolicy        | users                                              |
+      | exposurePolicy    | users                                              |
       | sortOrder         | 50                                                 |
       | active            | true                                               |
     Then the response should have a status code 200
