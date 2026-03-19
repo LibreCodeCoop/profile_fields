@@ -111,6 +111,159 @@ test('admin can create, update, and delete a field definition', async ({ page })
 	await deleteDefinitionByFieldKey(page.request, fieldKey)
 })
 
+test('admin uses a modal editor on compact layout', async ({ page }) => {
+	const suffix = Date.now()
+	const existingFieldKey = `playwright_mobile_existing_${suffix}`
+	const existingLabel = `Playwright mobile existing ${suffix}`
+	const createdFieldKey = `playwright_mobile_created_${suffix}`
+	const createdLabel = `Playwright mobile created ${suffix}`
+
+	await deleteDefinitionByFieldKey(page.request, existingFieldKey)
+	await deleteDefinitionByFieldKey(page.request, createdFieldKey)
+	await createDefinition(page.request, {
+		fieldKey: existingFieldKey,
+		label: existingLabel,
+	})
+
+	try {
+		await page.setViewportSize({ width: 768, height: 1180 })
+		await page.goto('./settings/admin/profile_fields')
+		await expect(page.getByTestId('profile-fields-admin')).toBeVisible()
+		await expect(page.getByText('No field selected')).toHaveCount(0)
+
+		await page.getByTestId(`profile-fields-admin-definition-${existingFieldKey}`).click()
+		const editDialog = page.getByRole('dialog', { name: 'Edit field' })
+		await expect(editDialog).toBeVisible()
+		await expect(editDialog.locator('#profile-fields-admin-label')).toHaveValue(existingLabel)
+
+		const dialogBox = await editDialog.boundingBox()
+		const saveBox = await editDialog.getByTestId('profile-fields-admin-save').boundingBox()
+		expect(dialogBox).not.toBeNull()
+		expect(saveBox).not.toBeNull()
+		expect(dialogBox!.y + dialogBox!.height - (saveBox!.y + saveBox!.height)).toBeGreaterThan(16)
+
+		await editDialog.getByRole('button', { name: /close/i }).click()
+		await expect(editDialog).toBeHidden()
+
+		await page.getByTestId('profile-fields-admin-new-field').click()
+		const createDialog = page.getByRole('dialog', { name: 'Create field' })
+		await expect(createDialog).toBeVisible()
+		await createDialog.locator('#profile-fields-admin-field-key').fill(createdFieldKey)
+		await createDialog.locator('#profile-fields-admin-label').fill(createdLabel)
+		await createDialog.getByTestId('profile-fields-admin-save').click()
+
+		await expect(page.getByTestId('profile-fields-admin-success')).toContainText('Field definition created.')
+		await expect(page.getByTestId(`profile-fields-admin-definition-${createdFieldKey}`)).toBeVisible()
+		await expect(createDialog).toBeHidden()
+	} finally {
+		await deleteDefinitionByFieldKey(page.request, existingFieldKey)
+		await deleteDefinitionByFieldKey(page.request, createdFieldKey)
+	}
+})
+
+test('admin can reorder field definitions by dragging the list handles', async ({ page }) => {
+	const suffix = Date.now()
+	const firstFieldKey = `playwright_order_first_${suffix}`
+	const secondFieldKey = `playwright_order_second_${suffix}`
+	const firstLabel = `Playwright order first ${suffix}`
+	const secondLabel = `Playwright order second ${suffix}`
+
+	await deleteDefinitionByFieldKey(page.request, firstFieldKey)
+	await deleteDefinitionByFieldKey(page.request, secondFieldKey)
+	await createDefinition(page.request, {
+		fieldKey: firstFieldKey,
+		label: firstLabel,
+		sortOrder: 0,
+	})
+	await createDefinition(page.request, {
+		fieldKey: secondFieldKey,
+		label: secondLabel,
+		sortOrder: 1,
+	})
+
+	try {
+		await page.goto('./settings/admin/profile_fields')
+		await expect(page.getByTestId('profile-fields-admin')).toBeVisible()
+
+		const firstHandle = page.getByTestId(`profile-fields-admin-definition-handle-${firstFieldKey}`)
+		const secondHandle = page.getByTestId(`profile-fields-admin-definition-handle-${secondFieldKey}`)
+		const verticalOrder = async() => {
+			const firstBox = await firstHandle.boundingBox()
+			const secondBox = await secondHandle.boundingBox()
+			expect(firstBox).not.toBeNull()
+			expect(secondBox).not.toBeNull()
+			return {
+				firstY: firstBox!.y,
+				secondY: secondBox!.y,
+			}
+		}
+
+		let order = await verticalOrder()
+		expect(order.firstY).toBeLessThan(order.secondY)
+
+		await secondHandle.dragTo(firstHandle)
+
+		await expect.poll(verticalOrder).toEqual(expect.objectContaining({
+			firstY: expect.any(Number),
+			secondY: expect.any(Number),
+		}))
+		order = await verticalOrder()
+		expect(order.secondY).toBeLessThan(order.firstY)
+
+		await page.reload()
+		await expect(page.getByTestId('profile-fields-admin')).toBeVisible()
+		order = await verticalOrder()
+		expect(order.secondY).toBeLessThan(order.firstY)
+	} finally {
+		await deleteDefinitionByFieldKey(page.request, firstFieldKey)
+		await deleteDefinitionByFieldKey(page.request, secondFieldKey)
+	}
+})
+
+test('admin shows native status chip, actions menu, and drag handle in the expected order', async ({ page }) => {
+	const suffix = Date.now()
+	const fieldKey = `playwright_layout_${suffix}`
+	const label = `Playwright layout ${suffix}`
+
+	await deleteDefinitionByFieldKey(page.request, fieldKey)
+	await createDefinition(page.request, {
+		fieldKey,
+		label,
+		active: true,
+	})
+
+	try {
+		await page.goto('./settings/admin/profile_fields')
+		await expect(page.getByTestId('profile-fields-admin')).toBeVisible()
+
+		const row = page.getByTestId(`profile-fields-admin-definition-${fieldKey}`)
+		const fieldKeyText = row.getByText(fieldKey, { exact: true })
+		const statusChip = row.getByText('Active', { exact: true })
+		const actionsButton = row.getByRole('button', { name: `Actions for ${label}` })
+		const dragHandle = page.getByTestId(`profile-fields-admin-definition-handle-${fieldKey}`)
+
+		await expect(fieldKeyText).toBeVisible()
+		await expect(statusChip).toBeVisible()
+		await expect(actionsButton).toBeVisible()
+		await expect(dragHandle).toBeVisible()
+
+		const fieldKeyBox = await fieldKeyText.boundingBox()
+		const statusBox = await statusChip.boundingBox()
+		const actionsBox = await actionsButton.boundingBox()
+		const dragHandleBox = await dragHandle.boundingBox()
+
+		expect(fieldKeyBox).not.toBeNull()
+		expect(statusBox).not.toBeNull()
+		expect(actionsBox).not.toBeNull()
+		expect(dragHandleBox).not.toBeNull()
+		expect(fieldKeyBox!.x).toBeLessThan(statusBox!.x)
+		expect(statusBox!.x).toBeLessThan(actionsBox!.x)
+		expect(actionsBox!.x).toBeLessThan(dragHandleBox!.x)
+	} finally {
+		await deleteDefinitionByFieldKey(page.request, fieldKey)
+	}
+})
+
 test('admin gets an initial select option row and can remove empty rows by keyboard', async ({ page }) => {
 	const suffix = Date.now()
 	const fieldKey = `playwright_select_create_${suffix}`
@@ -322,9 +475,8 @@ test('embedded personal settings autosave a user-visible field', async ({ page }
 	const definition = await createDefinition(page.request, {
 		fieldKey,
 		label,
-		userEditable: true,
-		userVisible: true,
-		initialVisibility: 'private',
+		editPolicy: 'users',
+		exposurePolicy: 'private',
 	})
 
 	try {
