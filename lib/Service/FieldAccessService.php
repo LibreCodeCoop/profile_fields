@@ -10,6 +10,8 @@ declare(strict_types=1);
 namespace OCA\ProfileFields\Service;
 
 use OCA\ProfileFields\Db\FieldDefinition;
+use OCA\ProfileFields\Enum\FieldEditPolicy;
+use OCA\ProfileFields\Enum\FieldExposurePolicy;
 use OCA\ProfileFields\Enum\FieldVisibility;
 
 class FieldAccessService {
@@ -38,15 +40,11 @@ class FieldAccessService {
 			return false;
 		}
 
-		if (!$definition->getUserVisible()) {
+		if (!FieldExposurePolicy::from($definition->getExposurePolicy())->isUserVisible()) {
 			return false;
 		}
 
-		if ($definition->getAdminOnly()) {
-			return false;
-		}
-
-		return $definition->getUserEditable();
+		return FieldEditPolicy::from($definition->getEditPolicy())->userCanEdit();
 	}
 
 	public function canChangeVisibility(?string $actorUid, string $ownerUid, bool $actorIsAdmin): bool {
