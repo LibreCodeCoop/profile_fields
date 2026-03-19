@@ -55,10 +55,8 @@ class FieldDefinitionApiController extends OCSController {
 	 * @param string $fieldKey Immutable unique key of the field
 	 * @param string $label Human-readable label shown in the UI
 	 * @param string $type Value type accepted by the field
-	 * @param bool $adminOnly Whether only admins can edit values for this field
-	 * @param bool $userEditable Whether the owner can edit the field value
-	 * @param bool $userVisible Whether the owner can see the field in personal settings
-	 * @param string $initialVisibility Initial visibility applied to new values
+	 * @param string $editPolicy Whether values are managed by admins only or by users too
+	 * @param string $exposurePolicy Whether the field is hidden or which default visibility new values receive
 	 * @param int $sortOrder Display order used in admin and profile forms
 	 * @param bool $active Whether the definition is currently active
 	 * @param list<string> $options Allowed values for select fields (ignored for other types)
@@ -72,10 +70,8 @@ class FieldDefinitionApiController extends OCSController {
 		string $fieldKey,
 		string $label,
 		string $type,
-		bool $adminOnly = false,
-		bool $userEditable = false,
-		bool $userVisible = true,
-		string $initialVisibility = 'private',
+		string $editPolicy = 'users',
+		string $exposurePolicy = 'private',
 		int $sortOrder = 0,
 		bool $active = true,
 		array $options = [],
@@ -85,10 +81,8 @@ class FieldDefinitionApiController extends OCSController {
 				'field_key' => $fieldKey,
 				'label' => $label,
 				'type' => $type,
-				'admin_only' => $adminOnly,
-				'user_editable' => $userEditable,
-				'user_visible' => $userVisible,
-				'initial_visibility' => $initialVisibility,
+				'edit_policy' => $editPolicy,
+				'exposure_policy' => $exposurePolicy,
 				'sort_order' => $sortOrder,
 				'active' => $active,
 			];
@@ -111,10 +105,8 @@ class FieldDefinitionApiController extends OCSController {
 	 * @param int $id Identifier of the field definition
 	 * @param string $label Human-readable label shown in the UI
 	 * @param string $type Value type accepted by the field
-	 * @param bool $adminOnly Whether only admins can edit values for this field
-	 * @param bool $userEditable Whether the owner can edit the field value
-	 * @param bool $userVisible Whether the owner can see the field in personal settings
-	 * @param string $initialVisibility Initial visibility applied to new values
+	 * @param string $editPolicy Whether values are managed by admins only or by users too
+	 * @param string $exposurePolicy Whether the field is hidden or which default visibility new values receive
 	 * @param int $sortOrder Display order used in admin and profile forms
 	 * @param bool $active Whether the definition is currently active
 	 * @param list<string> $options Allowed values for select fields (ignored for other types)
@@ -129,10 +121,8 @@ class FieldDefinitionApiController extends OCSController {
 		int $id,
 		string $label,
 		string $type,
-		bool $adminOnly = false,
-		bool $userEditable = false,
-		bool $userVisible = true,
-		string $initialVisibility = 'private',
+		string $editPolicy = 'users',
+		string $exposurePolicy = 'private',
 		int $sortOrder = 0,
 		bool $active = true,
 		array $options = [],
@@ -146,10 +136,8 @@ class FieldDefinitionApiController extends OCSController {
 			$payload = [
 				'label' => $label,
 				'type' => $type,
-				'admin_only' => $adminOnly,
-				'user_editable' => $userEditable,
-				'user_visible' => $userVisible,
-				'initial_visibility' => $initialVisibility,
+				'edit_policy' => $editPolicy,
+				'exposure_policy' => $exposurePolicy,
 				'sort_order' => $sortOrder,
 				'active' => $active,
 			];
