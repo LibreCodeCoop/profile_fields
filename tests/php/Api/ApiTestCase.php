@@ -16,6 +16,8 @@ use OCA\ProfileFields\Db\FieldDefinition;
 use OCA\ProfileFields\Db\FieldDefinitionMapper;
 use OCA\ProfileFields\Db\FieldValue;
 use OCA\ProfileFields\Db\FieldValueMapper;
+use OCA\ProfileFields\Enum\FieldEditPolicy;
+use OCA\ProfileFields\Enum\FieldExposurePolicy;
 use OCA\ProfileFields\Migration\Version1000Date20260309120000;
 use OCA\ProfileFields\Service\FieldDefinitionService;
 use OCA\ProfileFields\Service\FieldValueService;
@@ -179,10 +181,12 @@ abstract class ApiTestCase extends TestCase {
 		$definition->setFieldKey($fieldKey);
 		$definition->setLabel($label);
 		$definition->setType($type);
-		$definition->setAdminOnly($adminOnly);
-		$definition->setUserEditable($userEditable);
-		$definition->setUserVisible(true);
-		$definition->setInitialVisibility($initialVisibility);
+		$definition->setEditPolicy(($adminOnly || !$userEditable) ? FieldEditPolicy::ADMINS->value : FieldEditPolicy::USERS->value);
+		$definition->setExposurePolicy(match ($initialVisibility) {
+			'public' => FieldExposurePolicy::PUBLIC->value,
+			'users' => FieldExposurePolicy::USERS->value,
+			default => FieldExposurePolicy::PRIVATE->value,
+		});
 		$definition->setSortOrder($sortOrder);
 		$definition->setActive($active);
 		$definition->setCreatedAt(new \DateTime());
