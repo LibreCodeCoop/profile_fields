@@ -39,10 +39,8 @@ class FieldDefinitionService {
 		$entity->setFieldKey($validated['field_key']);
 		$entity->setLabel($validated['label']);
 		$entity->setType($validated['type']);
-		$entity->setAdminOnly($validated['admin_only']);
-		$entity->setUserEditable($validated['user_editable']);
-		$entity->setUserVisible($validated['user_visible']);
-		$entity->setInitialVisibility($validated['initial_visibility']);
+		$entity->setEditPolicy($validated['edit_policy']);
+		$entity->setExposurePolicy($validated['exposure_policy']);
 		$entity->setSortOrder($validated['sort_order']);
 		$entity->setActive($validated['active']);
 		try {
@@ -71,10 +69,8 @@ class FieldDefinitionService {
 
 		$existing->setLabel($validated['label']);
 		$existing->setType($validated['type']);
-		$existing->setAdminOnly($validated['admin_only']);
-		$existing->setUserEditable($validated['user_editable']);
-		$existing->setUserVisible($validated['user_visible']);
-		$existing->setInitialVisibility($validated['initial_visibility']);
+		$existing->setEditPolicy($validated['edit_policy']);
+		$existing->setExposurePolicy($validated['exposure_policy']);
 		$existing->setSortOrder($validated['sort_order']);
 		$existing->setActive($validated['active']);
 		try {
