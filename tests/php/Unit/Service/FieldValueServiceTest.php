@@ -52,7 +52,7 @@ class FieldValueServiceTest extends TestCase {
 		$definition = $this->buildDefinition(FieldType::NUMBER->value);
 		$definition->setId(3);
 		$definition->setFieldKey('score');
-		$definition->setInitialVisibility('users');
+		$definition->setExposurePolicy(\OCA\ProfileFields\Enum\FieldExposurePolicy::USERS->value);
 
 		$this->fieldValueMapper
 			->method('findByFieldDefinitionIdAndUserUid')
@@ -93,7 +93,7 @@ class FieldValueServiceTest extends TestCase {
 		$definition = $this->buildDefinition(FieldType::TEXT->value);
 		$definition->setId(3);
 		$definition->setFieldKey('department');
-		$definition->setInitialVisibility('users');
+		$definition->setExposurePolicy(\OCA\ProfileFields\Enum\FieldExposurePolicy::USERS->value);
 
 		$this->fieldValueMapper
 			->method('findByFieldDefinitionIdAndUserUid')
@@ -128,7 +128,7 @@ class FieldValueServiceTest extends TestCase {
 		$definition = $this->buildDefinition(FieldType::TEXT->value);
 		$definition->setId(3);
 		$definition->setFieldKey('department');
-		$definition->setInitialVisibility('users');
+		$definition->setExposurePolicy(\OCA\ProfileFields\Enum\FieldExposurePolicy::USERS->value);
 
 		$existing = new FieldValue();
 		$existing->setId(10);
@@ -392,7 +392,7 @@ class FieldValueServiceTest extends TestCase {
 	private function buildDefinition(string $type): FieldDefinition {
 		$definition = new FieldDefinition();
 		$definition->setType($type);
-		$definition->setInitialVisibility('private');
+		$definition->setExposurePolicy(\OCA\ProfileFields\Enum\FieldExposurePolicy::PRIVATE->value);
 		return $definition;
 	}
 
