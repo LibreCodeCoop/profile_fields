@@ -183,10 +183,8 @@ class DataImportServiceTest extends TestCase {
 					'field_key' => 'region',
 					'label' => 'Region',
 					'type' => 'text',
-					'admin_only' => false,
-					'user_editable' => false,
-					'user_visible' => true,
-					'initial_visibility' => 'users',
+					'edit_policy' => 'admins',
+					'exposure_policy' => 'users',
 					'sort_order' => 0,
 					'active' => true,
 					'created_at' => '2026-03-10T08:00:00+00:00',
@@ -196,10 +194,8 @@ class DataImportServiceTest extends TestCase {
 					'field_key' => 'cost_center',
 					'label' => 'Cost center',
 					'type' => 'text',
-					'admin_only' => false,
-					'user_editable' => false,
-					'user_visible' => true,
-					'initial_visibility' => 'users',
+					'edit_policy' => 'admins',
+					'exposure_policy' => 'users',
 					'sort_order' => 2,
 					'active' => true,
 					'created_at' => '2026-03-01T12:00:00+00:00',
@@ -233,10 +229,8 @@ class DataImportServiceTest extends TestCase {
 		$definition->setFieldKey($fieldKey);
 		$definition->setLabel($label);
 		$definition->setType('text');
-		$definition->setAdminOnly(false);
-		$definition->setUserEditable(false);
-		$definition->setUserVisible(true);
-		$definition->setInitialVisibility('users');
+		$definition->setEditPolicy(\OCA\ProfileFields\Enum\FieldEditPolicy::ADMINS->value);
+		$definition->setExposurePolicy(\OCA\ProfileFields\Enum\FieldExposurePolicy::USERS->value);
 		$definition->setSortOrder($sortOrder);
 		$definition->setActive($active);
 		$definition->setCreatedAt(new \DateTime('2026-03-01T12:00:00+00:00'));
