@@ -12,8 +12,9 @@ namespace OCA\ProfileFields\Tests\ControllerIntegration\Controller;
 use OCA\ProfileFields\AppInfo\Application;
 use OCA\ProfileFields\Controller\FieldDefinitionApiController;
 use OCA\ProfileFields\Db\FieldDefinitionMapper;
+use OCA\ProfileFields\Enum\FieldEditPolicy;
+use OCA\ProfileFields\Enum\FieldExposurePolicy;
 use OCA\ProfileFields\Enum\FieldType;
-use OCA\ProfileFields\Enum\FieldVisibility;
 use OCA\ProfileFields\Migration\Version1000Date20260309120000;
 use OCA\ProfileFields\Service\FieldDefinitionService;
 use OCP\AppFramework\App;
@@ -81,12 +82,10 @@ class FieldDefinitionApiControllerTest extends TestCase {
 			$fieldKey,
 			'Performance score',
 			FieldType::NUMBER->value,
-			false,
-			false,
-			true,
-			FieldVisibility::USERS->value,
+			FieldEditPolicy::USERS->value,
+			FieldExposurePolicy::PRIVATE->value,
 			5,
-			true,
+			false,
 		);
 
 		$this->assertSame(Http::STATUS_CREATED, $createResponse->getStatus());
@@ -105,10 +104,8 @@ class FieldDefinitionApiControllerTest extends TestCase {
 			$createResponse->getData()['id'],
 			'Performance score updated',
 			FieldType::NUMBER->value,
-			true,
-			false,
-			true,
-			FieldVisibility::PUBLIC->value,
+			FieldEditPolicy::ADMINS->value,
+			FieldExposurePolicy::PUBLIC->value,
 			6,
 			true,
 		);

@@ -138,10 +138,8 @@ class NotifyAdminsOrGroupsProfileFieldChangeOperationTest extends TestCase {
 		$definition->setFieldKey('department');
 		$definition->setLabel('Department');
 		$definition->setType(FieldType::TEXT->value);
-		$definition->setAdminOnly(false);
-		$definition->setUserEditable(true);
-		$definition->setUserVisible(true);
-		$definition->setInitialVisibility('users');
+		$definition->setEditPolicy(\OCA\ProfileFields\Enum\FieldEditPolicy::USERS->value);
+		$definition->setExposurePolicy(\OCA\ProfileFields\Enum\FieldExposurePolicy::USERS->value);
 		$definition->setSortOrder(1);
 		$definition->setActive(true);
 		$definition->setCreatedAt(new \DateTime());

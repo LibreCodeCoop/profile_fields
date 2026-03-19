@@ -10,6 +10,8 @@ declare(strict_types=1);
 namespace OCA\ProfileFields\Tests\Unit\Service;
 
 use OCA\ProfileFields\Db\FieldDefinition;
+use OCA\ProfileFields\Enum\FieldEditPolicy;
+use OCA\ProfileFields\Enum\FieldExposurePolicy;
 use OCA\ProfileFields\Enum\FieldType;
 use OCA\ProfileFields\Enum\FieldVisibility;
 use OCA\ProfileFields\Service\FieldAccessService;
@@ -62,10 +64,8 @@ class FieldAccessServiceTest extends TestCase {
 	private function buildDefinition(bool $adminOnly, bool $userEditable): FieldDefinition {
 		$definition = new FieldDefinition();
 		$definition->setType(FieldType::TEXT->value);
-		$definition->setInitialVisibility(FieldVisibility::PRIVATE->value);
-		$definition->setAdminOnly($adminOnly);
-		$definition->setUserEditable($userEditable);
-		$definition->setUserVisible(true);
+		$definition->setExposurePolicy(FieldExposurePolicy::PRIVATE->value);
+		$definition->setEditPolicy(($adminOnly || !$userEditable) ? FieldEditPolicy::ADMINS->value : FieldEditPolicy::USERS->value);
 		return $definition;
 	}
 }

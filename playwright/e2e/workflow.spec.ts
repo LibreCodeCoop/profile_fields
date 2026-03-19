@@ -83,9 +83,8 @@ const createWorkflowFieldDefinition = async(page: Page, fieldKey: string, label:
 	await createDefinition(page.request, {
 		fieldKey,
 		label,
-		userEditable: true,
-		userVisible: true,
-		initialVisibility: 'users',
+		editPolicy: 'users',
+		exposurePolicy: 'users',
 	})
 }
 

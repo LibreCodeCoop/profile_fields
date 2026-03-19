@@ -18,10 +18,8 @@ Feature: profile fields API
       | fieldKey          | employee_code |
       | label             | Employee code |
       | type              | text          |
-      | adminOnly         | false         |
-      | userEditable      | true          |
-      | userVisible       | true          |
-      | initialVisibility | users         |
+      | editPolicy        | users         |
+      | exposurePolicy    | users         |
       | sortOrder         | 10            |
       | active            | true          |
     Then the response should have a status code 201
@@ -29,16 +27,14 @@ Feature: profile fields API
       | key                              | value         |
       | (jq).ocs.data.field_key          | employee_code |
       | (jq).ocs.data.label              | Employee code |
-      | (jq).ocs.data.user_editable      | true          |
-      | (jq).ocs.data.initial_visibility | users         |
+      | (jq).ocs.data.edit_policy        | users         |
+      | (jq).ocs.data.exposure_policy    | users         |
     And fetch field "(FIELD_DEFINITION_ID)(jq).ocs.data.id" from previous JSON response
     When sending "put" to ocs "/apps/profile_fields/api/v1/definitions/<FIELD_DEFINITION_ID>"
       | label             | Employee ID |
       | type              | text        |
-      | adminOnly         | true        |
-      | userEditable      | false       |
-      | userVisible       | true        |
-      | initialVisibility | private     |
+      | editPolicy        | admins      |
+      | exposurePolicy    | private     |
       | sortOrder         | 30          |
       | active            | true        |
     Then the response should have a status code 200
@@ -46,9 +42,8 @@ Feature: profile fields API
       | key                              | value                 |
       | (jq).ocs.data.id                 | <FIELD_DEFINITION_ID> |
       | (jq).ocs.data.label              | Employee ID           |
-      | (jq).ocs.data.admin_only         | true                  |
-      | (jq).ocs.data.user_editable      | false                 |
-      | (jq).ocs.data.initial_visibility | private               |
+      | (jq).ocs.data.edit_policy        | admins                |
+      | (jq).ocs.data.exposure_policy    | private               |
     When sending "get" to ocs "/apps/profile_fields/api/v1/definitions"
     Then the response should have a status code 200
     And the response should be a JSON array with the following mandatory values
@@ -56,9 +51,8 @@ Feature: profile fields API
       | (jq).ocs.data[0].id                 | <FIELD_DEFINITION_ID> |
       | (jq).ocs.data[0].field_key          | employee_code         |
       | (jq).ocs.data[0].label              | Employee ID           |
-      | (jq).ocs.data[0].admin_only         | true                  |
-      | (jq).ocs.data[0].user_editable      | false                 |
-      | (jq).ocs.data[0].initial_visibility | private               |
+      | (jq).ocs.data[0].edit_policy        | admins                |
+      | (jq).ocs.data[0].exposure_policy    | private               |
     When sending "delete" to ocs "/apps/profile_fields/api/v1/definitions/<FIELD_DEFINITION_ID>"
     Then the response should have a status code 200
     And the response should be a JSON array with the following mandatory values
@@ -77,10 +71,8 @@ Feature: profile fields API
       | fieldKey          | nickname |
       | label             | Nickname |
       | type              | text     |
-      | adminOnly         | false    |
-      | userEditable      | true     |
-      | userVisible       | true     |
-      | initialVisibility | users    |
+      | editPolicy        | users    |
+      | exposurePolicy    | users    |
       | sortOrder         | 10       |
       | active            | true     |
     Then the response should have a status code 201
@@ -89,10 +81,8 @@ Feature: profile fields API
       | fieldKey          | employee_id |
       | label             | Employee ID |
       | type              | text        |
-      | adminOnly         | true        |
-      | userEditable      | false       |
-      | userVisible       | true        |
-      | initialVisibility | users       |
+      | editPolicy        | admins      |
+      | exposurePolicy    | users       |
       | sortOrder         | 20          |
       | active            | true        |
     Then the response should have a status code 201
@@ -157,10 +147,8 @@ Feature: profile fields API
       | fieldKey          | cpf |
       | label             | CPF |
       | type              | text |
-      | adminOnly         | false |
-      | userEditable      | false |
-      | userVisible       | true |
-      | initialVisibility | private |
+      | editPolicy        | admins |
+      | exposurePolicy    | private |
       | sortOrder         | 10 |
       | active            | true |
     Then the response should have a status code 201
@@ -169,10 +157,8 @@ Feature: profile fields API
       | fieldKey          | health_plan_type |
       | label             | Health plan type |
       | type              | text |
-      | adminOnly         | false |
-      | userEditable      | false |
-      | userVisible       | true |
-      | initialVisibility | private |
+      | editPolicy        | admins |
+      | exposurePolicy    | private |
       | sortOrder         | 20 |
       | active            | true |
     Then the response should have a status code 201
@@ -181,10 +167,8 @@ Feature: profile fields API
       | fieldKey          | health_plan_installment |
       | label             | Health plan installment |
       | type              | number |
-      | adminOnly         | false |
-      | userEditable      | false |
-      | userVisible       | true |
-      | initialVisibility | private |
+      | editPolicy        | admins |
+      | exposurePolicy    | private |
       | sortOrder         | 30 |
       | active            | true |
     Then the response should have a status code 201
@@ -193,10 +177,8 @@ Feature: profile fields API
       | fieldKey          | social_capital_recurring |
       | label             | Social capital recurring |
       | type              | number |
-      | adminOnly         | false |
-      | userEditable      | false |
-      | userVisible       | true |
-      | initialVisibility | private |
+      | editPolicy        | admins |
+      | exposurePolicy    | private |
       | sortOrder         | 40 |
       | active            | true |
     Then the response should have a status code 201
@@ -205,10 +187,8 @@ Feature: profile fields API
       | fieldKey          | corporate_mobile_plan |
       | label             | Corporate mobile plan |
       | type              | text |
-      | adminOnly         | false |
-      | userEditable      | false |
-      | userVisible       | true |
-      | initialVisibility | private |
+      | editPolicy        | admins |
+      | exposurePolicy    | private |
       | sortOrder         | 50 |
       | active            | true |
     Then the response should have a status code 201
@@ -254,10 +234,8 @@ Feature: profile fields API
       | fieldKey          | cpf |
       | label             | CPF |
       | type              | text |
-      | adminOnly         | false |
-      | userEditable      | false |
-      | userVisible       | true |
-      | initialVisibility | private |
+      | editPolicy        | admins |
+      | exposurePolicy    | private |
       | sortOrder         | 10 |
       | active            | true |
     Then the response should have a status code 201
@@ -286,10 +264,8 @@ Feature: profile fields API
       | fieldKey          | region |
       | label             | Region |
       | type              | text |
-      | adminOnly         | false |
-      | userEditable      | false |
-      | userVisible       | true |
-      | initialVisibility | private |
+      | editPolicy        | admins |
+      | exposurePolicy    | private |
       | sortOrder         | 10 |
       | active            | true |
     Then the response should have a status code 201
@@ -326,10 +302,8 @@ Feature: profile fields API
       | fieldKey          | region |
       | label             | Region |
       | type              | text |
-      | adminOnly         | false |
-      | userEditable      | false |
-      | userVisible       | true |
-      | initialVisibility | private |
+      | editPolicy        | admins |
+      | exposurePolicy    | private |
       | sortOrder         | 10 |
       | active            | true |
     Then the response should have a status code 201

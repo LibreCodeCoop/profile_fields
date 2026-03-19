@@ -13,6 +13,8 @@ use InvalidArgumentException;
 use OCA\ProfileFields\Db\FieldDefinition;
 use OCA\ProfileFields\Db\FieldDefinitionMapper;
 use OCA\ProfileFields\Db\FieldValueMapper;
+use OCA\ProfileFields\Enum\FieldEditPolicy;
+use OCA\ProfileFields\Enum\FieldExposurePolicy;
 use OCA\ProfileFields\Enum\FieldType;
 use OCA\ProfileFields\Service\FieldDefinitionService;
 use OCA\ProfileFields\Service\FieldDefinitionValidator;
@@ -63,8 +65,8 @@ class FieldDefinitionServiceTest extends TestCase {
 				$this->assertSame('performance_score', $definition->getFieldKey());
 				$this->assertSame('Performance score', $definition->getLabel());
 				$this->assertSame(FieldType::NUMBER->value, $definition->getType());
-				$this->assertSame('users', $definition->getInitialVisibility());
-				$this->assertFalse($definition->getUserEditable());
+				$this->assertSame(FieldExposurePolicy::USERS->value, $definition->getExposurePolicy());
+				$this->assertSame(FieldEditPolicy::ADMINS->value, $definition->getEditPolicy());
 				$this->assertInstanceOf(\DateTimeInterface::class, $definition->getCreatedAt());
 				$this->assertInstanceOf(\DateTimeInterface::class, $definition->getUpdatedAt());
 				return true;
@@ -75,8 +77,8 @@ class FieldDefinitionServiceTest extends TestCase {
 			'field_key' => 'performance_score',
 			'label' => 'Performance score',
 			'type' => FieldType::NUMBER->value,
-			'initial_visibility' => 'users',
-			'user_editable' => false,
+			'exposure_policy' => FieldExposurePolicy::USERS->value,
+			'edit_policy' => FieldEditPolicy::ADMINS->value,
 		]);
 
 		$this->assertSame('performance_score', $created->getFieldKey());
@@ -115,7 +117,7 @@ class FieldDefinitionServiceTest extends TestCase {
 		$existing->setFieldKey('cpf');
 		$existing->setLabel('CPF');
 		$existing->setType(FieldType::TEXT->value);
-		$existing->setInitialVisibility('private');
+		$existing->setExposurePolicy(FieldExposurePolicy::PRIVATE->value);
 
 		$this->expectException(InvalidArgumentException::class);
 		$this->expectExceptionMessage('field_key cannot be changed');
@@ -133,7 +135,7 @@ class FieldDefinitionServiceTest extends TestCase {
 		$existing->setFieldKey('cpf');
 		$existing->setLabel('CPF');
 		$existing->setType(FieldType::TEXT->value);
-		$existing->setInitialVisibility('private');
+		$existing->setExposurePolicy(FieldExposurePolicy::PRIVATE->value);
 
 		$this->fieldValueMapper
 			->method('hasValuesForFieldDefinitionId')
@@ -178,10 +180,8 @@ class FieldDefinitionServiceTest extends TestCase {
 		$definition->setFieldKey('contract_type');
 		$definition->setLabel('Contract Type');
 		$definition->setType(FieldType::SELECT->value);
-		$definition->setAdminOnly(false);
-		$definition->setUserEditable(true);
-		$definition->setUserVisible(true);
-		$definition->setInitialVisibility('private');
+		$definition->setEditPolicy(FieldEditPolicy::USERS->value);
+		$definition->setExposurePolicy(FieldExposurePolicy::PRIVATE->value);
 		$definition->setSortOrder(0);
 		$definition->setActive(true);
 		$definition->setOptions('["CLT","PJ"]');
@@ -199,10 +199,8 @@ class FieldDefinitionServiceTest extends TestCase {
 		$definition->setFieldKey('cpf');
 		$definition->setLabel('CPF');
 		$definition->setType(FieldType::TEXT->value);
-		$definition->setAdminOnly(false);
-		$definition->setUserEditable(false);
-		$definition->setUserVisible(false);
-		$definition->setInitialVisibility('private');
+		$definition->setEditPolicy(FieldEditPolicy::ADMINS->value);
+		$definition->setExposurePolicy(FieldExposurePolicy::HIDDEN->value);
 		$definition->setSortOrder(0);
 		$definition->setActive(true);
 		$definition->setCreatedAt(new \DateTime('2026-01-01T00:00:00+00:00'));
@@ -219,10 +217,8 @@ class FieldDefinitionServiceTest extends TestCase {
 		$existing->setFieldKey('cpf');
 		$existing->setLabel('CPF');
 		$existing->setType(FieldType::TEXT->value);
-		$existing->setAdminOnly(false);
-		$existing->setUserEditable(false);
-		$existing->setUserVisible(true);
-		$existing->setInitialVisibility('private');
+		$existing->setEditPolicy(FieldEditPolicy::ADMINS->value);
+		$existing->setExposurePolicy(FieldExposurePolicy::PRIVATE->value);
 		$existing->setSortOrder(0);
 		$existing->setActive(true);
 		$existing->setCreatedAt(new \DateTime('2026-03-01T00:00:00+00:00'));

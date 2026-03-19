@@ -37,10 +37,8 @@ class ExportTest extends TestCase {
 		$definition->setFieldKey('cost_center');
 		$definition->setLabel('Cost center');
 		$definition->setType('text');
-		$definition->setAdminOnly(false);
-		$definition->setUserEditable(true);
-		$definition->setUserVisible(true);
-		$definition->setInitialVisibility('users');
+		$definition->setEditPolicy(\OCA\ProfileFields\Enum\FieldEditPolicy::USERS->value);
+		$definition->setExposurePolicy(\OCA\ProfileFields\Enum\FieldExposurePolicy::USERS->value);
 		$definition->setSortOrder(3);
 		$definition->setActive(true);
 		$definition->setCreatedAt(new \DateTime('2026-03-01T12:00:00+00:00'));

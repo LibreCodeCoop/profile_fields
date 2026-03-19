@@ -16,6 +16,7 @@ use JsonException;
 use OCA\ProfileFields\Db\FieldDefinition;
 use OCA\ProfileFields\Db\FieldValue;
 use OCA\ProfileFields\Db\FieldValueMapper;
+use OCA\ProfileFields\Enum\FieldExposurePolicy;
 use OCA\ProfileFields\Enum\FieldType;
 use OCA\ProfileFields\Enum\FieldVisibility;
 use OCA\ProfileFields\Workflow\Event\ProfileFieldValueCreatedEvent;
@@ -48,7 +49,7 @@ class FieldValueService {
 	): FieldValue {
 		$normalizedValue = $this->normalizeValue($definition, $rawValue);
 		$valueJson = $this->encodeValue($normalizedValue);
-		$visibility = $currentVisibility ?? $definition->getInitialVisibility();
+		$visibility = $currentVisibility ?? FieldExposurePolicy::from($definition->getExposurePolicy())->initialVisibility()->value;
 		if (!FieldVisibility::isValid($visibility)) {
 			throw new InvalidArgumentException('current_visibility is not supported');
 		}

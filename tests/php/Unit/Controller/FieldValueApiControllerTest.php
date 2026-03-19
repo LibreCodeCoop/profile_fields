@@ -131,10 +131,8 @@ class FieldValueApiControllerTest extends TestCase {
 		$inactive->setFieldKey('grade');
 		$inactive->setLabel('Grade');
 		$inactive->setType(FieldType::TEXT->value);
-		$inactive->setAdminOnly(false);
-		$inactive->setUserEditable(true);
-		$inactive->setUserVisible(true);
-		$inactive->setInitialVisibility(FieldVisibility::PRIVATE->value);
+		$inactive->setEditPolicy(\OCA\ProfileFields\Enum\FieldEditPolicy::USERS->value);
+		$inactive->setExposurePolicy(\OCA\ProfileFields\Enum\FieldExposurePolicy::PRIVATE->value);
 		$inactive->setSortOrder(0);
 		$inactive->setActive(false);
 		$inactive->setCreatedAt(new \DateTime());
@@ -258,10 +256,8 @@ class FieldValueApiControllerTest extends TestCase {
 		$inactive->setFieldKey('grade');
 		$inactive->setLabel('Grade');
 		$inactive->setType(FieldType::TEXT->value);
-		$inactive->setAdminOnly(false);
-		$inactive->setUserEditable(true);
-		$inactive->setUserVisible(true);
-		$inactive->setInitialVisibility(FieldVisibility::PRIVATE->value);
+		$inactive->setEditPolicy(\OCA\ProfileFields\Enum\FieldEditPolicy::USERS->value);
+		$inactive->setExposurePolicy(\OCA\ProfileFields\Enum\FieldExposurePolicy::PRIVATE->value);
 		$inactive->setSortOrder(0);
 		$inactive->setActive(false);
 		$inactive->setCreatedAt(new \DateTime());
@@ -271,8 +267,8 @@ class FieldValueApiControllerTest extends TestCase {
 		$forbidden->setActive(true);
 		$editableButVisibilityForbidden = clone $inactive;
 		$editableButVisibilityForbidden->setActive(true);
-		$editableButVisibilityForbidden->setUserEditable(true);
-		$editableButVisibilityForbidden->setUserVisible(true);
+		$editableButVisibilityForbidden->setEditPolicy(\OCA\ProfileFields\Enum\FieldEditPolicy::USERS->value);
+		$editableButVisibilityForbidden->setExposurePolicy(\OCA\ProfileFields\Enum\FieldExposurePolicy::PRIVATE->value);
 
 		return [
 			'missing definition' => [null, null, null, Http::STATUS_NOT_FOUND, 'Field definition not found'],
@@ -367,10 +363,8 @@ class FieldValueApiControllerTest extends TestCase {
 		$definition->setFieldKey('grade_' . $id);
 		$definition->setLabel('Grade ' . $id);
 		$definition->setType(FieldType::TEXT->value);
-		$definition->setAdminOnly($adminOnly);
-		$definition->setUserEditable($userEditable);
-		$definition->setUserVisible(true);
-		$definition->setInitialVisibility(FieldVisibility::PRIVATE->value);
+		$definition->setEditPolicy(($adminOnly || !$userEditable) ? \OCA\ProfileFields\Enum\FieldEditPolicy::ADMINS->value : \OCA\ProfileFields\Enum\FieldEditPolicy::USERS->value);
+		$definition->setExposurePolicy(\OCA\ProfileFields\Enum\FieldExposurePolicy::PRIVATE->value);
 		$definition->setSortOrder(0);
 		$definition->setActive($active);
 		$definition->setCreatedAt(new \DateTime());

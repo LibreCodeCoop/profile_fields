@@ -12,6 +12,7 @@ namespace OCA\ProfileFields\Search;
 use InvalidArgumentException;
 use OCA\ProfileFields\Db\FieldValue;
 use OCA\ProfileFields\Db\FieldValueMapper;
+use OCA\ProfileFields\Enum\FieldExposurePolicy;
 use OCA\ProfileFields\Enum\FieldVisibility;
 use OCA\ProfileFields\Service\FieldDefinitionService;
 use OCP\IGroupManager;
@@ -72,7 +73,7 @@ class ProfileFieldDirectorySearchService {
 				continue;
 			}
 
-			if (!$this->isSearchableForActor($definition->getUserVisible(), $value->getCurrentVisibility(), $actorIsAdmin, $actorUid !== null)) {
+			if (!$this->isSearchableForActor(FieldExposurePolicy::from($definition->getExposurePolicy()), $value->getCurrentVisibility(), $actorIsAdmin, $actorUid !== null)) {
 				continue;
 			}
 
@@ -123,12 +124,12 @@ class ProfileFieldDirectorySearchService {
 		return trim((string)$scalar);
 	}
 
-	private function isSearchableForActor(bool $fieldIsUserVisible, string $currentVisibility, bool $actorIsAdmin, bool $actorIsAuthenticated): bool {
+	private function isSearchableForActor(FieldExposurePolicy $exposurePolicy, string $currentVisibility, bool $actorIsAdmin, bool $actorIsAuthenticated): bool {
 		if ($actorIsAdmin) {
 			return true;
 		}
 
-		if (!$fieldIsUserVisible) {
+		if (!$exposurePolicy->isUserVisible()) {
 			return false;
 		}
 

@@ -10,8 +10,9 @@ declare(strict_types=1);
 namespace OCA\ProfileFields\Service;
 
 use InvalidArgumentException;
+use OCA\ProfileFields\Enum\FieldEditPolicy;
+use OCA\ProfileFields\Enum\FieldExposurePolicy;
 use OCA\ProfileFields\Enum\FieldType;
-use OCA\ProfileFields\Enum\FieldVisibility;
 
 class FieldDefinitionValidator {
 	/**
@@ -19,10 +20,8 @@ class FieldDefinitionValidator {
 	 *     field_key?: string,
 	 *     label?: string,
 	 *     type?: string,
-	 *     admin_only?: bool,
-	 *     user_editable?: bool,
-	 *     user_visible?: bool,
-	 *     initial_visibility?: string,
+	 *     edit_policy?: string,
+	 *     exposure_policy?: string,
 	 *     sort_order?: int,
 	 *     active?: bool,
 	 *     options?: list<string>,
@@ -31,10 +30,8 @@ class FieldDefinitionValidator {
 	 *     field_key: non-empty-string,
 	 *     label: non-empty-string,
 	 *     type: 'text'|'number'|'select',
-	 *     admin_only: bool,
-	 *     user_editable: bool,
-	 *     user_visible: bool,
-	 *     initial_visibility: 'private'|'users'|'public',
+	 *     edit_policy: 'admins'|'users',
+	 *     exposure_policy: 'hidden'|'private'|'users'|'public',
 	 *     sort_order: int,
 	 *     active: bool,
 	 *     options: list<string>|null,
@@ -52,19 +49,14 @@ class FieldDefinitionValidator {
 			throw new InvalidArgumentException('type is not supported');
 		}
 
-		$visibility = (string)($definition['initial_visibility'] ?? FieldVisibility::PRIVATE->value);
-		if (!FieldVisibility::isValid($visibility)) {
-			throw new InvalidArgumentException('initial_visibility is not supported');
+		$editPolicy = (string)($definition['edit_policy'] ?? FieldEditPolicy::USERS->value);
+		if (!FieldEditPolicy::isValid($editPolicy)) {
+			throw new InvalidArgumentException('edit_policy is not supported');
 		}
 
-		$adminOnly = (bool)($definition['admin_only'] ?? false);
-		$userEditable = (bool)($definition['user_editable'] ?? false);
-		$userVisible = (bool)($definition['user_visible'] ?? true);
-		if ($adminOnly && $userEditable) {
-			throw new InvalidArgumentException('admin_only and user_editable cannot both be enabled');
-		}
-		if (!$userVisible && $userEditable) {
-			throw new InvalidArgumentException('user_editable cannot be enabled when the field is hidden from users');
+		$exposurePolicy = (string)($definition['exposure_policy'] ?? FieldExposurePolicy::PRIVATE->value);
+		if (!FieldExposurePolicy::isValid($exposurePolicy)) {
+			throw new InvalidArgumentException('exposure_policy is not supported');
 		}
 
 		$options = $this->validateOptions($type, $definition['options'] ?? null);
@@ -73,10 +65,8 @@ class FieldDefinitionValidator {
 			'field_key' => $fieldKey,
 			'label' => $label,
 			'type' => $type,
-			'admin_only' => $adminOnly,
-			'user_editable' => $userEditable,
-			'user_visible' => $userVisible,
-			'initial_visibility' => $visibility,
+			'edit_policy' => $editPolicy,
+			'exposure_policy' => $exposurePolicy,
 			'sort_order' => (int)($definition['sort_order'] ?? 0),
 			'active' => (bool)($definition['active'] ?? true),
 			'options' => $options,
@@ -117,10 +107,8 @@ class FieldDefinitionValidator {
 	 *     field_key?: string,
 	 *     label?: string,
 	 *     type?: string,
-	 *     admin_only?: bool,
-	 *     user_editable?: bool,
-	 *     user_visible?: bool,
-	 *     initial_visibility?: string,
+	 *     edit_policy?: string,
+	 *     exposure_policy?: string,
 	 *     sort_order?: int,
 	 *     active?: bool,
 	 *     options?: list<string>,

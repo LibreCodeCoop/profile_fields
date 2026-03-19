@@ -10,8 +10,9 @@ declare(strict_types=1);
 namespace OCA\ProfileFields\Tests\Unit\Service;
 
 use InvalidArgumentException;
+use OCA\ProfileFields\Enum\FieldEditPolicy;
+use OCA\ProfileFields\Enum\FieldExposurePolicy;
 use OCA\ProfileFields\Enum\FieldType;
-use OCA\ProfileFields\Enum\FieldVisibility;
 use OCA\ProfileFields\Service\FieldDefinitionValidator;
 use PHPUnit\Framework\TestCase;
 
@@ -28,12 +29,12 @@ class FieldDefinitionValidatorTest extends TestCase {
 			'field_key' => 'cpf',
 			'label' => 'CPF',
 			'type' => FieldType::TEXT->value,
-			'user_editable' => false,
+			'edit_policy' => FieldEditPolicy::ADMINS->value,
 		]);
 
 		$this->assertSame('cpf', $validated['field_key']);
 		$this->assertSame(FieldType::TEXT->value, $validated['type']);
-		$this->assertSame(FieldVisibility::PRIVATE->value, $validated['initial_visibility']);
+		$this->assertSame(FieldExposurePolicy::PRIVATE->value, $validated['exposure_policy']);
 		$this->assertTrue($validated['active']);
 	}
 
@@ -105,28 +106,27 @@ class FieldDefinitionValidatorTest extends TestCase {
 		$this->assertNull($validated['options']);
 	}
 
-	public function testRejectAdminOnlyAndUserEditableCombination(): void {
+	public function testRejectInvalidEditPolicy(): void {
 		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage('admin_only and user_editable cannot both be enabled');
+		$this->expectExceptionMessage('edit_policy is not supported');
 
 		$this->validator->validate([
 			'field_key' => 'rg',
 			'label' => 'RG',
 			'type' => FieldType::TEXT->value,
-			'admin_only' => true,
-			'user_editable' => true,
+			'edit_policy' => 'mixed',
 		]);
 	}
 
-	public function testRejectInvalidInitialVisibility(): void {
+	public function testRejectInvalidExposurePolicy(): void {
 		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage('initial_visibility is not supported');
+		$this->expectExceptionMessage('exposure_policy is not supported');
 
 		$this->validator->validate([
 			'field_key' => 'department',
 			'label' => 'Department',
 			'type' => FieldType::TEXT->value,
-			'initial_visibility' => 'team',
+			'exposure_policy' => 'team',
 		]);
 	}
 }

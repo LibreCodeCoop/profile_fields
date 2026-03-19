@@ -3,7 +3,7 @@
  * Do not make direct changes to the file.
  */
 
-export interface paths {
+export type paths = {
     "/ocs/v2.php/apps/profile_fields/api/v1/definitions": {
         parameters: {
             query?: never;
@@ -200,9 +200,9 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-}
+};
 export type webhooks = Record<string, never>;
-export interface components {
+export type components = {
     schemas: {
         Definition: {
             /** Format: int64 */
@@ -210,10 +210,8 @@ export interface components {
             field_key: string;
             label: string;
             type: components["schemas"]["Type"];
-            admin_only: boolean;
-            user_editable: boolean;
-            user_visible: boolean;
-            initial_visibility: components["schemas"]["Visibility"];
+            edit_policy: components["schemas"]["EditPolicy"];
+            exposure_policy: components["schemas"]["ExposurePolicy"];
             /** Format: int64 */
             sort_order: number;
             active: boolean;
@@ -225,20 +223,22 @@ export interface components {
             field_key?: string;
             label?: string;
             type?: string;
-            admin_only?: boolean;
-            user_editable?: boolean;
-            user_visible?: boolean;
-            initial_visibility?: string;
+            edit_policy?: components["schemas"]["EditPolicy"];
+            exposure_policy?: components["schemas"]["ExposurePolicy"];
             /** Format: int64 */
             sort_order?: number;
             active?: boolean;
             options?: string[];
         };
+        /** @enum {string} */
+        EditPolicy: "admins" | "users";
         EditableField: {
             definition: components["schemas"]["Definition"];
             value: components["schemas"]["ValueRecord"];
             can_edit: boolean;
         };
+        /** @enum {string} */
+        ExposurePolicy: "hidden" | "private" | "users" | "public";
         LookupField: {
             definition: components["schemas"]["Definition"];
             value: components["schemas"]["ValueRecord"];
@@ -299,7 +299,7 @@ export interface components {
     requestBodies: never;
     headers: never;
     pathItems: never;
-}
+};
 export type $defs = Record<string, never>;
 export interface operations {
     "field_definition_api-index": {
@@ -350,25 +350,15 @@ export interface operations {
                     /** @description Value type accepted by the field */
                     type: string;
                     /**
-                     * @description Whether only admins can edit values for this field
-                     * @default false
+                     * @description Whether values are managed by admins only or by users too
+                     * @default users
                      */
-                    adminOnly?: boolean;
+                    editPolicy?: string;
                     /**
-                     * @description Whether the owner can edit the field value
-                     * @default false
-                     */
-                    userEditable?: boolean;
-                    /**
-                     * @description Whether the owner can see the field in personal settings
-                     * @default true
-                     */
-                    userVisible?: boolean;
-                    /**
-                     * @description Initial visibility applied to new values
+                     * @description Whether the field is hidden or which default visibility new values receive
                      * @default private
                      */
-                    initialVisibility?: string;
+                    exposurePolicy?: string;
                     /**
                      * Format: int64
                      * @description Display order used in admin and profile forms
@@ -442,25 +432,15 @@ export interface operations {
                     /** @description Value type accepted by the field */
                     type: string;
                     /**
-                     * @description Whether only admins can edit values for this field
-                     * @default false
+                     * @description Whether values are managed by admins only or by users too
+                     * @default users
                      */
-                    adminOnly?: boolean;
+                    editPolicy?: string;
                     /**
-                     * @description Whether the owner can edit the field value
-                     * @default false
-                     */
-                    userEditable?: boolean;
-                    /**
-                     * @description Whether the owner can see the field in personal settings
-                     * @default true
-                     */
-                    userVisible?: boolean;
-                    /**
-                     * @description Initial visibility applied to new values
+                     * @description Whether the field is hidden or which default visibility new values receive
                      * @default private
                      */
-                    initialVisibility?: string;
+                    exposurePolicy?: string;
                     /**
                      * Format: int64
                      * @description Display order used in admin and profile forms

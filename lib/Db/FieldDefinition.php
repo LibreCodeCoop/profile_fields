@@ -20,14 +20,10 @@ use OCP\AppFramework\Db\Entity;
  * @method void setLabel(string $value)
  * @method string getType()
  * @method void setType(string $value)
- * @method bool getAdminOnly()
- * @method void setAdminOnly(bool $value)
- * @method bool getUserEditable()
- * @method void setUserEditable(bool $value)
- * @method bool getUserVisible()
- * @method void setUserVisible(bool $value)
- * @method string getInitialVisibility()
- * @method void setInitialVisibility(string $value)
+ * @method string getEditPolicy()
+ * @method void setEditPolicy(string $value)
+ * @method string getExposurePolicy()
+ * @method void setExposurePolicy(string $value)
  * @method int getSortOrder()
  * @method void setSortOrder(int $value)
  * @method bool getActive()
@@ -43,10 +39,8 @@ class FieldDefinition extends Entity {
 	protected $fieldKey;
 	protected $label;
 	protected $type;
-	protected $adminOnly;
-	protected $userEditable;
-	protected $userVisible;
-	protected $initialVisibility;
+	protected $editPolicy;
+	protected $exposurePolicy;
 	protected $sortOrder;
 	protected $active;
 	protected $options;
@@ -55,9 +49,6 @@ class FieldDefinition extends Entity {
 
 	public function __construct() {
 		$this->addType('id', 'integer');
-		$this->addType('adminOnly', 'boolean');
-		$this->addType('userEditable', 'boolean');
-		$this->addType('userVisible', 'boolean');
 		$this->addType('sortOrder', 'integer');
 		$this->addType('active', 'boolean');
 		$this->addType('createdAt', 'datetime');
@@ -70,10 +61,8 @@ class FieldDefinition extends Entity {
 	 *     field_key: string,
 	 *     label: string,
 	 *     type: string,
-	 *     admin_only: bool,
-	 *     user_editable: bool,
-	 *     user_visible: bool,
-	 *     initial_visibility: string,
+	 *     edit_policy: string,
+	 *     exposure_policy: string,
 	 *     sort_order: int,
 	 *     active: bool,
 	 *     options: list<string>|null,
@@ -89,10 +78,8 @@ class FieldDefinition extends Entity {
 			'field_key' => $this->getFieldKey(),
 			'label' => $this->getLabel(),
 			'type' => $this->getType(),
-			'admin_only' => $this->getAdminOnly(),
-			'user_editable' => $this->getUserEditable(),
-			'user_visible' => $this->getUserVisible(),
-			'initial_visibility' => $this->getInitialVisibility(),
+			'edit_policy' => $this->getEditPolicy(),
+			'exposure_policy' => $this->getExposurePolicy(),
 			'sort_order' => $this->getSortOrder(),
 			'active' => $this->getActive(),
 			'options' => $rawOptions !== null ? (json_decode($rawOptions, true) ?? null) : null,

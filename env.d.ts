@@ -4,8 +4,8 @@
 /// <reference types="vite/client" />
 
 declare module '@nextcloud/router' {
-	export function generateOcsUrl(path: string): string
-	export function generateUrl(path: string): string
+	export function generateOcsUrl(path: string, params?: object, options?: object): string
+	export function generateUrl(path: string, params?: object, options?: object): string
 }
 
 interface SettingsUserListRow {

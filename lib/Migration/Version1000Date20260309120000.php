@@ -41,16 +41,11 @@ class Version1000Date20260309120000 extends SimpleMigrationStep {
 			$table->addColumn('type', Types::STRING, [
 				'length' => 32,
 			]);
-			$table->addColumn('admin_only', Types::BOOLEAN, [
-				'default' => false,
+			$table->addColumn('edit_policy', Types::STRING, [
+				'length' => 32,
+				'default' => 'users',
 			]);
-			$table->addColumn('user_editable', Types::BOOLEAN, [
-				'default' => false,
-			]);
-			$table->addColumn('user_visible', Types::BOOLEAN, [
-				'default' => true,
-			]);
-			$table->addColumn('initial_visibility', Types::STRING, [
+			$table->addColumn('exposure_policy', Types::STRING, [
 				'length' => 32,
 				'default' => 'private',
 			]);

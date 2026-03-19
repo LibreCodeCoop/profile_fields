@@ -11,6 +11,8 @@ namespace OCA\ProfileFields\Tests\Unit\Service;
 
 use InvalidArgumentException;
 use OCA\ProfileFields\Db\FieldDefinition;
+use OCA\ProfileFields\Enum\FieldEditPolicy;
+use OCA\ProfileFields\Enum\FieldExposurePolicy;
 use OCA\ProfileFields\Enum\FieldType;
 use OCA\ProfileFields\Service\FieldDefinitionService;
 use OCA\ProfileFields\Service\FieldDefinitionValidator;
@@ -52,10 +54,8 @@ class ImportPayloadValidatorTest extends TestCase {
 				'field_key' => 'cost_center',
 				'label' => 'Cost center',
 				'type' => FieldType::TEXT->value,
-				'admin_only' => false,
-				'user_editable' => false,
-				'user_visible' => true,
-				'initial_visibility' => 'users',
+				'edit_policy' => FieldEditPolicy::ADMINS->value,
+				'exposure_policy' => FieldExposurePolicy::USERS->value,
 				'sort_order' => 1,
 				'active' => true,
 				'created_at' => '2026-03-10T08:00:00+00:00',
@@ -127,10 +127,8 @@ class ImportPayloadValidatorTest extends TestCase {
 		$existingDefinition->setFieldKey('cost_center');
 		$existingDefinition->setLabel('Cost center');
 		$existingDefinition->setType(FieldType::NUMBER->value);
-		$existingDefinition->setAdminOnly(false);
-		$existingDefinition->setUserEditable(false);
-		$existingDefinition->setUserVisible(true);
-		$existingDefinition->setInitialVisibility('users');
+		$existingDefinition->setEditPolicy(FieldEditPolicy::ADMINS->value);
+		$existingDefinition->setExposurePolicy(FieldExposurePolicy::USERS->value);
 
 		$this->fieldDefinitionService->expects($this->once())
 			->method('findByFieldKey')

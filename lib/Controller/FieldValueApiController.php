@@ -11,6 +11,7 @@ namespace OCA\ProfileFields\Controller;
 
 use InvalidArgumentException;
 use OCA\ProfileFields\AppInfo\Application;
+use OCA\ProfileFields\Enum\FieldExposurePolicy;
 use OCA\ProfileFields\Service\FieldAccessService;
 use OCA\ProfileFields\Service\FieldDefinitionService;
 use OCA\ProfileFields\Service\FieldValueService;
@@ -58,7 +59,7 @@ class FieldValueApiController extends OCSController {
 		$editableFields = [];
 
 		foreach ($definitions as $definition) {
-			if (!$definition->getUserVisible()) {
+			if (!FieldExposurePolicy::from($definition->getExposurePolicy())->isUserVisible()) {
 				continue;
 			}
 

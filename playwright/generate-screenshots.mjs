@@ -91,6 +91,14 @@ async function uploadCurrentUserAvatar(api, imagePath) {
 	}
 }
 
+const waitForAvatarImage = async(page) => {
+	await page.waitForFunction(() => {
+		const avatarImages = [...document.querySelectorAll('img')]
+			.filter((img) => img.src.includes('/avatar/'))
+		return avatarImages.some((img) => img.complete && img.naturalWidth > 0)
+	}, { timeout: 60_000 })
+}
+
 async function appRequest(api, method, path, body) {
 	const headers = {
 		'OCS-APIRequest': 'true',
@@ -173,6 +181,9 @@ const hideNonShowcaseAdminDefinitions = async(page) => {
 		const allowedKeys = new Set(keys)
 		document.querySelectorAll('[data-testid^="profile-fields-admin-definition-"]').forEach((element) => {
 			const testId = element.getAttribute('data-testid') ?? ''
+			if (testId.startsWith('profile-fields-admin-definition-handle-')) {
+				return
+			}
 			const fieldKey = testId.replace('profile-fields-admin-definition-', '')
 			const row = element.closest('li')
 			if (row instanceof HTMLElement && !allowedKeys.has(fieldKey)) {
@@ -304,6 +315,8 @@ const run = async() => {
 		await createDemoUser(api)
 		demoApi = await loginApi(demoUser.id, demoUser.password)
 		await uploadCurrentUserAvatar(demoApi, demoAvatarPath)
+		await demoApi.dispose()
+		demoApi = await loginApi(demoUser.id, demoUser.password)
 
 		for (const field of showcaseFields) {
 			const definition = await appRequest(api, 'POST', './ocs/v2.php/apps/profile_fields/api/v1/definitions', {
@@ -351,6 +364,7 @@ const run = async() => {
 
 		const personalPage = await demoContext.newPage()
 		await personalPage.goto('./settings/user/personal-info')
+		await waitForAvatarImage(personalPage)
 		await personalPage.getByTestId('profile-fields-personal-field-showcase_support_region').waitFor({ state: 'visible', timeout: 60_000 })
 		await seedPedroPotiAccountProfile(personalPage)
 		await hideNonShowcasePersonalFields(personalPage)

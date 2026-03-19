@@ -170,10 +170,8 @@ class ProfileFieldDirectorySearchServiceTest extends TestCase {
 		$definition->setFieldKey($fieldKey);
 		$definition->setLabel($label);
 		$definition->setType('text');
-		$definition->setAdminOnly(false);
-		$definition->setUserEditable(true);
-		$definition->setUserVisible($userVisible);
-		$definition->setInitialVisibility('private');
+		$definition->setEditPolicy(\OCA\ProfileFields\Enum\FieldEditPolicy::USERS->value);
+		$definition->setExposurePolicy($userVisible ? \OCA\ProfileFields\Enum\FieldExposurePolicy::PRIVATE->value : \OCA\ProfileFields\Enum\FieldExposurePolicy::HIDDEN->value);
 		$definition->setSortOrder(0);
 		$definition->setActive(true);
 		$definition->setCreatedAt(new DateTime());
