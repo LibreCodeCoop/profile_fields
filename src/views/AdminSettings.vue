@@ -22,6 +22,11 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 		<NcNoteCard v-if="errorMessage" type="error" data-testid="profile-fields-admin-error">
 			{{ errorMessage }}
 		</NcNoteCard>
+		<span
+			class="profile-fields-admin__success-announcement"
+			data-testid="profile-fields-admin-success"
+			aria-live="polite"
+			aria-atomic="true">{{ successMessage }}</span>
 
 		<div v-if="isLoading" class="profile-fields-admin__loading">
 			<NcLoadingIcon :size="32" />
@@ -419,6 +424,19 @@ const errorMessage = ref('')
 const selectedId = ref<number | null>(null)
 const justSavedId = ref<number | null>(null)
 let justSavedTimeout: ReturnType<typeof setTimeout> | null = null
+const successMessage = ref('')
+let successMessageTimeout: ReturnType<typeof setTimeout> | null = null
+
+const setSuccessMessage = (message: string) => {
+	if (successMessageTimeout !== null) {
+		clearTimeout(successMessageTimeout)
+	}
+	successMessage.value = message
+	successMessageTimeout = setTimeout(() => {
+		successMessage.value = ''
+		successMessageTimeout = null
+	}, 4000)
+}
 
 const markJustSaved = (id: number) => {
 	if (justSavedTimeout !== null) {
@@ -735,6 +753,7 @@ const persistDefinition = async() => {
 			selectedId.value = created.id
 			populateForm(created)
 			markJustSaved(created.id)
+			setSuccessMessage('Field definition created.')
 		} else {
 			const updated = await updateDefinition(selectedDefinition.value.id, {
 				label: payload.label,
@@ -748,6 +767,7 @@ const persistDefinition = async() => {
 			replaceDefinitionInState(updated)
 			populateForm(updated)
 			markJustSaved(updated.id)
+			setSuccessMessage('Field definition updated.')
 		}
 		if (isCompactLayout.value) {
 			closeEditor()
@@ -771,6 +791,7 @@ const removeDefinition = async() => {
 		removeDefinitionFromState(selectedDefinition.value.id)
 		isCreatingNew.value = false
 		resetForm()
+		setSuccessMessage('Field definition deleted.')
 	} catch (error: any) {
 		errorMessage.value = error?.response?.data?.ocs?.data?.message ?? error?.message ?? 'Failed to delete field definition.'
 	} finally {
@@ -991,11 +1012,15 @@ onBeforeUnmount(() => {
 	if (justSavedTimeout !== null) {
 		clearTimeout(justSavedTimeout)
 	}
+	if (successMessageTimeout !== null) {
+		clearTimeout(successMessageTimeout)
+	}
 })
 </script>
 
 <style scoped lang="scss">
 .profile-fields-admin {
+	position: relative;
 	display: grid;
 	gap: 18px;
 	color: var(--color-main-text);
@@ -1487,6 +1512,18 @@ onBeforeUnmount(() => {
 		display: flex;
 		justify-content: center;
 		padding-top: 4px;
+	}
+
+	&__success-announcement {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
 	}
 
 	&__loading {
