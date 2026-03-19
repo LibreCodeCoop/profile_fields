@@ -12,8 +12,9 @@ namespace OCA\ProfileFields\Tests\Unit\Controller;
 use InvalidArgumentException;
 use OCA\ProfileFields\Controller\FieldDefinitionApiController;
 use OCA\ProfileFields\Db\FieldDefinition;
+use OCA\ProfileFields\Enum\FieldEditPolicy;
+use OCA\ProfileFields\Enum\FieldExposurePolicy;
 use OCA\ProfileFields\Enum\FieldType;
-use OCA\ProfileFields\Enum\FieldVisibility;
 use OCA\ProfileFields\Service\FieldDefinitionService;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
@@ -54,10 +55,8 @@ class FieldDefinitionApiControllerTest extends TestCase {
 				'field_key' => 'cpf',
 				'label' => 'CPF',
 				'type' => FieldType::TEXT->value,
-				'admin_only' => false,
-				'user_editable' => true,
-				'user_visible' => true,
-				'initial_visibility' => FieldVisibility::USERS->value,
+				'edit_policy' => FieldEditPolicy::USERS->value,
+				'exposure_policy' => FieldExposurePolicy::USERS->value,
 				'sort_order' => 2,
 				'active' => true,
 			])
@@ -67,10 +66,8 @@ class FieldDefinitionApiControllerTest extends TestCase {
 			'cpf',
 			'CPF',
 			FieldType::TEXT->value,
-			false,
-			true,
-			true,
-			FieldVisibility::USERS->value,
+			FieldEditPolicy::USERS->value,
+			FieldExposurePolicy::USERS->value,
 			2,
 			true,
 		);
@@ -87,10 +84,8 @@ class FieldDefinitionApiControllerTest extends TestCase {
 				'field_key' => 'contract_type',
 				'label' => 'Contract Type',
 				'type' => FieldType::SELECT->value,
-				'admin_only' => false,
-				'user_editable' => true,
-				'user_visible' => true,
-				'initial_visibility' => FieldVisibility::PRIVATE->value,
+				'edit_policy' => FieldEditPolicy::USERS->value,
+				'exposure_policy' => FieldExposurePolicy::PRIVATE->value,
 				'sort_order' => 0,
 				'active' => true,
 				'options' => ['CLT', 'PJ', 'Cooperado'],
@@ -101,10 +96,8 @@ class FieldDefinitionApiControllerTest extends TestCase {
 			'contract_type',
 			'Contract Type',
 			FieldType::SELECT->value,
-			false,
-			true,
-			true,
-			FieldVisibility::PRIVATE->value,
+			FieldEditPolicy::USERS->value,
+			FieldExposurePolicy::PRIVATE->value,
 			0,
 			true,
 			['CLT', 'PJ', 'Cooperado'],
@@ -122,10 +115,8 @@ class FieldDefinitionApiControllerTest extends TestCase {
 			'cpf',
 			'CPF',
 			FieldType::TEXT->value,
-			false,
-			false,
-			true,
-			FieldVisibility::PRIVATE->value,
+			FieldEditPolicy::ADMINS->value,
+			FieldExposurePolicy::PRIVATE->value,
 			0,
 			true,
 		);
@@ -148,10 +139,8 @@ class FieldDefinitionApiControllerTest extends TestCase {
 			->with($existing, [
 				'label' => 'Contract Type',
 				'type' => FieldType::SELECT->value,
-				'admin_only' => false,
-				'user_editable' => true,
-				'user_visible' => true,
-				'initial_visibility' => FieldVisibility::PRIVATE->value,
+				'edit_policy' => FieldEditPolicy::USERS->value,
+				'exposure_policy' => FieldExposurePolicy::PRIVATE->value,
 				'sort_order' => 0,
 				'active' => true,
 				'options' => ['CLT', 'PJ'],
@@ -162,10 +151,8 @@ class FieldDefinitionApiControllerTest extends TestCase {
 			6,
 			'Contract Type',
 			FieldType::SELECT->value,
-			false,
-			true,
-			true,
-			FieldVisibility::PRIVATE->value,
+			FieldEditPolicy::USERS->value,
+			FieldExposurePolicy::PRIVATE->value,
 			0,
 			true,
 			['CLT', 'PJ'],
@@ -184,10 +171,8 @@ class FieldDefinitionApiControllerTest extends TestCase {
 			99,
 			'CPF',
 			FieldType::TEXT->value,
-			false,
-			false,
-			true,
-			FieldVisibility::PRIVATE->value,
+			FieldEditPolicy::ADMINS->value,
+			FieldExposurePolicy::PRIVATE->value,
 			0,
 			true,
 		);
@@ -215,10 +200,8 @@ class FieldDefinitionApiControllerTest extends TestCase {
 		$definition->setFieldKey($fieldKey);
 		$definition->setLabel(strtoupper($fieldKey));
 		$definition->setType(FieldType::TEXT->value);
-		$definition->setAdminOnly(false);
-		$definition->setUserEditable(true);
-		$definition->setUserVisible(true);
-		$definition->setInitialVisibility(FieldVisibility::PRIVATE->value);
+		$definition->setEditPolicy(FieldEditPolicy::USERS->value);
+		$definition->setExposurePolicy(FieldExposurePolicy::PRIVATE->value);
 		$definition->setSortOrder(0);
 		$definition->setActive(true);
 		$definition->setCreatedAt(new \DateTime());
