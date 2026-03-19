@@ -157,10 +157,8 @@ class FieldValueAdminApiControllerTest extends TestCase {
 		$otherDefinition->setFieldKey('health_plan_type');
 		$otherDefinition->setLabel('Health plan type');
 		$otherDefinition->setType(FieldType::TEXT->value);
-		$otherDefinition->setAdminOnly(false);
-		$otherDefinition->setUserEditable(false);
-		$otherDefinition->setUserVisible(true);
-		$otherDefinition->setInitialVisibility(FieldVisibility::PRIVATE->value);
+		$otherDefinition->setEditPolicy(\OCA\ProfileFields\Enum\FieldEditPolicy::ADMINS->value);
+		$otherDefinition->setExposurePolicy(\OCA\ProfileFields\Enum\FieldExposurePolicy::PRIVATE->value);
 		$otherDefinition->setSortOrder(1);
 		$otherDefinition->setActive(true);
 		$otherDefinition->setCreatedAt(new \DateTime());
@@ -306,10 +304,8 @@ class FieldValueAdminApiControllerTest extends TestCase {
 		$definition->setFieldKey('cpf');
 		$definition->setLabel('CPF');
 		$definition->setType(FieldType::TEXT->value);
-		$definition->setAdminOnly(false);
-		$definition->setUserEditable(false);
-		$definition->setUserVisible(true);
-		$definition->setInitialVisibility(FieldVisibility::PRIVATE->value);
+		$definition->setEditPolicy(\OCA\ProfileFields\Enum\FieldEditPolicy::ADMINS->value);
+		$definition->setExposurePolicy(\OCA\ProfileFields\Enum\FieldExposurePolicy::PRIVATE->value);
 		$definition->setSortOrder(0);
 		$definition->setActive(true);
 		$definition->setCreatedAt(new \DateTime());
