@@ -247,10 +247,8 @@ class UserProfileFieldCheckTest extends TestCase {
 		$definition->setFieldKey($fieldKey);
 		$definition->setLabel(ucfirst($fieldKey));
 		$definition->setType($type);
-		$definition->setAdminOnly(false);
-		$definition->setUserEditable(true);
-		$definition->setUserVisible(true);
-		$definition->setInitialVisibility('users');
+		$definition->setEditPolicy(\OCA\ProfileFields\Enum\FieldEditPolicy::USERS->value);
+		$definition->setExposurePolicy(\OCA\ProfileFields\Enum\FieldExposurePolicy::USERS->value);
 		$definition->setSortOrder(1);
 		$definition->setActive(true);
 		$definition->setCreatedAt(new \DateTime('2026-03-10T10:00:00+00:00'));
