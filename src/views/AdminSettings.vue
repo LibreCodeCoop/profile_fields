@@ -10,7 +10,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 			<div>
 				<h2>Field catalog administration</h2>
 				<p>
-					Create the global field catalog, control who can edit each field and tune the default visibility used when a value is first stored.
+					Create the global field catalog, choose who can edit each field, and define how exposed new values are by default.
 				</p>
 			</div>
 			<div class="profile-fields-admin__hero-meta">
@@ -22,9 +22,6 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 		<NcNoteCard v-if="errorMessage" type="error" data-testid="profile-fields-admin-error">
 			{{ errorMessage }}
 		</NcNoteCard>
-		<NcNoteCard v-if="successMessage" type="success" data-testid="profile-fields-admin-success">
-			{{ successMessage }}
-		</NcNoteCard>
 
 		<div v-if="isLoading" class="profile-fields-admin__loading">
 			<NcLoadingIcon :size="32" />
@@ -35,7 +32,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 				<div class="profile-fields-admin__panel-header">
 					<div>
 						<h3>Defined fields</h3>
-						<p>Pick an existing definition to edit its rules or start a fresh field.</p>
+						<p>Pick a field to edit it or create a new one.</p>
 					</div>
 					<NcButton variant="secondary" data-testid="profile-fields-admin-new-field" @click="startCreatingField">
 						New field
@@ -44,48 +41,104 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 				<NcEmptyContent v-if="sortedDefinitions.length === 0" name="No fields yet" description="The catalog is empty. Create the first field to make it available to users." />
 
-				<ul v-else class="profile-fields-admin__list">
-					<li v-for="definition in sortedDefinitions" :key="definition.id">
-						<button
-							class="profile-fields-admin__list-item"
-							:class="{ 'is-selected': definition.id === selectedId }"
-							:data-testid="`profile-fields-admin-definition-${definition.field_key}`"
-							@click="populateForm(definition)">
-							<div>
-								<strong>{{ definition.label }}</strong>
-								<span>{{ definition.field_key }}</span>
-							</div>
-							<div class="profile-fields-admin__list-item-meta">
-								<span>{{ definition.type }}</span>
-								<span :class="definition.active ? 'is-active' : 'is-inactive'">{{ definition.active ? 'Active' : 'Inactive' }}</span>
-							</div>
-						</button>
-					</li>
-				</ul>
+				<Draggable
+					v-else
+					:model-value="sortedDefinitions"
+					tag="ul"
+					class="profile-fields-admin__list"
+					item-key="id"
+					handle=".profile-fields-admin__definition-handle"
+					ghost-class="profile-fields-admin__list-row--ghost"
+					chosen-class="profile-fields-admin__list-row--chosen"
+					:animation="180"
+					:disabled="isSaving"
+					@change="reorderDefinitions">
+					<template #item="{ element: definition }">
+						<li class="profile-fields-admin__list-row" :class="{ 'is-disabled': isSaving }">
+							<NcListItem
+								class="profile-fields-admin__list-item"
+								:class="{ 'is-selected': definition.id === selectedId, 'is-just-saved': definition.id === justSavedId }"
+								:data-testid="`profile-fields-admin-definition-${definition.field_key}`"
+								:name="definition.label"
+								:active="definition.id === selectedId"
+								compact
+								:link-aria-label="`Edit field ${definition.label}`"
+								@click="handleDefinitionClick(definition)">
+								<template #subname>
+									<span class="profile-fields-admin__list-item-subname">{{ definition.field_key }}</span>
+								</template>
+								<template #extra-actions>
+									<NcChip
+										class="profile-fields-admin__definition-status"
+										:text="definition.active ? 'Active' : 'Inactive'"
+										:variant="definition.active ? 'success' : 'secondary'"
+										:no-close="true" />
+									<NcActions
+										class="profile-fields-admin__definition-actions"
+										:aria-label="`Actions for ${definition.label}`">
+										<NcActionButton :disabled="isSaving" @click="openDefinition(definition)">
+											<template #icon>
+												<NcIconSvgWrapper :path="mdiPencilOutline" :size="18" />
+											</template>
+											Edit field
+										</NcActionButton>
+										<NcActionButton :disabled="isSaving" @click="toggleDefinitionActive(definition)">
+											<template #icon>
+												<NcIconSvgWrapper :path="definition.active ? mdiEyeOffOutline : mdiEyeOutline" :size="18" />
+											</template>
+											{{ definition.active ? 'Deactivate field' : 'Activate field' }}
+										</NcActionButton>
+										<NcActionButton :disabled="isSaving" @click="removeDefinitionByItem(definition)">
+											<template #icon>
+												<NcIconSvgWrapper :path="mdiDeleteOutline" :size="18" />
+											</template>
+											Delete field
+										</NcActionButton>
+									</NcActions>
+									<NcButton
+										class="profile-fields-admin__definition-handle"
+										:data-testid="`profile-fields-admin-definition-handle-${definition.field_key}`"
+										aria-label="Drag to reorder field"
+										variant="tertiary-no-background"
+										:disabled="isSaving"
+										tabindex="-1"
+										@click.stop>
+										<template #icon>
+											<NcIconSvgWrapper :path="mdiDragVertical" :size="18" />
+										</template>
+									</NcButton>
+								</template>
+							</NcListItem>
+						</li>
+					</template>
+				</Draggable>
 			</aside>
 
-			<div class="profile-fields-admin__editor">
+			<component
+				:is="editorShellComponent"
+				v-bind="editorShellProps"
+				class="profile-fields-admin__editor-shell"
+				@update:open="updateEditorDialogOpen">
+				<div
+					class="profile-fields-admin__editor"
+					:class="{ 'profile-fields-admin__editor--dialog': isCompactLayout }">
 				<template v-if="isEditorVisible">
 					<div class="profile-fields-admin__panel-header">
 						<div>
 							<h3>{{ isEditing ? 'Edit field' : 'Create field' }}</h3>
-							<p>Configure the label, storage rules and who is allowed to manage the value.</p>
+							<p>{{ editorDescription }}</p>
 						</div>
 						<div class="profile-fields-admin__editor-actions">
-							<NcButton variant="secondary" :disabled="!canMoveUp || isSaving" @click="moveDefinition(-1)">
-								Move up
-							</NcButton>
-							<NcButton variant="secondary" :disabled="!canMoveDown || isSaving" @click="moveDefinition(1)">
-								Move down
-							</NcButton>
+							<NcCheckboxRadioSwitch v-model="form.active" type="switch" class="profile-fields-admin__header-switch">
+								Active
+							</NcCheckboxRadioSwitch>
 						</div>
 					</div>
 
-					<form class="profile-fields-admin__form" data-testid="profile-fields-admin-form" @submit.prevent="persistDefinition">
+					<form id="profile-fields-admin-form" class="profile-fields-admin__form" data-testid="profile-fields-admin-form" @submit.prevent="persistDefinition">
 					<section class="profile-fields-admin__form-section profile-fields-admin__form-section--identity">
 						<div class="profile-fields-admin__section-heading">
 							<h4>Identity</h4>
-							<p>The key is immutable after creation and should stay API-safe.</p>
 						</div>
 
 						<div class="profile-fields-admin__grid profile-fields-admin__grid--identity">
@@ -116,12 +169,42 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 					<section class="profile-fields-admin__form-section">
 						<div class="profile-fields-admin__section-heading">
-							<h4>Behavior</h4>
-							<p>Choose how the field is stored, displayed and exposed by default.</p>
-							<p>Fields visible to users can appear in global search when stored values are public or visible to authenticated users. Hidden fields and private values stay searchable only for administrators.</p>
+							<h4>Rules</h4>
 						</div>
 
-						<div class="profile-fields-admin__grid">
+						<div class="profile-fields-admin__grid profile-fields-admin__grid--rules">
+							<div class="profile-fields-admin__field">
+								<label for="profile-fields-admin-edit-policy">Edit policy</label>
+								<NcSelect
+									input-id="profile-fields-admin-edit-policy"
+									v-model="selectedEditPolicyOption"
+									input-label="Edit policy"
+									label-outside
+									:clearable="false"
+									:searchable="false"
+									:options="editPolicyOptions"
+									label="label"
+									placeholder="Choose edit policy"
+								/>
+								<p class="profile-fields-admin__field-helper">{{ editPolicyDescription }}</p>
+							</div>
+
+							<div class="profile-fields-admin__field">
+								<label for="profile-fields-admin-visibility-policy">Visibility</label>
+								<NcSelect
+									input-id="profile-fields-admin-visibility-policy"
+									v-model="selectedExposurePolicyOption"
+									input-label="Visibility"
+									label-outside
+									:clearable="false"
+									:searchable="false"
+									:options="exposurePolicyOptions"
+									label="label"
+									placeholder="Choose visibility"
+								/>
+								<p class="profile-fields-admin__field-helper">{{ exposurePolicyDescription }}</p>
+							</div>
+
 							<div class="profile-fields-admin__field">
 								<label for="profile-fields-admin-type">Type</label>
 								<NcSelect
@@ -137,29 +220,18 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 									placeholder="Choose a field type"
 								/>
 							</div>
-
-							<div class="profile-fields-admin__field">
-								<label for="profile-fields-admin-visibility">Initial visibility</label>
-								<NcSelect
-									input-id="profile-fields-admin-visibility"
-									v-model="selectedVisibilityOption"
-									input-label="Initial visibility"
-									label-outside
-									:clearable="false"
-									:searchable="false"
-									:options="visibilityOptions"
-									label="label"
-									placeholder="Choose default visibility"
-								/>
-							</div>
 						</div>
 					</section>
 
 					<section v-if="form.type === 'select'" class="profile-fields-admin__form-section">
-						<div class="profile-fields-admin__section-heading">
-							<h4>Options</h4>
-							<p>Define the values users and admins can pick from this field.</p>
-							<p class="profile-fields-admin__section-hint">Press Enter to create the next option. Empty rows are reused, removed on blur, and Backspace or Delete removes an empty row. Use Add multiple options to paste one option per line.</p>
+						<div class="profile-fields-admin__section-heading profile-fields-admin__section-heading--split">
+							<div>
+								<h4>Options</h4>
+							</div>
+							<div class="profile-fields-admin__options-meta">
+								<strong>{{ normalizedOptionCount }}</strong>
+								<span>{{ normalizedOptionCount === 1 ? 'option' : 'options' }}</span>
+							</div>
 						</div>
 
 						<Draggable
@@ -237,42 +309,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 						</div>
 					</section>
 
-					<section class="profile-fields-admin__form-section">
-						<div class="profile-fields-admin__section-heading">
-							<h4>Permissions</h4>
-							<p>Control whether users can write the field directly and whether the definition stays active.</p>
-						</div>
-
-						<div class="profile-fields-admin__toggles">
-							<NcCheckboxRadioSwitch v-model="form.adminOnly" type="switch" class="profile-fields-admin__toggle-card">
-								Admin-only editing
-								<template #description>
-									Only administrators can update stored values. Enabling this turns off user self-service editing.
-								</template>
-							</NcCheckboxRadioSwitch>
-							<NcCheckboxRadioSwitch v-model="form.userEditable" type="switch" class="profile-fields-admin__toggle-card" :disabled="!form.userVisible">
-								User self-service editing
-								<template #description>
-									Expose the field in the personal settings page. Enabling this turns off admin-only editing.
-								</template>
-							</NcCheckboxRadioSwitch>
-							<NcCheckboxRadioSwitch v-model="form.userVisible" type="switch" class="profile-fields-admin__toggle-card">
-								Visible to users
-								<template #description>
-									{{ userVisibleDescription }}
-								</template>
-							</NcCheckboxRadioSwitch>
-							<NcCheckboxRadioSwitch v-model="form.active" type="switch" class="profile-fields-admin__toggle-card">
-								Field is active
-								<template #description>
-									Inactive fields stay defined but disappear from the UX.
-								</template>
-							</NcCheckboxRadioSwitch>
-						</div>
-					</section>
-
-					<div class="profile-fields-admin__submit-row">
-						<NcButton type="submit" variant="primary" data-testid="profile-fields-admin-save" :disabled="isSaving || !isFormDirty || hasDuplicateOptions">
+					<div v-if="!isCompactLayout" class="profile-fields-admin__submit-row">
+						<NcButton type="submit" variant="primary" data-testid="profile-fields-admin-save" :disabled="isSaveDisabled">
 							{{ isSaving ? 'Saving...' : (isEditing ? 'Save changes' : 'Create field') }}
 						</NcButton>
 						<NcButton v-if="isEditing" variant="error" data-testid="profile-fields-admin-delete" :disabled="isSaving" @click.prevent="removeDefinition">
@@ -282,13 +320,30 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 					</form>
 				</template>
 
-				<div v-else class="profile-fields-admin__empty-editor">
-					<NcEmptyContent :name="editorEmptyState.title" :description="editorEmptyState.description" />
-					<NcButton variant="primary" @click="startCreatingField">
-						New field
-					</NcButton>
+				<div v-else-if="!isCompactLayout" class="profile-fields-admin__empty-editor">
+					<div class="profile-fields-admin__empty-editor-card">
+						<h3>{{ editorEmptyState.title }}</h3>
+						<p>{{ editorEmptyState.description }}</p>
+						<div class="profile-fields-admin__empty-editor-actions">
+							<NcButton variant="primary" @click="startCreatingField">
+								New field
+							</NcButton>
+						</div>
+					</div>
 				</div>
 			</div>
+				<template v-if="isCompactLayout && isEditorVisible" #actions>
+					<NcButton :disabled="isSaving" @click="closeEditor">
+						Cancel
+					</NcButton>
+					<NcButton v-if="isEditing" variant="error" data-testid="profile-fields-admin-delete" :disabled="isSaving" @click.prevent="removeDefinition">
+						Delete field
+					</NcButton>
+					<NcButton type="submit" form="profile-fields-admin-form" variant="primary" data-testid="profile-fields-admin-save" :disabled="isSaveDisabled">
+						{{ isSaving ? 'Saving...' : (isEditing ? 'Save changes' : 'Create field') }}
+					</NcButton>
+				</template>
+			</component>
 		</div>
 
 		<NcDialog
@@ -328,18 +383,16 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 </template>
 
 <script setup lang="ts">
-import { mdiArrowDown, mdiArrowUp, mdiClose, mdiDragVertical } from '@mdi/js'
-import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
+import { mdiArrowDown, mdiArrowUp, mdiClose, mdiDeleteOutline, mdiDragVertical, mdiEyeOffOutline, mdiEyeOutline, mdiPencilOutline } from '@mdi/js'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import NcDialog from '@nextcloud/vue/components/NcDialog'
 import NcTextArea from '@nextcloud/vue/components/NcTextArea'
 import Draggable from 'vuedraggable'
-import { NcActionButton, NcActions, NcButton, NcCheckboxRadioSwitch, NcEmptyContent, NcIconSvgWrapper, NcInputField, NcLoadingIcon, NcNoteCard, NcSelect } from '@nextcloud/vue'
+import { NcActionButton, NcActions, NcButton, NcCheckboxRadioSwitch, NcChip, NcEmptyContent, NcIconSvgWrapper, NcInputField, NcListItem, NcLoadingIcon, NcNoteCard, NcSelect } from '@nextcloud/vue'
 import { createDefinition, deleteDefinition, listDefinitions, updateDefinition } from '../api'
-import type { FieldDefinition, FieldType, FieldVisibility } from '../types'
-import { buildFieldOrderUpdates } from '../utils/fieldOrder.js'
+import type { FieldDefinition, FieldEditPolicy, FieldExposurePolicy, FieldType } from '../types'
 import { createEditableSelectOptions, extractEditableSelectOptionValues, moveEditableSelectOption, normalizeEditableSelectOptionValue, parseEditableSelectOptionValues } from '../utils/selectFieldOptions.js'
 import type { EditableSelectOption } from '../utils/selectFieldOptions.js'
-import { visibilityOptions } from '../utils/visibilityOptions.js'
 
 const fieldTypeOptions: Array<{ value: FieldType, label: string }> = [
 	{ value: 'text', label: 'Text' },
@@ -347,16 +400,42 @@ const fieldTypeOptions: Array<{ value: FieldType, label: string }> = [
 	{ value: 'select', label: 'Select' },
 ]
 
+const editPolicyOptions: Array<{ value: FieldEditPolicy, label: string }> = [
+	{ value: 'users', label: 'Users can edit' },
+	{ value: 'admins', label: 'Admins only' },
+]
+
+const exposurePolicyOptions: Array<{ value: FieldExposurePolicy, label: string }> = [
+	{ value: 'hidden', label: 'Hidden from users' },
+	{ value: 'private', label: 'Visible to users, private by default' },
+	{ value: 'users', label: 'Visible to users, shared with users by default' },
+	{ value: 'public', label: 'Visible to everyone by default' },
+]
+
 const definitions = ref<FieldDefinition[]>([])
 const isLoading = ref(true)
 const isSaving = ref(false)
 const errorMessage = ref('')
-const successMessage = ref('')
 const selectedId = ref<number | null>(null)
+const justSavedId = ref<number | null>(null)
+let justSavedTimeout: ReturnType<typeof setTimeout> | null = null
+
+const markJustSaved = (id: number) => {
+	if (justSavedTimeout !== null) {
+		clearTimeout(justSavedTimeout)
+	}
+	justSavedId.value = id
+	justSavedTimeout = setTimeout(() => {
+		justSavedId.value = null
+		justSavedTimeout = null
+	}, 2000)
+}
 const isCreatingNew = ref(false)
 const isBulkOptionsDialogOpen = ref(false)
+const isCompactLayout = ref(false)
 const bulkOptionInput = ref('')
 let nextOptionId = 0
+let compactLayoutMediaQuery: MediaQueryList | null = null
 
 const createOptionId = () => `option-${nextOptionId++}`
 
@@ -364,26 +443,44 @@ const form = reactive({
 	fieldKey: '',
 	label: '',
 	type: 'text' as FieldType,
-	adminOnly: false,
-	userEditable: true,
-	userVisible: true,
-	initialVisibility: 'private' as FieldVisibility,
+	editPolicy: 'users' as FieldEditPolicy,
+	exposurePolicy: 'private' as FieldExposurePolicy,
 	sortOrder: 0,
 	active: true,
 	options: createEditableSelectOptions([], createOptionId),
 })
 
-
-const userVisibleDescription = computed(() => form.userVisible
-	? 'Show the field in admin and personal user-facing settings.'
-	: 'Hide system-managed fields from user-facing settings.')
+const editPolicyDescription = computed(() => form.editPolicy === 'admins'
+	? 'Only administrators can create or update stored values for this field.'
+	: 'Users can maintain their own value for this field from personal settings.')
+const exposurePolicyDescription = computed(() => {
+	switch (form.exposurePolicy) {
+	case 'hidden':
+		return 'The field stays out of personal settings and regular global search.'
+	case 'users':
+		return 'The field appears in personal settings. New values are shared with logged-in users.'
+	case 'public':
+		return 'The field appears in personal settings. New values are public.'
+	default:
+		return 'The field appears in personal settings. New values start private.'
+	}
+})
+const editorDescription = computed(() => isEditing.value
+	? 'Update the selected field and its policies.'
+	: 'Define the field and its policies.')
 const selectedDefinition = computed(() => definitions.value.find((definition: FieldDefinition) => definition.id === selectedId.value) ?? null)
 const sortedDefinitions = computed(() => [...definitions.value].sort((left, right) => left.sort_order - right.sort_order || left.id - right.id))
 const isEditing = computed(() => selectedDefinition.value !== null)
 const isEditorVisible = computed(() => isCreatingNew.value || isEditing.value)
-const selectedDefinitionIndex = computed(() => sortedDefinitions.value.findIndex((definition: FieldDefinition) => definition.id === selectedId.value))
-const canMoveUp = computed(() => isEditing.value && selectedDefinitionIndex.value > 0)
-const canMoveDown = computed(() => isEditing.value && selectedDefinitionIndex.value > -1 && selectedDefinitionIndex.value < sortedDefinitions.value.length - 1)
+const editorShellComponent = computed(() => isCompactLayout.value ? NcDialog : 'div')
+const editorShellProps = computed(() => isCompactLayout.value
+	? {
+		open: isEditorVisible.value,
+		name: isEditing.value ? 'Edit field' : 'Create field',
+		size: 'large',
+		contentClasses: 'profile-fields-admin__editor-dialog',
+	}
+	: {})
 const editorEmptyState = computed(() => sortedDefinitions.value.length === 0
 	? {
 		title: 'No fields yet',
@@ -398,10 +495,8 @@ const buildFormState = () => ({
 	fieldKey: form.fieldKey,
 	label: form.label,
 	type: form.type,
-	adminOnly: form.adminOnly,
-	userEditable: form.userEditable,
-	userVisible: form.userVisible,
-	initialVisibility: form.initialVisibility,
+	editPolicy: form.editPolicy,
+	exposurePolicy: form.exposurePolicy,
 	sortOrder: Number(form.sortOrder),
 	active: form.active,
 	options: form.type === 'select' ? extractEditableSelectOptionValues(form.options).filter((optionValue: string) => optionValue.trim() !== '') : [],
@@ -413,10 +508,8 @@ const buildDefinitionState = (definition: FieldDefinition | null) => {
 			fieldKey: '',
 			label: '',
 			type: 'text' as FieldType,
-			adminOnly: false,
-			userEditable: true,
-			userVisible: true,
-			initialVisibility: 'private' as FieldVisibility,
+			editPolicy: 'users' as FieldEditPolicy,
+			exposurePolicy: 'private' as FieldExposurePolicy,
 			sortOrder: definitions.value.length,
 			active: true,
 			options: [],
@@ -427,10 +520,8 @@ const buildDefinitionState = (definition: FieldDefinition | null) => {
 		fieldKey: definition.field_key,
 		label: definition.label,
 		type: definition.type,
-		adminOnly: definition.admin_only,
-		userEditable: definition.user_editable,
-		userVisible: definition.user_visible,
-		initialVisibility: definition.initial_visibility,
+		editPolicy: definition.edit_policy,
+		exposurePolicy: definition.exposure_policy,
 		sortOrder: definition.sort_order,
 		active: definition.active,
 		options: definition.type === 'select' ? (definition.options ?? []) : [],
@@ -463,6 +554,19 @@ const hasOptionValue = (index: number) => form.options[index]?.value.trim() !== 
 const canMoveOptionUp = (index: number) => index > 0
 const canMoveOptionDown = (index: number) => index < form.options.length - 1
 const bulkOptionValues = computed(() => parseEditableSelectOptionValues(bulkOptionInput.value))
+const normalizedOptionCount = computed(() => extractEditableSelectOptionValues(form.options).filter((optionValue: string) => optionValue.trim() !== '').length)
+const hasRequiredFields = computed(() => {
+	if (form.fieldKey.trim() === '' || form.label.trim() === '') {
+		return false
+	}
+
+	if (form.type === 'select' && normalizedOptionCount.value === 0) {
+		return false
+	}
+
+	return true
+})
+const isSaveDisabled = computed(() => isSaving.value || !isFormDirty.value || hasDuplicateOptions.value || !hasRequiredFields.value)
 
 const focusOptionInput = async(index: number) => {
 	await nextTick()
@@ -482,11 +586,19 @@ const selectedTypeOption = computed({
 		}
 	},
 })
-const selectedVisibilityOption = computed({
-	get: () => visibilityOptions.find((option) => option.value === form.initialVisibility) ?? visibilityOptions[0],
-	set: (option: { value: FieldVisibility, label: string } | null) => {
+const selectedEditPolicyOption = computed({
+	get: () => editPolicyOptions.find((option) => option.value === form.editPolicy) ?? editPolicyOptions[0],
+	set: (option: { value: FieldEditPolicy, label: string } | null) => {
 		if (option !== null) {
-			form.initialVisibility = option.value
+			form.editPolicy = option.value
+		}
+	},
+})
+const selectedExposurePolicyOption = computed({
+	get: () => exposurePolicyOptions.find((option) => option.value === form.exposurePolicy) ?? exposurePolicyOptions[0],
+	set: (option: { value: FieldExposurePolicy, label: string } | null) => {
+		if (option !== null) {
+			form.exposurePolicy = option.value
 		}
 	},
 })
@@ -496,18 +608,71 @@ const resetForm = () => {
 	form.fieldKey = ''
 	form.label = ''
 	form.type = 'text'
-	form.adminOnly = false
-	form.userEditable = true
-	form.userVisible = true
-	form.initialVisibility = 'private'
+	form.editPolicy = 'users'
+	form.exposurePolicy = 'private'
 	form.sortOrder = definitions.value.length
 	form.active = true
 	form.options = createEditableSelectOptions([], createOptionId)
 }
 
+const closeEditor = () => {
+	isCreatingNew.value = false
+	resetForm()
+}
+
 const startCreatingField = () => {
 	isCreatingNew.value = true
 	resetForm()
+}
+
+const openDefinition = (definition: FieldDefinition) => {
+	populateForm(definition)
+}
+
+const handleDefinitionClick = (definition: FieldDefinition) => {
+	if (isSaving.value) {
+		return
+	}
+
+	openDefinition(definition)
+}
+
+const updateEditorDialogOpen = (open: boolean) => {
+	if (!open && isCompactLayout.value) {
+		closeEditor()
+	}
+}
+
+const updateCompactLayout = (matches: boolean) => {
+	isCompactLayout.value = matches
+}
+
+const handleCompactLayoutChange = (event: MediaQueryListEvent) => {
+	updateCompactLayout(event.matches)
+}
+
+const buildDefinitionUpdatePayload = (definition: FieldDefinition, sortOrder: number) => ({
+	label: definition.label,
+	type: definition.type,
+	editPolicy: definition.edit_policy,
+	exposurePolicy: definition.exposure_policy,
+	sortOrder,
+	active: definition.active,
+	...(definition.type === 'select' ? { options: definition.options ?? [] } : {}),
+})
+
+const replaceDefinitionInState = (definition: FieldDefinition) => {
+	const existingIndex = definitions.value.findIndex((candidate: FieldDefinition) => candidate.id === definition.id)
+	if (existingIndex === -1) {
+		definitions.value = [...definitions.value, definition]
+		return
+	}
+
+	definitions.value = definitions.value.map((candidate: FieldDefinition) => candidate.id === definition.id ? definition : candidate)
+}
+
+const removeDefinitionFromState = (definitionId: number) => {
+	definitions.value = definitions.value.filter((definition: FieldDefinition) => definition.id !== definitionId)
 }
 
 const populateForm = (definition: FieldDefinition) => {
@@ -516,10 +681,8 @@ const populateForm = (definition: FieldDefinition) => {
 	form.fieldKey = definition.field_key
 	form.label = definition.label
 	form.type = definition.type
-	form.adminOnly = definition.admin_only
-	form.userEditable = definition.user_editable
-	form.userVisible = definition.user_visible
-	form.initialVisibility = definition.initial_visibility
+	form.editPolicy = definition.edit_policy
+	form.exposurePolicy = definition.exposure_policy
 	form.sortOrder = definition.sort_order
 	form.active = definition.active
 	form.options = definition.type === 'select'
@@ -551,16 +714,13 @@ const persistDefinition = async() => {
 
 	isSaving.value = true
 	errorMessage.value = ''
-	successMessage.value = ''
 
 	const payload = {
 		fieldKey: form.fieldKey,
 		label: form.label,
 		type: form.type,
-		adminOnly: form.adminOnly,
-		userEditable: form.userEditable,
-		userVisible: form.userVisible,
-		initialVisibility: form.initialVisibility,
+		editPolicy: form.editPolicy,
+		exposurePolicy: form.exposurePolicy,
 		sortOrder: Number(form.sortOrder),
 		active: form.active,
 		...(form.type === 'select'
@@ -571,23 +731,27 @@ const persistDefinition = async() => {
 	try {
 		if (selectedDefinition.value === null) {
 			const created = await createDefinition(payload)
+			replaceDefinitionInState(created)
 			selectedId.value = created.id
-			successMessage.value = 'Field definition created.'
+			populateForm(created)
+			markJustSaved(created.id)
 		} else {
-			await updateDefinition(selectedDefinition.value.id, {
+			const updated = await updateDefinition(selectedDefinition.value.id, {
 				label: payload.label,
 				type: payload.type,
-				adminOnly: payload.adminOnly,
-				userEditable: payload.userEditable,
-				userVisible: payload.userVisible,
-				initialVisibility: payload.initialVisibility,
+				editPolicy: payload.editPolicy,
+				exposurePolicy: payload.exposurePolicy,
 				sortOrder: payload.sortOrder,
 				active: payload.active,
 				...(payload.type === 'select' ? { options: payload.options } : {}),
 			})
-			successMessage.value = 'Field definition updated.'
+			replaceDefinitionInState(updated)
+			populateForm(updated)
+			markJustSaved(updated.id)
 		}
-		await loadDefinitions()
+		if (isCompactLayout.value) {
+			closeEditor()
+		}
 	} catch (error: any) {
 		errorMessage.value = error?.response?.data?.ocs?.data?.message ?? error?.message ?? 'Failed to save field definition.'
 	} finally {
@@ -602,13 +766,11 @@ const removeDefinition = async() => {
 
 	isSaving.value = true
 	errorMessage.value = ''
-	successMessage.value = ''
 	try {
 		await deleteDefinition(selectedDefinition.value.id)
-		successMessage.value = 'Field definition deleted.'
+		removeDefinitionFromState(selectedDefinition.value.id)
 		isCreatingNew.value = false
 		resetForm()
-		await loadDefinitions()
 	} catch (error: any) {
 		errorMessage.value = error?.response?.data?.ocs?.data?.message ?? error?.message ?? 'Failed to delete field definition.'
 	} finally {
@@ -616,48 +778,49 @@ const removeDefinition = async() => {
 	}
 }
 
-const moveDefinition = async(direction: -1 | 1) => {
-	if (selectedDefinition.value === null) {
+const reorderDefinitions = async(event: { moved?: { oldIndex: number, newIndex: number } }) => {
+	if (event.moved === undefined || event.moved.oldIndex === event.moved.newIndex) {
 		return
 	}
 
-	const updates = buildFieldOrderUpdates(definitions.value, selectedDefinition.value.id, direction)
+	const reordered = [...sortedDefinitions.value]
+	const [movedDefinition] = reordered.splice(event.moved.oldIndex, 1)
+	if (movedDefinition === undefined) {
+		return
+	}
+	reordered.splice(event.moved.newIndex, 0, movedDefinition)
+
+	const updates = reordered
+		.map((definition, index) => ({ definition, sortOrder: index }))
+		.filter(({ definition, sortOrder }) => definition.sort_order !== sortOrder)
+
 	if (updates.length === 0) {
 		return
 	}
 
 	isSaving.value = true
 	errorMessage.value = ''
-	successMessage.value = ''
+	const previousDefinitions = definitions.value
 
 	try {
-		const current = selectedDefinition.value
-		await Promise.all(updates.map(({ id, sortOrder }) => {
-			const definition = definitions.value.find((candidate: FieldDefinition) => candidate.id === id)
-			if (definition === undefined) {
-				return Promise.resolve(null)
-			}
-
-			return updateDefinition(id, {
-				label: definition.label,
-				type: definition.type,
-				adminOnly: definition.admin_only,
-				userEditable: definition.user_editable,
-				userVisible: definition.user_visible,
-				initialVisibility: definition.initial_visibility,
-				sortOrder,
-				active: definition.active,
-				...(definition.type === 'select' ? { options: definition.options ?? [] } : {}),
-			})
+		definitions.value = reordered.map((definition, index) => ({
+			...definition,
+			sort_order: index,
 		}))
+		const persistedDefinitions = await Promise.all(updates.map(({ definition, sortOrder }) => updateDefinition(
+			definition.id,
+			buildDefinitionUpdatePayload(definition, sortOrder),
+		)))
+		persistedDefinitions.forEach((definition) => replaceDefinitionInState(definition))
 
-		const nextSortOrder = updates.find((update) => update.id === current.id)?.sortOrder
-		if (nextSortOrder !== undefined) {
-			form.sortOrder = nextSortOrder
+		if (selectedDefinition.value !== null) {
+			const currentDefinition = reordered.find((definition) => definition.id === selectedDefinition.value?.id)
+			if (currentDefinition !== undefined) {
+				form.sortOrder = currentDefinition.sort_order
+			}
 		}
-		successMessage.value = 'Field order updated.'
-		await loadDefinitions()
 	} catch (error: any) {
+		definitions.value = previousDefinitions
 		errorMessage.value = error?.response?.data?.ocs?.data?.message ?? error?.message ?? 'Failed to reorder field definitions.'
 	} finally {
 		isSaving.value = false
@@ -766,6 +929,43 @@ const removeOption = (index: number) => {
 	form.options.splice(index, 1)
 }
 
+const toggleDefinitionActive = async(definition: FieldDefinition) => {
+	isSaving.value = true
+	errorMessage.value = ''
+	try {
+		const updated = await updateDefinition(definition.id, {
+			...buildDefinitionUpdatePayload(definition, definition.sort_order),
+			active: !definition.active,
+		})
+		replaceDefinitionInState(updated)
+		markJustSaved(updated.id)
+		if (selectedDefinition.value?.id === definition.id) {
+			populateForm(updated)
+		}
+	} catch (error: any) {
+		errorMessage.value = error?.response?.data?.ocs?.data?.message ?? error?.message ?? 'Failed to update field definition.'
+	} finally {
+		isSaving.value = false
+	}
+}
+
+const removeDefinitionByItem = async(definition: FieldDefinition) => {
+	isSaving.value = true
+	errorMessage.value = ''
+	try {
+		await deleteDefinition(definition.id)
+		removeDefinitionFromState(definition.id)
+		if (selectedDefinition.value?.id === definition.id) {
+			isCreatingNew.value = false
+			resetForm()
+		}
+	} catch (error: any) {
+		errorMessage.value = error?.response?.data?.ocs?.data?.message ?? error?.message ?? 'Failed to delete field definition.'
+	} finally {
+		isSaving.value = false
+	}
+}
+
 watch(() => form.type, (newType: FieldType) => {
 	if (newType === 'select') {
 		if (form.options.length === 0) {
@@ -779,25 +979,19 @@ watch(() => form.type, (newType: FieldType) => {
 	}
 })
 
-watch(() => form.userVisible, (userVisible: boolean) => {
-	if (!userVisible) {
-		form.userEditable = false
-	}
+onMounted(() => {
+	loadDefinitions()
+	compactLayoutMediaQuery = window.matchMedia('(max-width: 1024px)')
+	updateCompactLayout(compactLayoutMediaQuery.matches)
+	compactLayoutMediaQuery.addEventListener('change', handleCompactLayoutChange)
 })
 
-watch(() => form.adminOnly, (adminOnly: boolean) => {
-	if (adminOnly) {
-		form.userEditable = false
+onBeforeUnmount(() => {
+	compactLayoutMediaQuery?.removeEventListener('change', handleCompactLayoutChange)
+	if (justSavedTimeout !== null) {
+		clearTimeout(justSavedTimeout)
 	}
 })
-
-watch(() => form.userEditable, (userEditable: boolean) => {
-	if (userEditable) {
-		form.adminOnly = false
-	}
-})
-
-onMounted(loadDefinitions)
 </script>
 
 <style scoped lang="scss">
@@ -810,45 +1004,48 @@ onMounted(loadDefinitions)
 		display: flex;
 		justify-content: space-between;
 		gap: 24px;
-		padding: 24px;
+		padding: 20px 22px;
 		border-radius: 20px;
 		background:
-			radial-gradient(circle at top right, color-mix(in srgb, var(--color-primary-element) 20%, transparent), transparent 34%),
-			linear-gradient(135deg, color-mix(in srgb, var(--color-background-darker) 72%, var(--color-main-background) 28%), color-mix(in srgb, var(--color-main-background) 90%, var(--color-primary-element) 10%));
+			radial-gradient(circle at top right, color-mix(in srgb, var(--color-primary-element) 14%, transparent), transparent 34%),
+			linear-gradient(135deg, color-mix(in srgb, var(--color-background-darker) 76%, var(--color-main-background) 24%), color-mix(in srgb, var(--color-main-background) 94%, var(--color-primary-element) 6%));
 		border: 1px solid color-mix(in srgb, var(--color-primary-element) 24%, var(--color-border-default) 76%);
-		box-shadow: 0 18px 48px rgba(15, 23, 42, 0.14);
+		box-shadow: 0 12px 32px rgba(15, 23, 42, 0.1);
 
 		> div:first-child {
-			padding-inline-start: clamp(28px, 4vw, 44px);
+			padding-inline-start: clamp(18px, 2.4vw, 28px);
 		}
 
 		h2 {
 			margin: 0 0 8px;
-			font-size: 28px;
+			font-size: 24px;
 		}
 
 		p {
 			margin: 0;
-			max-width: 62ch;
+			max-width: 58ch;
+			font-size: 14px;
 			color: color-mix(in srgb, var(--color-main-text) 82%, transparent);
 		}
 	}
 
 	&__hero-meta {
-		display: grid;
-		align-content: center;
-		justify-items: end;
-		min-width: 140px;
-		padding: 14px 16px;
-		border-radius: 16px;
-		background: color-mix(in srgb, var(--color-main-background) 86%, transparent);
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		justify-content: center;
+		min-width: 120px;
+		padding: 12px 14px;
+		border-radius: 14px;
+		background: color-mix(in srgb, var(--color-main-background) 90%, transparent);
 
 		strong {
-			font-size: 40px;
+			font-size: 32px;
 			line-height: 1;
 		}
 
 		span {
+			font-size: 12px;
 			color: var(--color-text-maxcontrast);
 		}
 	}
@@ -859,6 +1056,11 @@ onMounted(loadDefinitions)
 		gap: 20px;
 	}
 
+	&__field-helper {
+		margin: 8px 0 0;
+		color: var(--color-text-maxcontrast);
+	}
+
 	&__list-panel,
 	&__editor {
 		min-width: 0;
@@ -867,6 +1069,26 @@ onMounted(loadDefinitions)
 		background: color-mix(in srgb, var(--color-main-background) 96%, var(--color-background-dark) 4%);
 		border: 1px solid color-mix(in srgb, var(--color-border-default) 84%, transparent);
 		box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+	}
+
+	&__editor {
+		display: grid;
+		justify-content: center;
+
+		> * {
+			width: min(100%, 980px);
+		}
+
+		&--dialog {
+			padding: 6px 0 12px;
+			border: 0;
+			background: transparent;
+			box-shadow: none;
+
+			> * {
+				width: 100%;
+			}
+		}
 	}
 
 	&__panel-header {
@@ -898,7 +1120,23 @@ onMounted(loadDefinitions)
 	&__editor-actions {
 		display: flex;
 		gap: 8px;
+		align-items: center;
 		flex: 0 0 auto;
+	}
+
+	&__header-switch {
+		padding: 6px 10px;
+		border-radius: 999px;
+		border: 1px solid color-mix(in srgb, var(--color-border-default) 84%, transparent);
+		background: color-mix(in srgb, var(--color-main-background) 98%, var(--color-background-hover) 2%);
+
+		:deep(.checkbox-content__description) {
+			display: none;
+		}
+
+		:deep(.checkbox-content__text) {
+			font-weight: 600;
+		}
 	}
 
 	&__list-type-tag {
@@ -919,66 +1157,103 @@ onMounted(loadDefinitions)
 		gap: 10px;
 	}
 
-	&__list-item {
-		width: 100%;
-		padding: 14px;
-		border-radius: 16px;
-		border: 1px solid var(--color-border-default);
-		background: color-mix(in srgb, var(--color-main-background) 92%, var(--color-background-hover) 8%);
-		display: flex;
-		justify-content: space-between;
-		gap: 12px;
-		text-align: left;
-		cursor: pointer;
-		transition: border-color 120ms ease, transform 120ms ease, background 120ms ease;
+	&__list-row {
+		display: block;
 
-		&:hover {
-			transform: translateY(-1px);
-			border-color: color-mix(in srgb, var(--color-primary-element) 28%, var(--color-border-default) 72%);
+		&.is-disabled {
+			opacity: 0.72;
 		}
+
+		&--ghost {
+			:deep(.list-item) {
+				opacity: 0.5;
+			}
+		}
+
+		&--chosen {
+			:deep(.list-item) {
+				box-shadow: 0 8px 18px color-mix(in srgb, var(--color-box-shadow) 55%, transparent);
+			}
+		}
+	}
+
+	&__list-item {
+		min-width: 0;
 
 		&.is-selected {
-			border-color: var(--color-primary-element);
-			box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary-element) 20%, transparent);
+			:deep(.list-item) {
+				box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary-element) 20%, transparent);
+			}
 		}
 
-		strong,
-		span {
-			display: block;
+		&.is-just-saved {
+			:deep(.list-item) {
+				box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-success) 22%, transparent);
+				transition: box-shadow 0.3s ease;
+			}
 		}
 
-		span {
+		:deep(.list-item) {
+			min-height: 72px;
+			transition: box-shadow 0.2s ease, background-color 0.2s ease;
+		}
+
+		:deep(.list-item-content__main) {
+			min-width: 0;
+		}
+
+		:deep(.list-item-content__name),
+		:deep(.list-item-content__subname) {
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+
+		:deep(.list-item-content__subname) {
 			font-size: 12px;
 			color: var(--color-text-maxcontrast);
 		}
 	}
 
-	&__list-item-meta {
-		display: grid;
-		justify-items: end;
-		align-content: start;
-		gap: 6px;
+	&__definition-status {
+		flex: 0 0 auto;
+	}
 
-		span:first-child {
-			padding: 4px 8px;
-			border-radius: 999px;
-			background: color-mix(in srgb, var(--color-primary-element) 12%, transparent);
-			color: var(--color-main-text);
-			text-transform: capitalize;
+	&__definition-actions {
+		flex: 0 0 auto;
+	}
+
+	&__definition-handle {
+		cursor: grab;
+		user-select: none;
+		opacity: 0.72;
+
+		&:active {
+			cursor: grabbing;
+		}
+
+		&:hover,
+		&:focus-visible {
+			opacity: 1;
 		}
 	}
 
-	.is-active {
-		color: #0b7a38 !important;
-	}
-
-	.is-inactive {
-		color: #9b3d16 !important;
+	&__list-item-subname {
+		display: block;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	&__form {
 		display: grid;
 		gap: 16px;
+		justify-items: stretch;
+
+		> * {
+			width: 100%;
+		}
 	}
 
 	&__form-section {
@@ -995,16 +1270,34 @@ onMounted(loadDefinitions)
 			margin: 0;
 			font-size: 16px;
 		}
-
-		p {
-			margin: 6px 0 0;
-			color: var(--color-text-maxcontrast);
-		}
 	}
 
-	&__section-hint {
-		font-size: 12px;
-		line-height: 1.4;
+	&__section-heading--split {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-start;
+		gap: 16px;
+	}
+
+	&__options-meta {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		min-width: auto;
+		padding: 6px 10px;
+		border-radius: 999px;
+		background: color-mix(in srgb, var(--color-main-background) 88%, var(--color-background-hover) 12%);
+		border: 1px solid color-mix(in srgb, var(--color-border-default) 86%, transparent);
+
+		strong {
+			font-size: 14px;
+			line-height: 1;
+		}
+
+		span {
+			font-size: 12px;
+			color: var(--color-text-maxcontrast);
+		}
 	}
 
 	&__bulk-options-content {
@@ -1042,19 +1335,21 @@ onMounted(loadDefinitions)
 
 	&__grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 420px));
 		gap: 14px;
 		align-items: start;
+		justify-content: start;
 
 		&--identity {
-			grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+			grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 420px));
 		}
-	}
 
-	&__toggles {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
-		gap: 10px 16px;
+		&--rules {
+			grid-template-columns: repeat(2, minmax(min(100%, 280px), 420px));
+			max-width: 980px;
+			column-gap: 18px;
+			row-gap: 18px;
+		}
 	}
 
 	&__toggle-card {
@@ -1084,6 +1379,8 @@ onMounted(loadDefinitions)
 			color: var(--color-text-maxcontrast);
 			font-size: 12px;
 			line-height: 1.4;
+			display: block;
+			min-block-size: calc(1.4em * 3);
 		}
 	}
 
@@ -1092,6 +1389,7 @@ onMounted(loadDefinitions)
 		gap: 10px;
 		justify-content: flex-end;
 		padding-top: 4px;
+		width: 100%;
 	}
 
 	&__option-toolbar {
@@ -1162,19 +1460,51 @@ onMounted(loadDefinitions)
 
 	&__empty-editor {
 		display: grid;
-		justify-items: start;
-		gap: 18px;
-		padding: 28px 8px;
+		place-items: center;
+		min-height: 320px;
+		padding: 24px 8px;
+	}
 
-		:deep(.empty-content) {
+	&__empty-editor-card {
+		display: grid;
+		justify-items: center;
+		gap: 12px;
+		max-width: 440px;
+		text-align: center;
+
+		h3 {
 			margin: 0;
+			font-size: 18px;
 		}
+
+		p {
+			margin: 0;
+			color: var(--color-text-maxcontrast);
+		}
+	}
+
+	&__empty-editor-actions {
+		display: flex;
+		justify-content: center;
+		padding-top: 4px;
 	}
 
 	&__loading {
 		display: flex;
 		justify-content: center;
 		padding: 40px 0;
+	}
+
+	:deep(.profile-fields-admin__editor-dialog) {
+		width: min(100vw - 20px, 880px);
+		max-width: 100%;
+		padding-top: 8px;
+		padding-bottom: 8px;
+	}
+
+	:deep(.profile-fields-admin__editor-dialog ~ .modal-container__buttons),
+	:deep(.profile-fields-admin__editor-dialog + .modal-container__buttons) {
+		padding-top: 8px;
 	}
 }
 
@@ -1191,11 +1521,20 @@ onMounted(loadDefinitions)
 
 		&__panel-header {
 			align-items: flex-start;
+			flex-direction: column;
 		}
 
 		&__editor-actions {
 			flex-wrap: wrap;
 			justify-content: flex-start;
+		}
+
+		&__section-heading--split {
+			flex-direction: column;
+		}
+
+		&__options-meta {
+			justify-items: start;
 		}
 	}
 }
@@ -1212,7 +1551,7 @@ onMounted(loadDefinitions)
 	.profile-fields-admin {
 		&__layout,
 		&__grid--identity,
-		&__toggles {
+		&__grid--rules {
 			grid-template-columns: 1fr;
 		}
 
@@ -1240,10 +1579,10 @@ onMounted(loadDefinitions)
 @media (max-width: 720px) {
 	.profile-fields-admin {
 		&__hero {
-			padding: 20px;
+			padding: 18px;
 
 			> div:first-child {
-				padding-inline-start: 36px;
+				padding-inline-start: 28px;
 			}
 		}
 	}
