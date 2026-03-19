@@ -27,10 +27,8 @@
                     "field_key",
                     "label",
                     "type",
-                    "admin_only",
-                    "user_editable",
-                    "user_visible",
-                    "initial_visibility",
+                    "edit_policy",
+                    "exposure_policy",
                     "sort_order",
                     "active",
                     "options",
@@ -53,17 +51,11 @@
                     "type": {
                         "$ref": "#/components/schemas/Type"
                     },
-                    "admin_only": {
-                        "type": "boolean"
+                    "edit_policy": {
+                        "$ref": "#/components/schemas/EditPolicy"
                     },
-                    "user_editable": {
-                        "type": "boolean"
-                    },
-                    "user_visible": {
-                        "type": "boolean"
-                    },
-                    "initial_visibility": {
-                        "$ref": "#/components/schemas/Visibility"
+                    "exposure_policy": {
+                        "$ref": "#/components/schemas/ExposurePolicy"
                     },
                     "sort_order": {
                         "type": "integer",
@@ -99,17 +91,11 @@
                     "type": {
                         "type": "string"
                     },
-                    "admin_only": {
-                        "type": "boolean"
+                    "edit_policy": {
+                        "$ref": "#/components/schemas/EditPolicy"
                     },
-                    "user_editable": {
-                        "type": "boolean"
-                    },
-                    "user_visible": {
-                        "type": "boolean"
-                    },
-                    "initial_visibility": {
-                        "type": "string"
+                    "exposure_policy": {
+                        "$ref": "#/components/schemas/ExposurePolicy"
                     },
                     "sort_order": {
                         "type": "integer",
@@ -125,6 +111,13 @@
                         }
                     }
                 }
+            },
+            "EditPolicy": {
+                "type": "string",
+                "enum": [
+                    "admins",
+                    "users"
+                ]
             },
             "EditableField": {
                 "type": "object",
@@ -145,6 +138,15 @@
                         "type": "boolean"
                     }
                 }
+            },
+            "ExposurePolicy": {
+                "type": "string",
+                "enum": [
+                    "hidden",
+                    "private",
+                    "users",
+                    "public"
+                ]
             },
             "LookupField": {
                 "type": "object",
@@ -436,25 +438,15 @@
                                         "type": "string",
                                         "description": "Value type accepted by the field"
                                     },
-                                    "adminOnly": {
-                                        "type": "boolean",
-                                        "default": false,
-                                        "description": "Whether only admins can edit values for this field"
+                                    "editPolicy": {
+                                        "type": "string",
+                                        "default": "users",
+                                        "description": "Whether values are managed by admins only or by users too"
                                     },
-                                    "userEditable": {
-                                        "type": "boolean",
-                                        "default": false,
-                                        "description": "Whether the owner can edit the field value"
-                                    },
-                                    "userVisible": {
-                                        "type": "boolean",
-                                        "default": true,
-                                        "description": "Whether the owner can see the field in personal settings"
-                                    },
-                                    "initialVisibility": {
+                                    "exposurePolicy": {
                                         "type": "string",
                                         "default": "private",
-                                        "description": "Initial visibility applied to new values"
+                                        "description": "Whether the field is hidden or which default visibility new values receive"
                                     },
                                     "sortOrder": {
                                         "type": "integer",
@@ -599,25 +591,15 @@
                                         "type": "string",
                                         "description": "Value type accepted by the field"
                                     },
-                                    "adminOnly": {
-                                        "type": "boolean",
-                                        "default": false,
-                                        "description": "Whether only admins can edit values for this field"
+                                    "editPolicy": {
+                                        "type": "string",
+                                        "default": "users",
+                                        "description": "Whether values are managed by admins only or by users too"
                                     },
-                                    "userEditable": {
-                                        "type": "boolean",
-                                        "default": false,
-                                        "description": "Whether the owner can edit the field value"
-                                    },
-                                    "userVisible": {
-                                        "type": "boolean",
-                                        "default": true,
-                                        "description": "Whether the owner can see the field in personal settings"
-                                    },
-                                    "initialVisibility": {
+                                    "exposurePolicy": {
                                         "type": "string",
                                         "default": "private",
-                                        "description": "Initial visibility applied to new values"
+                                        "description": "Whether the field is hidden or which default visibility new values receive"
                                     },
                                     "sortOrder": {
                                         "type": "integer",
