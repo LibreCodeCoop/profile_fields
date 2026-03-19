@@ -39,13 +39,6 @@ Run the app commands from the Nextcloud stack root, not from the host PHP enviro
 | `profile_fields:data:import` | Apply the non-destructive `upsert` import. |
 | `profile_fields:data:clear` | Clear app definitions explicitly before reimporting into the same environment. |
 
-Notes:
-
-- The import contract is versioned with `schema_version` and reconciles definitions by `field_key` and values by `field_key + user_uid`.
-- The first delivery is non-destructive: missing items in the payload do not delete existing definitions or values.
-- Validation is all-or-nothing. If the payload contains an incompatible definition or a missing destination user, no database write is performed.
-- For a restore in the same environment, clear app data explicitly before reimporting.
-
 ## Screenshots
 
 ### Admin catalog
