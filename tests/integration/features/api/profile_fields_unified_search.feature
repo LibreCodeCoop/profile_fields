@@ -13,10 +13,8 @@ Feature: profile fields unified search
       | fieldKey          | unified_region_admin |
       | label             | Unified Region Admin |
       | type              | text                 |
-      | adminOnly         | false                |
-      | userEditable      | false                |
-      | userVisible       | true                 |
-      | initialVisibility | private              |
+      | editPolicy        | admins               |
+      | exposurePolicy    | private              |
       | sortOrder         | 10                   |
       | active            | true                 |
     Then the response should have a status code 201
@@ -58,10 +56,8 @@ Feature: profile fields unified search
       | fieldKey          | unified_region_visibility |
       | label             | Unified Region Visibility |
       | type              | text                      |
-      | adminOnly         | false                     |
-      | userEditable      | false                     |
-      | userVisible       | true                      |
-      | initialVisibility | private                   |
+      | editPolicy        | admins                    |
+      | exposurePolicy    | private                   |
       | sortOrder         | 10                        |
       | active            | true                      |
     Then the response should have a status code 201
@@ -97,10 +93,8 @@ Feature: profile fields unified search
       | fieldKey          | unified_region_hidden     |
       | label             | Unified Region Hidden     |
       | type              | text                      |
-      | adminOnly         | false                     |
-      | userEditable      | false                     |
-      | userVisible       | false                     |
-      | initialVisibility | public                    |
+      | editPolicy        | admins                    |
+      | exposurePolicy    | hidden                    |
       | sortOrder         | 10                        |
       | active            | true                      |
     Then the response should have a status code 201
@@ -113,10 +107,8 @@ Feature: profile fields unified search
       | fieldKey          | unified_region_private    |
       | label             | Unified Region Private    |
       | type              | text                      |
-      | adminOnly         | false                     |
-      | userEditable      | false                     |
-      | userVisible       | true                      |
-      | initialVisibility | private                   |
+      | editPolicy        | admins                    |
+      | exposurePolicy    | private                   |
       | sortOrder         | 20                        |
       | active            | true                      |
     Then the response should have a status code 201
