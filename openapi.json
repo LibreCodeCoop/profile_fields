@@ -27,10 +27,8 @@
                     "field_key",
                     "label",
                     "type",
-                    "admin_only",
-                    "user_editable",
-                    "user_visible",
-                    "initial_visibility",
+                    "edit_policy",
+                    "exposure_policy",
                     "sort_order",
                     "active",
                     "options",
@@ -53,17 +51,11 @@
                     "type": {
                         "$ref": "#/components/schemas/Type"
                     },
-                    "admin_only": {
-                        "type": "boolean"
+                    "edit_policy": {
+                        "$ref": "#/components/schemas/EditPolicy"
                     },
-                    "user_editable": {
-                        "type": "boolean"
-                    },
-                    "user_visible": {
-                        "type": "boolean"
-                    },
-                    "initial_visibility": {
-                        "$ref": "#/components/schemas/Visibility"
+                    "exposure_policy": {
+                        "$ref": "#/components/schemas/ExposurePolicy"
                     },
                     "sort_order": {
                         "type": "integer",
@@ -87,6 +79,13 @@
                     }
                 }
             },
+            "EditPolicy": {
+                "type": "string",
+                "enum": [
+                    "admins",
+                    "users"
+                ]
+            },
             "EditableField": {
                 "type": "object",
                 "required": [
@@ -106,6 +105,15 @@
                         "type": "boolean"
                     }
                 }
+            },
+            "ExposurePolicy": {
+                "type": "string",
+                "enum": [
+                    "hidden",
+                    "private",
+                    "users",
+                    "public"
+                ]
             },
             "OCSMeta": {
                 "type": "object",
