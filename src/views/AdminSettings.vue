@@ -22,6 +22,21 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 		<NcNoteCard v-if="errorMessage" type="error" data-testid="profile-fields-admin-error">
 			{{ errorMessage }}
 		</NcNoteCard>
+		<NcNoteCard v-if="showSupportBanner" type="info" data-testid="profile-fields-admin-support-banner">
+			<div class="profile-fields-admin__support-banner">
+				<p>
+					This app is open source and released under the AGPL license.
+					To keep development and maintenance active, please
+					<a href="https://github.com/sponsors/LibreSign" target="_blank" rel="noopener noreferrer">sponsor LibreSign on GitHub Sponsors</a>
+					If possible, choose a monthly sponsorship.
+				</p>
+				<div class="profile-fields-admin__support-banner-actions">
+					<NcButton class="profile-fields-admin__support-banner-action" variant="tertiary-no-background" @click="dismissSupportBanner">
+						Not now
+					</NcButton>
+				</div>
+			</div>
+		</NcNoteCard>
 		<span
 			class="profile-fields-admin__success-announcement"
 			data-testid="profile-fields-admin-success"
@@ -421,11 +436,22 @@ const definitions = ref<FieldDefinition[]>([])
 const isLoading = ref(true)
 const isSaving = ref(false)
 const errorMessage = ref('')
+const supportBannerStorageKey = 'profile_fields_support_banner_dismissed'
+const showSupportBanner = ref(true)
 const selectedId = ref<number | null>(null)
 const justSavedId = ref<number | null>(null)
 let justSavedTimeout: ReturnType<typeof setTimeout> | null = null
 const successMessage = ref('')
 let successMessageTimeout: ReturnType<typeof setTimeout> | null = null
+
+const dismissSupportBanner = () => {
+	showSupportBanner.value = false
+	try {
+		window.localStorage.setItem(supportBannerStorageKey, '1')
+	} catch {
+		// Ignore storage errors and keep only in-memory dismissal.
+	}
+}
 
 const setSuccessMessage = (message: string) => {
 	if (successMessageTimeout !== null) {
@@ -1002,6 +1028,11 @@ watch(() => form.type, (newType: FieldType) => {
 
 onMounted(() => {
 	loadDefinitions()
+	try {
+		showSupportBanner.value = window.localStorage.getItem(supportBannerStorageKey) !== '1'
+	} catch {
+		showSupportBanner.value = true
+	}
 	compactLayoutMediaQuery = window.matchMedia('(max-width: 1024px)')
 	updateCompactLayout(compactLayoutMediaQuery.matches)
 	compactLayoutMediaQuery.addEventListener('change', handleCompactLayoutChange)
@@ -1079,6 +1110,35 @@ onBeforeUnmount(() => {
 		display: grid;
 		grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
 		gap: 20px;
+	}
+
+	&__support-banner {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: 10px;
+		width: 100%;
+
+		p {
+			margin: 0;
+			overflow-wrap: anywhere;
+			line-height: 1.5;
+		}
+
+		a {
+			font-weight: 600;
+			overflow-wrap: anywhere;
+		}
+	}
+
+	&__support-banner-actions {
+		display: flex;
+		justify-content: flex-end;
+		width: 100%;
+	}
+
+	&__support-banner-action {
+		flex: 0 0 auto;
+		white-space: nowrap;
 	}
 
 	&__field-helper {
@@ -1599,6 +1659,18 @@ onBeforeUnmount(() => {
 		&__hero-meta {
 			justify-items: start;
 			width: 100%;
+		}
+
+		&__support-banner {
+			gap: 8px;
+
+			:deep(.button-vue) {
+				max-width: 100%;
+			}
+		}
+
+		&__support-banner-actions {
+			justify-content: flex-start;
 		}
 
 		&__submit-row,
