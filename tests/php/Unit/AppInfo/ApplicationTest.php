@@ -14,6 +14,7 @@ use OCA\ProfileFields\Listener\LoadWorkflowSettingsScriptsListener;
 use OCA\ProfileFields\Listener\RegisterWorkflowCheckListener;
 use OCA\ProfileFields\Listener\RegisterWorkflowEntityListener;
 use OCA\ProfileFields\Listener\RegisterWorkflowOperationListener;
+use OCA\ProfileFields\Search\ProfileFieldSearchProvider;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
 use OCP\IRequest;
@@ -27,8 +28,14 @@ use PHPUnit\Framework\TestCase;
 class ApplicationTest extends TestCase {
 	public function testRegisterAddsWorkflowListeners(): void {
 		$registrations = [];
+		$searchProviders = [];
 
 		$registrationContext = $this->createMock(IRegistrationContext::class);
+		$registrationContext->expects($this->once())
+			->method('registerSearchProvider')
+			->willReturnCallback(static function (string $provider) use (&$searchProviders): void {
+				$searchProviders[] = $provider;
+			});
 		$registrationContext->expects($this->exactly(6))
 			->method('registerEventListener')
 			->willReturnCallback(static function (string $event, string $listener, int $priority = 0) use (&$registrations): void {
@@ -38,6 +45,7 @@ class ApplicationTest extends TestCase {
 		$application = new Application();
 		$application->register($registrationContext);
 
+		self::assertContains(ProfileFieldSearchProvider::class, $searchProviders);
 		self::assertContains(['\\OCA\\Settings\\Events\\BeforeTemplateRenderedEvent', 'OCA\\ProfileFields\\Listener\\BeforeTemplateRenderedListener', 0], $registrations);
 		self::assertContains([UserDeletedEvent::class, 'OCA\\ProfileFields\\Listener\\UserDeletedCleanupListener', 0], $registrations);
 		self::assertContains([RegisterEntitiesEvent::class, RegisterWorkflowEntityListener::class, 0], $registrations);

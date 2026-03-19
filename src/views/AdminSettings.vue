@@ -118,6 +118,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 						<div class="profile-fields-admin__section-heading">
 							<h4>Behavior</h4>
 							<p>Choose how the field is stored, displayed and exposed by default.</p>
+							<p>Fields visible to users can appear in global search when stored values are public or visible to authenticated users. Hidden fields and private values stay searchable only for administrators.</p>
 						</div>
 
 						<div class="profile-fields-admin__grid">
