@@ -12,14 +12,14 @@ namespace OCA\ProfileFields;
 /**
  * @psalm-type ProfileFieldsType = 'text'|'number'|'select'
  * @psalm-type ProfileFieldsVisibility = 'private'|'users'|'public'
+ * @psalm-type ProfileFieldsEditPolicy = 'admins'|'users'
+ * @psalm-type ProfileFieldsExposurePolicy = 'hidden'|'private'|'users'|'public'
  * @psalm-type ProfileFieldsDefinitionInput = array{
  *     field_key?: string,
  *     label?: string,
  *     type?: string,
- *     admin_only?: bool,
- *     user_editable?: bool,
- *     user_visible?: bool,
- *     initial_visibility?: string,
+ *     edit_policy?: ProfileFieldsEditPolicy,
+ *     exposure_policy?: ProfileFieldsExposurePolicy,
  *     sort_order?: int,
  *     active?: bool,
  *     options?: list<string>,
@@ -29,10 +29,8 @@ namespace OCA\ProfileFields;
  *     field_key: non-empty-string,
  *     label: non-empty-string,
  *     type: ProfileFieldsType,
- *     admin_only: bool,
- *     user_editable: bool,
- *     user_visible: bool,
- *     initial_visibility: ProfileFieldsVisibility,
+ *     edit_policy: ProfileFieldsEditPolicy,
+ *     exposure_policy: ProfileFieldsExposurePolicy,
  *     sort_order: int,
  *     active: bool,
  *     options: list<string>|null,
