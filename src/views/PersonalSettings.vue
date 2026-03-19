@@ -198,6 +198,7 @@ import { mdiLockOutline, mdiInformationOutline } from '@mdi/js'
 import { computed, inject, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { NcButton, NcEmptyContent, NcIconSvgWrapper, NcInputField, NcLoadingIcon, NcNoteCard, NcPopover, NcSelect } from '@nextcloud/vue'
 import { listEditableFields, upsertOwnValue } from '../api'
+import { definitionDefaultVisibility } from '../types'
 import type { EditableField, FieldType, FieldVisibility } from '../types'
 import { visibilityOptions } from '../utils/visibilityOptions.js'
 
@@ -258,7 +259,7 @@ const placeholderForField = (field: EditableField) => {
 const normaliseEditableField = (field: EditableField) => {
 	const existingValue = field.value?.value
 	draftValues[field.definition.id] = existingValue?.value?.toString() ?? ''
-	draftVisibilities[field.definition.id] = field.value?.current_visibility ?? field.definition.initial_visibility
+	draftVisibilities[field.definition.id] = field.value?.current_visibility ?? definitionDefaultVisibility(field.definition)
 	delete fieldErrors[field.definition.id]
 }
 
@@ -371,7 +372,7 @@ const hasFieldChanges = (field: EditableField) => {
 		return false
 	}
 
-	const visibilityChanged = draftVisibilities[field.definition.id] !== (field.value?.current_visibility ?? field.definition.initial_visibility)
+	const visibilityChanged = draftVisibilities[field.definition.id] !== (field.value?.current_visibility ?? definitionDefaultVisibility(field.definition))
 	return visibilityChanged || currentDraftValue(field) !== currentStoredValue(field)
 }
 
