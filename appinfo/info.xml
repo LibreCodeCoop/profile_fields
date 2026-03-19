@@ -19,9 +19,9 @@ Each field can be governed with edit and visibility rules so teams can combine s
 
 ## Donation
 
-Developed with ❤️ by [LibreCode](https://librecode.coop). Help us transform people and businesses through cooperativism.
+Developed with ❤️ by [LibreCode](https://librecode.coop). Ongoing maintenance, bug fixes, and long-term sustainability depend on community support.
 
-* [Donate with GitHub Sponsor: ![Donate using GitHub Sponsor](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/libresign)
+* [Sponsor LibreSign on GitHub (monthly recurring support is especially welcome): ![Donate using GitHub Sponsor](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/LibreSign)
 	]]></description>
 	<version>0.0.1-dev</version>
 	<licence>agpl</licence>
@@ -39,7 +39,8 @@ Developed with ❤️ by [LibreCode](https://librecode.coop). Help us transform 
 	<screenshot small-thumbnail="https://raw.githubusercontent.com/LibreCodeCoop/profile_fields/main/img/screenshots/user-management-dialog-thumb.png">https://raw.githubusercontent.com/LibreCodeCoop/profile_fields/main/img/screenshots/user-management-dialog.png</screenshot>
 	<screenshot small-thumbnail="https://raw.githubusercontent.com/LibreCodeCoop/profile_fields/main/img/screenshots/personal-settings-thumb.png">https://raw.githubusercontent.com/LibreCodeCoop/profile_fields/main/img/screenshots/personal-settings.png</screenshot>
 	<screenshot small-thumbnail="https://raw.githubusercontent.com/LibreCodeCoop/profile_fields/main/img/screenshots/workflow-notify-admins-thumb.png">https://raw.githubusercontent.com/LibreCodeCoop/profile_fields/main/img/screenshots/workflow-notify-admins.png</screenshot>
-	<donation title="Donate via GitHub Sponsors">https://github.com/sponsors/LibreSign</donation>
+	<donation title="Sponsor LibreSign on GitHub (monthly recurring preferred)">https://github.com/sponsors/LibreSign</donation>
+	<donation type="stripe" title="Donate via Stripe">https://buy.stripe.com/eVqfZibhx8QO3LseWc2kw00</donation>
 	<dependencies>
 		<nextcloud min-version="32" max-version="34"/>
 	</dependencies>
