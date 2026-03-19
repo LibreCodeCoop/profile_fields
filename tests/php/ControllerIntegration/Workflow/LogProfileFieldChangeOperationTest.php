@@ -247,10 +247,8 @@ class LogProfileFieldChangeOperationTest extends TestCase {
 		$definition->setFieldKey($fieldKey);
 		$definition->setLabel('Department');
 		$definition->setType(FieldType::TEXT->value);
-		$definition->setAdminOnly(false);
-		$definition->setUserEditable(true);
-		$definition->setUserVisible(true);
-		$definition->setInitialVisibility(FieldVisibility::USERS->value);
+		$definition->setEditPolicy(\OCA\ProfileFields\Enum\FieldEditPolicy::USERS->value);
+		$definition->setExposurePolicy(\OCA\ProfileFields\Enum\FieldExposurePolicy::USERS->value);
 		$definition->setSortOrder(0);
 		$definition->setActive(true);
 		$definition->setCreatedAt(new \DateTime());
