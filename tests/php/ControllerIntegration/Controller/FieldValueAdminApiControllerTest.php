@@ -125,10 +125,8 @@ class FieldValueAdminApiControllerTest extends TestCase {
 			'field_key' => 'cpf_lookup_integration',
 			'label' => 'CPF',
 			'type' => FieldType::TEXT->value,
-			'admin_only' => false,
-			'user_editable' => false,
-			'user_visible' => true,
-			'initial_visibility' => FieldVisibility::PRIVATE->value,
+			'edit_policy' => 'admins',
+			'exposure_policy' => 'private',
 			'sort_order' => 0,
 			'active' => true,
 		]);
@@ -137,10 +135,8 @@ class FieldValueAdminApiControllerTest extends TestCase {
 			'field_key' => 'health_plan_type_lookup_integration',
 			'label' => 'Health plan type',
 			'type' => FieldType::TEXT->value,
-			'admin_only' => false,
-			'user_editable' => false,
-			'user_visible' => true,
-			'initial_visibility' => FieldVisibility::PRIVATE->value,
+			'edit_policy' => 'admins',
+			'exposure_policy' => 'private',
 			'sort_order' => 1,
 			'active' => true,
 		]);
@@ -175,10 +171,8 @@ class FieldValueAdminApiControllerTest extends TestCase {
 			'field_key' => 'region_search_integration',
 			'label' => 'Region',
 			'type' => FieldType::TEXT->value,
-			'admin_only' => false,
-			'user_editable' => false,
-			'user_visible' => true,
-			'initial_visibility' => FieldVisibility::PRIVATE->value,
+			'edit_policy' => 'admins',
+			'exposure_policy' => 'private',
 			'sort_order' => 0,
 			'active' => true,
 		]);
@@ -229,10 +223,12 @@ class FieldValueAdminApiControllerTest extends TestCase {
 		$definition->setFieldKey($fieldKey);
 		$definition->setLabel($label);
 		$definition->setType($type);
-		$definition->setAdminOnly($adminOnly);
-		$definition->setUserEditable($userEditable);
-		$definition->setUserVisible(true);
-		$definition->setInitialVisibility($initialVisibility);
+		$definition->setEditPolicy(($adminOnly || !$userEditable) ? \OCA\ProfileFields\Enum\FieldEditPolicy::ADMINS->value : \OCA\ProfileFields\Enum\FieldEditPolicy::USERS->value);
+		$definition->setExposurePolicy(match ($initialVisibility) {
+			'public' => \OCA\ProfileFields\Enum\FieldExposurePolicy::PUBLIC->value,
+			'users' => \OCA\ProfileFields\Enum\FieldExposurePolicy::USERS->value,
+			default => \OCA\ProfileFields\Enum\FieldExposurePolicy::PRIVATE->value,
+		});
 		$definition->setSortOrder($sortOrder);
 		$definition->setActive($active);
 		$definition->setCreatedAt(new \DateTime());
