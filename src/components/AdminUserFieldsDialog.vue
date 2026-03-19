@@ -108,6 +108,7 @@ import { computed, defineComponent, reactive, ref, watch } from 'vue'
 import NcAvatar from '@nextcloud/vue/components/NcAvatar'
 import { NcButton, NcDialog, NcEmptyContent, NcInputField, NcLoadingIcon, NcNoteCard, NcSelect } from '@nextcloud/vue'
 import { listAdminUserValues, listDefinitions, upsertAdminUserValue } from '../api'
+import { definitionDefaultVisibility } from '../types'
 import type { AdminEditableField, FieldDefinition, FieldType, FieldValueRecord, FieldVisibility } from '../types'
 import { buildAdminEditableFields } from '../utils/adminFieldValues.js'
 import { visibilityOptions } from '../utils/visibilityOptions.js'
@@ -248,7 +249,7 @@ export default defineComponent({
 			const currentValue = field.value?.value
 			userDraftValues[field.definition.id] = currentValue?.value?.toString() ?? ''
 
-			userDraftVisibilities[field.definition.id] = field.value?.current_visibility ?? field.definition.initial_visibility
+			userDraftVisibilities[field.definition.id] = field.value?.current_visibility ?? definitionDefaultVisibility(field.definition)
 			delete userValueErrors[field.definition.id]
 		}
 
@@ -364,7 +365,7 @@ export default defineComponent({
 		const currentPayload = (field: AdminEditableField) => {
 			return {
 				value: field.value?.value?.value ?? null,
-				visibility: field.value?.current_visibility ?? field.definition.initial_visibility,
+				visibility: field.value?.current_visibility ?? definitionDefaultVisibility(field.definition),
 			}
 		}
 
