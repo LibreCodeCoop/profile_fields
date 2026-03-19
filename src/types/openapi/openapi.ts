@@ -3,7 +3,7 @@
  * Do not make direct changes to the file.
  */
 
-export interface paths {
+export type paths = {
     "/ocs/v2.php/apps/profile_fields/api/v1/me/values": {
         parameters: {
             query?: never;
@@ -64,9 +64,9 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-}
+};
 export type webhooks = Record<string, never>;
-export interface components {
+export type components = {
     schemas: {
         Definition: {
             /** Format: int64 */
@@ -74,10 +74,8 @@ export interface components {
             field_key: string;
             label: string;
             type: components["schemas"]["Type"];
-            admin_only: boolean;
-            user_editable: boolean;
-            user_visible: boolean;
-            initial_visibility: components["schemas"]["Visibility"];
+            edit_policy: components["schemas"]["EditPolicy"];
+            exposure_policy: components["schemas"]["ExposurePolicy"];
             /** Format: int64 */
             sort_order: number;
             active: boolean;
@@ -85,11 +83,15 @@ export interface components {
             created_at: string;
             updated_at: string;
         };
+        /** @enum {string} */
+        EditPolicy: "admins" | "users";
         EditableField: {
             definition: components["schemas"]["Definition"];
             value: components["schemas"]["ValueRecord"];
             can_edit: boolean;
         };
+        /** @enum {string} */
+        ExposurePolicy: "hidden" | "private" | "users" | "public";
         OCSMeta: {
             status: string;
             statuscode: number;
@@ -121,7 +123,7 @@ export interface components {
     requestBodies: never;
     headers: never;
     pathItems: never;
-}
+};
 export type $defs = Record<string, never>;
 export interface operations {
     "field_value_api-index": {
