@@ -134,7 +134,7 @@ const ensureEmbeddedProfileAnchor = () => {
 	const anchor = document.createElement('a')
 	anchor.className = 'profile-fields-personal__profile-anchor'
 	anchor.href = '#profile-fields-personal-info'
-	anchor.textContent = t('profile_fields', 'Edit your Profile fields')
+	anchor.textContent = t('profile_fields', 'Additional profile fields')
 
 	const referenceLink = profileSection.querySelector('a[href="#profile-visibility"]')
 	if (referenceLink !== null && referenceLink.parentNode !== null) {
