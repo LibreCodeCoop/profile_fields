@@ -137,7 +137,7 @@ class LogProfileFieldChangeOperationTest extends TestCase {
 		$urlGenerator->method('imagePath')->willReturn('/core/img/actions/profile.svg');
 
 		$subjectContext = new ProfileFieldValueSubjectContext();
-		$fieldValueService = new FieldValueService($this->fieldValueMapper, $this->dispatcher);
+		$fieldValueService = new FieldValueService($this->fieldValueMapper, $this->dispatcher, $l10n);
 		$check = new UserProfileFieldCheck(
 			$this->userSession,
 			$l10n,
@@ -238,7 +238,7 @@ class LogProfileFieldChangeOperationTest extends TestCase {
 				}),
 			);
 
-		$fieldValueService = new FieldValueService($this->fieldValueMapper, $this->dispatcher);
+		$fieldValueService = new FieldValueService($this->fieldValueMapper, $this->dispatcher, $this->createStub(IL10N::class));
 		$fieldValueService->upsert($this->definition, $userId, 'engineering', 'admin');
 	}
 

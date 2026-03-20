@@ -19,6 +19,7 @@ use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attribute\ApiRoute;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\OCSController;
+use OCP\IL10N;
 use OCP\IRequest;
 use OCP\IUser;
 use OCP\IUserManager;
@@ -35,6 +36,7 @@ class FieldValueAdminApiController extends OCSController {
 		private FieldDefinitionService $fieldDefinitionService,
 		private FieldValueService $fieldValueService,
 		private IUserManager $userManager,
+		private IL10N $l10n,
 		private ?string $userId,
 	) {
 		parent::__construct(Application::APP_ID, $request);
@@ -82,12 +84,12 @@ class FieldValueAdminApiController extends OCSController {
 		?string $currentVisibility = null,
 	): DataResponse {
 		if ($this->userId === null) {
-			return new DataResponse(['message' => 'Authenticated admin user is required'], Http::STATUS_UNAUTHORIZED);
+			return new DataResponse(['message' => $this->l10n->t('Authenticated admin user is required')], Http::STATUS_UNAUTHORIZED);
 		}
 
 		$definition = $this->fieldDefinitionService->findById($fieldDefinitionId);
 		if ($definition === null || !$definition->getActive()) {
-			return new DataResponse(['message' => 'Field definition not found'], Http::STATUS_NOT_FOUND);
+			return new DataResponse(['message' => $this->l10n->t('Field definition not found')], Http::STATUS_NOT_FOUND);
 		}
 
 		try {
@@ -122,12 +124,12 @@ class FieldValueAdminApiController extends OCSController {
 		array|string|int|float|bool|null $fieldValue = null,
 	): DataResponse {
 		if ($this->userId === null) {
-			return new DataResponse(['message' => 'Authenticated admin user is required'], Http::STATUS_UNAUTHORIZED);
+			return new DataResponse(['message' => $this->l10n->t('Authenticated admin user is required')], Http::STATUS_UNAUTHORIZED);
 		}
 
 		$definition = $this->fieldDefinitionService->findByFieldKey($fieldKey);
 		if ($definition === null || !$definition->getActive()) {
-			return new DataResponse(['message' => 'Lookup field definition not found'], Http::STATUS_NOT_FOUND);
+			return new DataResponse(['message' => $this->l10n->t('Lookup field definition not found')], Http::STATUS_NOT_FOUND);
 		}
 
 		try {
@@ -137,11 +139,11 @@ class FieldValueAdminApiController extends OCSController {
 		}
 
 		if ($matches === []) {
-			return new DataResponse(['message' => 'User not found for lookup field value'], Http::STATUS_NOT_FOUND);
+			return new DataResponse(['message' => $this->l10n->t('User not found for lookup field value')], Http::STATUS_NOT_FOUND);
 		}
 
 		if (count($matches) > 1) {
-			return new DataResponse(['message' => 'Multiple users match the lookup field value'], Http::STATUS_CONFLICT);
+			return new DataResponse(['message' => $this->l10n->t('Multiple users match the lookup field value')], Http::STATUS_CONFLICT);
 		}
 
 		return new DataResponse($this->serializeLookupResult($definition, $matches[0]), Http::STATUS_OK);
@@ -174,12 +176,12 @@ class FieldValueAdminApiController extends OCSController {
 		int $offset = 0,
 	): DataResponse {
 		if ($this->userId === null) {
-			return new DataResponse(['message' => 'Authenticated admin user is required'], Http::STATUS_UNAUTHORIZED);
+			return new DataResponse(['message' => $this->l10n->t('Authenticated admin user is required')], Http::STATUS_UNAUTHORIZED);
 		}
 
 		$definition = $this->fieldDefinitionService->findByFieldKey($fieldKey);
 		if ($definition === null || !$definition->getActive()) {
-			return new DataResponse(['message' => 'Search field definition not found'], Http::STATUS_NOT_FOUND);
+			return new DataResponse(['message' => $this->l10n->t('Search field definition not found')], Http::STATUS_NOT_FOUND);
 		}
 
 		try {

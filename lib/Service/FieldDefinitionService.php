@@ -15,12 +15,14 @@ use JsonException;
 use OCA\ProfileFields\Db\FieldDefinition;
 use OCA\ProfileFields\Db\FieldDefinitionMapper;
 use OCA\ProfileFields\Db\FieldValueMapper;
+use OCP\IL10N;
 
 class FieldDefinitionService {
 	public function __construct(
 		private FieldDefinitionMapper $fieldDefinitionMapper,
 		private FieldValueMapper $fieldValueMapper,
 		private FieldDefinitionValidator $validator,
+		private IL10N $l10n,
 	) {
 	}
 
@@ -30,7 +32,7 @@ class FieldDefinitionService {
 	public function create(array $definition): FieldDefinition {
 		$validated = $this->validator->validate($definition);
 		if ($this->fieldDefinitionMapper->findByFieldKey($validated['field_key']) !== null) {
-			throw new InvalidArgumentException('field_key already exists');
+			throw new InvalidArgumentException($this->l10n->t('field_key already exists'));
 		}
 
 		$createdAt = $this->parseImportedDate($definition['created_at'] ?? null) ?? new DateTime();
@@ -46,7 +48,7 @@ class FieldDefinitionService {
 		try {
 			$entity->setOptions(isset($validated['options']) ? json_encode($validated['options'], JSON_THROW_ON_ERROR) : null);
 		} catch (JsonException $e) {
-			throw new InvalidArgumentException('options could not be encoded: ' . $e->getMessage(), 0, $e);
+			throw new InvalidArgumentException($this->l10n->t('options could not be encoded: %s', [$e->getMessage()]), 0, $e);
 		}
 		$entity->setCreatedAt($createdAt);
 		$entity->setUpdatedAt($updatedAt);
@@ -60,11 +62,11 @@ class FieldDefinitionService {
 	public function update(FieldDefinition $existing, array $definition): FieldDefinition {
 		$validated = $this->validator->validate($definition + ['field_key' => $existing->getFieldKey()]);
 		if (($definition['field_key'] ?? $existing->getFieldKey()) !== $existing->getFieldKey()) {
-			throw new InvalidArgumentException('field_key cannot be changed');
+			throw new InvalidArgumentException($this->l10n->t('field_key cannot be changed'));
 		}
 
 		if ($validated['type'] !== $existing->getType() && $this->fieldValueMapper->hasValuesForFieldDefinitionId($existing->getId())) {
-			throw new InvalidArgumentException('type cannot be changed after values exist');
+			throw new InvalidArgumentException($this->l10n->t('type cannot be changed after values exist'));
 		}
 
 		$existing->setLabel($validated['label']);
@@ -76,7 +78,7 @@ class FieldDefinitionService {
 		try {
 			$existing->setOptions(isset($validated['options']) ? json_encode($validated['options'], JSON_THROW_ON_ERROR) : null);
 		} catch (JsonException $e) {
-			throw new InvalidArgumentException('options could not be encoded: ' . $e->getMessage(), 0, $e);
+			throw new InvalidArgumentException($this->l10n->t('options could not be encoded: %s', [$e->getMessage()]), 0, $e);
 		}
 		$existing->setUpdatedAt($this->parseImportedDate($definition['updated_at'] ?? null) ?? new DateTime());
 

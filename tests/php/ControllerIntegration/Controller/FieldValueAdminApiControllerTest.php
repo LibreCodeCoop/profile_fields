@@ -23,6 +23,7 @@ use OCP\AppFramework\App;
 use OCP\AppFramework\Http;
 use OCP\DB\ISchemaWrapper;
 use OCP\IDBConnection;
+use OCP\IL10N;
 use OCP\IRequest;
 use OCP\IUser;
 use OCP\IUserManager;
@@ -100,6 +101,7 @@ class FieldValueAdminApiControllerTest extends TestCase {
 			$this->fieldDefinitionService,
 			$this->fieldValueService,
 			$this->userManager,
+			$this->createL10n(),
 			$this->currentUserId,
 		);
 
@@ -150,6 +152,7 @@ class FieldValueAdminApiControllerTest extends TestCase {
 			$this->fieldDefinitionService,
 			$this->fieldValueService,
 			$this->userManager,
+			$this->createL10n(),
 			$this->currentUserId,
 		);
 
@@ -187,6 +190,7 @@ class FieldValueAdminApiControllerTest extends TestCase {
 			$this->fieldDefinitionService,
 			$this->fieldValueService,
 			$this->userManager,
+			$this->createL10n(),
 			$this->currentUserId,
 		);
 
@@ -247,6 +251,12 @@ class FieldValueAdminApiControllerTest extends TestCase {
 		}
 
 		return $userId;
+	}
+
+	private function createL10n(): IL10N {
+		$l10n = $this->createStub(IL10N::class);
+		$l10n->method('t')->willReturnCallback(static fn (string $text, array $parameters = []): string => $parameters === [] ? $text : vsprintf($text, $parameters));
+		return $l10n;
 	}
 
 	private static function ensureSchemaExists(IDBConnection $connection): void {
