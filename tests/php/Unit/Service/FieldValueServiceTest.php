@@ -395,6 +395,32 @@ class FieldValueServiceTest extends TestCase {
 		$this->service->normalizeValue($definition, 1.5);
 	}
 
+	public function testNormalizeMultiSelectAcceptsArrayOfValidOptions(): void {
+		$definition = $this->buildMultiSelectDefinition(['LATAM', 'EMEA', 'APAC']);
+
+		$normalized = $this->service->normalizeValue($definition, ['LATAM', 'APAC']);
+
+		$this->assertSame(['value' => ['LATAM', 'APAC']], $normalized);
+	}
+
+	public function testNormalizeMultiSelectRejectsUnknownOption(): void {
+		$definition = $this->buildMultiSelectDefinition(['LATAM', 'EMEA', 'APAC']);
+
+		$this->expectException(InvalidArgumentException::class);
+		$this->expectExceptionMessage('"ANZ" is not a valid option for this field');
+
+		$this->service->normalizeValue($definition, ['LATAM', 'ANZ']);
+	}
+
+	public function testNormalizeMultiSelectRejectsScalar(): void {
+		$definition = $this->buildMultiSelectDefinition(['LATAM', 'EMEA']);
+
+		$this->expectException(InvalidArgumentException::class);
+		$this->expectExceptionMessage('Multiselect fields require one or more configured option values.');
+
+		$this->service->normalizeValue($definition, 'LATAM');
+	}
+
 	private function buildDefinition(string $type): FieldDefinition {
 		$definition = new FieldDefinition();
 		$definition->setType($type);
@@ -407,6 +433,15 @@ class FieldValueServiceTest extends TestCase {
 	 */
 	private function buildSelectDefinition(array $options): FieldDefinition {
 		$definition = $this->buildDefinition(FieldType::SELECT->value);
+		$definition->setOptions(json_encode($options));
+		return $definition;
+	}
+
+	/**
+	 * @param list<string> $options
+	 */
+	private function buildMultiSelectDefinition(array $options): FieldDefinition {
+		$definition = $this->buildDefinition(FieldType::MULTISELECT->value);
 		$definition->setOptions(json_encode($options));
 		return $definition;
 	}
