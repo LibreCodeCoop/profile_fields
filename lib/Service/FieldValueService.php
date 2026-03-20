@@ -108,6 +108,7 @@ class FieldValueService {
 			FieldType::NUMBER => $this->normalizeNumberValue($rawValue),
 			FieldType::BOOLEAN => $this->normalizeBooleanValue($rawValue),
 			FieldType::DATE => $this->normalizeDateValue($rawValue),
+			FieldType::URL => $this->normalizeUrlValue($rawValue),
 			FieldType::SELECT => $this->normalizeSelectValue($rawValue, $definition),
 			FieldType::MULTISELECT => $this->normalizeMultiSelectValue($rawValue, $definition),
 		};
@@ -344,6 +345,23 @@ class FieldValueService {
 		$date = \DateTimeImmutable::createFromFormat('!Y-m-d', $value);
 		if ($date === false || $date->format('Y-m-d') !== $value) {
 			throw new InvalidArgumentException($this->l10n->t('Date fields require a valid ISO-8601 date in YYYY-MM-DD format.'));
+		}
+
+		return ['value' => $value];
+	}
+
+	/**
+	 * @param array<string, mixed>|scalar $rawValue
+	 * @return array{value: string}
+	 */
+	private function normalizeUrlValue(array|string|int|float|bool $rawValue): array {
+		if (!is_string($rawValue)) {
+			throw new InvalidArgumentException($this->l10n->t('URL fields require a valid URL.'));
+		}
+
+		$value = trim($rawValue);
+		if (filter_var($value, FILTER_VALIDATE_URL) === false) {
+			throw new InvalidArgumentException($this->l10n->t('URL fields require a valid URL.'));
 		}
 
 		return ['value' => $value];
