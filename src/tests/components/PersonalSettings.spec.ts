@@ -41,6 +41,29 @@ vi.mock('../../api', () => ({
 			},
 			can_edit: true,
 		},
+		{
+			definition: {
+				id: 2,
+				field_key: 'is_manager',
+				label: 'Is manager',
+				type: 'boolean',
+				edit_policy: 'users',
+				exposure_policy: 'private',
+				sort_order: 1,
+				active: true,
+				options: null,
+			},
+			value: {
+				id: 11,
+				field_definition_id: 2,
+				user_uid: 'alice',
+				value: { value: true },
+				current_visibility: 'private',
+				updated_by_uid: 'alice',
+				updated_at: '2026-03-20T12:00:00+00:00',
+			},
+			can_edit: true,
+		},
 	]),
 	upsertOwnValue: vi.fn(),
 }))
@@ -76,7 +99,7 @@ vi.mock('@nextcloud/vue', () => ({
 		props: {
 			options: { type: Array, default: () => [] },
 		},
-		template: '<select />',
+		template: '<div><span v-for="option in options" :key="String(option.value)">{{ option.label }}</span></div>',
 	}),
 }))
 
@@ -95,5 +118,20 @@ describe('PersonalSettings', () => {
 		const input = wrapper.find('[data-testid="profile-fields-personal-input-start_date"]')
 		expect(input.exists()).toBe(true)
 		expect(input.attributes('type')).toBe('date')
+	})
+
+	it('renders boolean fields with true and false options', async() => {
+		const wrapper = mount(PersonalSettings, {
+			global: {
+				stubs: {
+					Teleport: true,
+				},
+			},
+		})
+
+		await flushPromises()
+
+		expect(wrapper.text()).toContain('tr:True')
+		expect(wrapper.text()).toContain('tr:False')
 	})
 })
