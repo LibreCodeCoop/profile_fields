@@ -15,6 +15,7 @@ const definitions = [
 	{ field_key: 'score', label: 'Score', type: 'number', active: true },
 	{ field_key: 'start_date', label: 'Start date', type: 'date', active: true },
 	{ field_key: 'is_manager', label: 'Is manager', type: 'boolean', active: true },
+	{ field_key: 'website', label: 'Website', type: 'url', active: true },
 ] as const
 
 describe('workflowProfileFieldCheck', () => {
@@ -73,5 +74,20 @@ describe('workflowProfileFieldCheck', () => {
 	it('rejects unsupported operators for the selected field type', () => {
 		expect(isWorkflowOperatorSupported('contains', serializeWorkflowCheckValue({ field_key: 'score', value: '9' }), definitions)).toBe(false)
 		expect(isWorkflowOperatorSupported('greater', serializeWorkflowCheckValue({ field_key: 'score', value: '9' }), definitions)).toBe(true)
+	})
+
+	it('returns text-style operators for url definitions', () => {
+		expect(getWorkflowOperatorKeys(serializeWorkflowCheckValue({ field_key: 'website', value: 'https://example.com' }), definitions)).toEqual([
+			'is-set',
+			'!is-set',
+			'is',
+			'!is',
+			'contains',
+			'!contains',
+		])
+	})
+
+	it('accepts contains operator for url field', () => {
+		expect(isWorkflowOperatorSupported('contains', serializeWorkflowCheckValue({ field_key: 'website', value: 'example.com' }), definitions)).toBe(true)
 	})
 })
