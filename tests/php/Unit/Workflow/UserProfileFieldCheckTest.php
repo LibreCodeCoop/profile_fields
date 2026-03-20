@@ -52,7 +52,7 @@ class UserProfileFieldCheckTest extends TestCase {
 			$this->userSession,
 			$l10n,
 			$this->fieldDefinitionService,
-			new FieldValueService($this->fieldValueMapper, $this->createMock(IEventDispatcher::class)),
+			new FieldValueService($this->fieldValueMapper, $this->createMock(IEventDispatcher::class), $l10n),
 			$this->workflowSubjectContext,
 		);
 	}
