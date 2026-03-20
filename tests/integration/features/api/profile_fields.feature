@@ -311,7 +311,7 @@ Feature: profile fields API
     Then the response should have a status code 400
     And the response should be a JSON array with the following mandatory values
       | key                   | value                            |
-      | (jq).ocs.data.message | search operator is not supported |
+      | (jq).ocs.data.message | The search operator is not supported. |
 
   Scenario: admins get not found when search field definition does not exist
     Given as user "admin"
