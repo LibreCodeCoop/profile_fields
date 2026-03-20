@@ -119,6 +119,17 @@ class FieldDefinitionValidatorTest extends TestCase {
 		$this->assertNull($validated['options']);
 	}
 
+	public function testValidateBooleanFieldDefinition(): void {
+		$validated = $this->validator->validate([
+			'field_key' => 'is_manager',
+			'label' => 'Is manager',
+			'type' => FieldType::BOOLEAN->value,
+		]);
+
+		$this->assertSame(FieldType::BOOLEAN->value, $validated['type']);
+		$this->assertNull($validated['options']);
+	}
+
 	public function testRejectMultiSelectWithNoOptions(): void {
 		$this->expectException(InvalidArgumentException::class);
 		$this->expectExceptionMessage('multiselect fields require at least one option');
