@@ -43,6 +43,16 @@ class UserProfileFieldCheck implements ICheck {
 		'greater',
 		'!less',
 	];
+	private const DATE_OPERATORS = [
+		self::OPERATOR_IS_SET,
+		self::OPERATOR_IS_NOT_SET,
+		'is',
+		'!is',
+		'less',
+		'!greater',
+		'greater',
+		'!less',
+	];
 	private const SELECT_OPERATORS = [
 		self::OPERATOR_IS_SET,
 		self::OPERATOR_IS_NOT_SET,
@@ -166,6 +176,7 @@ class UserProfileFieldCheck implements ICheck {
 		$operators = match (FieldType::from($definition->getType())) {
 			FieldType::TEXT => self::TEXT_OPERATORS,
 			FieldType::NUMBER => self::NUMBER_OPERATORS,
+			FieldType::DATE => self::DATE_OPERATORS,
 			FieldType::SELECT => self::SELECT_OPERATORS,
 			FieldType::MULTISELECT => self::SELECT_OPERATORS,
 		};
@@ -242,6 +253,11 @@ class UserProfileFieldCheck implements ICheck {
 				$this->normalizeNumericComparisonOperand($expectedValue),
 				$this->normalizeNumericComparisonOperand($actualValue),
 			),
+			FieldType::DATE => $this->evaluateDateOperator(
+				$operator,
+				$this->normalizeDateComparisonOperand($expectedValue),
+				$this->normalizeDateComparisonOperand($actualValue),
+			),
 			FieldType::MULTISELECT => false,
 		};
 	}
@@ -281,6 +297,19 @@ class UserProfileFieldCheck implements ICheck {
 		return str_contains((string)$value, '.') ? (float)$value : (int)$value;
 	}
 
+	private function normalizeDateComparisonOperand(string|int|float|bool|null $value): int {
+		if (!is_string($value)) {
+			throw new InvalidArgumentException('date comparison value must be a valid YYYY-MM-DD string');
+		}
+
+		$date = \DateTimeImmutable::createFromFormat('!Y-m-d', $value);
+		if ($date === false || $date->format('Y-m-d') !== $value) {
+			throw new InvalidArgumentException('date comparison value must be a valid YYYY-MM-DD string');
+		}
+
+		return $date->getTimestamp();
+	}
+
 	private function evaluateTextOperator(string $operator, string $expectedValue, string $actualValue): bool {
 		return match ($operator) {
 			'is' => $actualValue === $expectedValue,
@@ -292,6 +321,18 @@ class UserProfileFieldCheck implements ICheck {
 	}
 
 	private function evaluateNumberOperator(string $operator, int|float $expectedValue, int|float $actualValue): bool {
+		return match ($operator) {
+			'is' => $actualValue === $expectedValue,
+			'!is' => $actualValue !== $expectedValue,
+			'less' => $actualValue < $expectedValue,
+			'!greater' => $actualValue <= $expectedValue,
+			'greater' => $actualValue > $expectedValue,
+			'!less' => $actualValue >= $expectedValue,
+			default => false,
+		};
+	}
+
+	private function evaluateDateOperator(string $operator, int $expectedValue, int $actualValue): bool {
 		return match ($operator) {
 			'is' => $actualValue === $expectedValue,
 			'!is' => $actualValue !== $expectedValue,
