@@ -276,7 +276,7 @@ export type components = {
             };
         };
         /** @enum {string} */
-        Type: "text" | "number" | "select" | "multiselect";
+        Type: "text" | "number" | "date" | "select" | "multiselect";
         ValuePayload: {
             value: Record<string, never>;
         };
