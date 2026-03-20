@@ -163,6 +163,36 @@ class UserProfileFieldCheckTest extends TestCase {
 		$this->check->validateCheck('contains', $this->encodeConfig('start_date', '2026-03-20'));
 	}
 
+	public function testExecuteCheckMatchesBooleanExactValue(): void {
+		$definition = $this->buildDefinition(7, 'is_manager', FieldType::BOOLEAN->value);
+		$value = $this->buildStoredValue(7, 'alice', '{"value":true}');
+
+		$this->fieldDefinitionService->expects($this->once())
+			->method('findByFieldKey')
+			->with('is_manager')
+			->willReturn($definition);
+		$this->fieldValueMapper->expects($this->once())
+			->method('findByFieldDefinitionIdAndUserUid')
+			->with(7, 'alice')
+			->willReturn($value);
+
+		$this->userSession->method('getUser')->willReturn($this->buildUser('alice'));
+
+		$this->assertTrue($this->check->executeCheck('is', $this->encodeConfig('is_manager', true)));
+	}
+
+	public function testValidateCheckRejectsContainsForBooleanField(): void {
+		$this->fieldDefinitionService->expects($this->once())
+			->method('findByFieldKey')
+			->with('is_manager')
+			->willReturn($this->buildDefinition(7, 'is_manager', FieldType::BOOLEAN->value));
+
+		$this->expectException(\UnexpectedValueException::class);
+		$this->expectExceptionMessage('The selected operator is not supported for this profile field');
+
+		$this->check->validateCheck('contains', $this->encodeConfig('is_manager', true));
+	}
+
 	public function testExecuteCheckTreatsMissingValueAsNotSet(): void {
 		$definition = $this->buildDefinition(7, 'region', FieldType::TEXT->value);
 
@@ -345,7 +375,7 @@ class UserProfileFieldCheckTest extends TestCase {
 		return $user;
 	}
 
-	private function encodeConfig(string $fieldKey, string|int|float|null $value): string {
+	private function encodeConfig(string $fieldKey, string|int|float|bool|null $value): string {
 		try {
 			return json_encode([
 				'field_key' => $fieldKey,

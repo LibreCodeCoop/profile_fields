@@ -17,6 +17,7 @@ export type WorkflowCheckDefinition = {
 
 const textOperatorKeys = ['is-set', '!is-set', 'is', '!is', 'contains', '!contains'] as const
 const numberOperatorKeys = ['is-set', '!is-set', 'is', '!is', 'less', '!greater', 'greater', '!less'] as const
+const booleanOperatorKeys = ['is-set', '!is-set', 'is', '!is'] as const
 const fallbackOperatorKeys = ['is-set', '!is-set', 'is', '!is', 'contains', '!contains', 'less', '!greater', 'greater', '!less'] as const
 
 export const parseWorkflowCheckValue = (rawValue: string | null | undefined): WorkflowCheckValue | null => {
@@ -65,6 +66,8 @@ export const getWorkflowOperatorKeys = (rawValue: string | null | undefined, def
 	return definition.type === 'number'
 		|| definition.type === 'date'
 		? [...numberOperatorKeys]
+		: definition.type === 'boolean'
+			? [...booleanOperatorKeys]
 		: [...textOperatorKeys]
 }
 

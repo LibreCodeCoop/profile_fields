@@ -144,6 +144,7 @@
                 "enum": [
                     "text",
                     "number",
+                    "boolean",
                     "date",
                     "select",
                     "multiselect"

@@ -53,6 +53,12 @@ class UserProfileFieldCheck implements ICheck {
 		'greater',
 		'!less',
 	];
+	private const BOOLEAN_OPERATORS = [
+		self::OPERATOR_IS_SET,
+		self::OPERATOR_IS_NOT_SET,
+		'is',
+		'!is',
+	];
 	private const SELECT_OPERATORS = [
 		self::OPERATOR_IS_SET,
 		self::OPERATOR_IS_NOT_SET,
@@ -176,6 +182,7 @@ class UserProfileFieldCheck implements ICheck {
 		$operators = match (FieldType::from($definition->getType())) {
 			FieldType::TEXT => self::TEXT_OPERATORS,
 			FieldType::NUMBER => self::NUMBER_OPERATORS,
+			FieldType::BOOLEAN => self::BOOLEAN_OPERATORS,
 			FieldType::DATE => self::DATE_OPERATORS,
 			FieldType::SELECT => self::SELECT_OPERATORS,
 			FieldType::MULTISELECT => self::SELECT_OPERATORS,
@@ -248,6 +255,11 @@ class UserProfileFieldCheck implements ICheck {
 		return match ($fieldType) {
 			FieldType::TEXT,
 			FieldType::SELECT => $this->evaluateTextOperator($operator, (string)$expectedValue, (string)$actualValue),
+			FieldType::BOOLEAN => $this->evaluateBooleanOperator(
+				$operator,
+				$this->normalizeBooleanComparisonOperand($expectedValue),
+				$this->normalizeBooleanComparisonOperand($actualValue),
+			),
 			FieldType::NUMBER => $this->evaluateNumberOperator(
 				$operator,
 				$this->normalizeNumericComparisonOperand($expectedValue),
@@ -297,6 +309,33 @@ class UserProfileFieldCheck implements ICheck {
 		return str_contains((string)$value, '.') ? (float)$value : (int)$value;
 	}
 
+	private function normalizeBooleanComparisonOperand(string|int|float|bool|null $value): bool {
+		if (is_bool($value)) {
+			return $value;
+		}
+
+		if (is_string($value)) {
+			$normalized = strtolower(trim($value));
+			if ($normalized === 'true' || $normalized === '1') {
+				return true;
+			}
+			if ($normalized === 'false' || $normalized === '0') {
+				return false;
+			}
+		}
+
+		if (is_int($value) || is_float($value)) {
+			if ((float)$value === 1.0) {
+				return true;
+			}
+			if ((float)$value === 0.0) {
+				return false;
+			}
+		}
+
+		throw new InvalidArgumentException('boolean comparison value must be true or false');
+	}
+
 	private function normalizeDateComparisonOperand(string|int|float|bool|null $value): int {
 		if (!is_string($value)) {
 			throw new InvalidArgumentException('date comparison value must be a valid YYYY-MM-DD string');
@@ -328,6 +367,14 @@ class UserProfileFieldCheck implements ICheck {
 			'!greater' => $actualValue <= $expectedValue,
 			'greater' => $actualValue > $expectedValue,
 			'!less' => $actualValue >= $expectedValue,
+			default => false,
+		};
+	}
+
+	private function evaluateBooleanOperator(string $operator, bool $expectedValue, bool $actualValue): bool {
+		return match ($operator) {
+			'is' => $actualValue === $expectedValue,
+			'!is' => $actualValue !== $expectedValue,
 			default => false,
 		};
 	}

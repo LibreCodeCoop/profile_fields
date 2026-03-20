@@ -65,6 +65,22 @@ class FieldValueServiceTest extends TestCase {
 		$this->service->normalizeValue($definition, '2026-02-30');
 	}
 
+	public function testNormalizeBooleanValueAcceptsBooleanAndString(): void {
+		$definition = $this->buildDefinition(FieldType::BOOLEAN->value);
+
+		$this->assertSame(['value' => true], $this->service->normalizeValue($definition, true));
+		$this->assertSame(['value' => false], $this->service->normalizeValue($definition, 'false'));
+	}
+
+	public function testNormalizeBooleanValueRejectsInvalidValue(): void {
+		$definition = $this->buildDefinition(FieldType::BOOLEAN->value);
+
+		$this->expectException(InvalidArgumentException::class);
+		$this->expectExceptionMessage('Boolean fields require true or false values.');
+
+		$this->service->normalizeValue($definition, 'yes');
+	}
+
 	public function testNormalizeMissingValueAsNull(): void {
 		$definition = $this->buildDefinition(FieldType::TEXT->value);
 

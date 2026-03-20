@@ -14,6 +14,7 @@ const definitions = [
 	{ field_key: 'region', label: 'Region', type: 'text', active: true },
 	{ field_key: 'score', label: 'Score', type: 'number', active: true },
 	{ field_key: 'start_date', label: 'Start date', type: 'date', active: true },
+	{ field_key: 'is_manager', label: 'Is manager', type: 'boolean', active: true },
 ] as const
 
 describe('workflowProfileFieldCheck', () => {
@@ -57,6 +58,15 @@ describe('workflowProfileFieldCheck', () => {
 			'!greater',
 			'greater',
 			'!less',
+		])
+	})
+
+	it('returns exact-match operators for boolean definitions', () => {
+		expect(getWorkflowOperatorKeys(serializeWorkflowCheckValue({ field_key: 'is_manager', value: true }), definitions)).toEqual([
+			'is-set',
+			'!is-set',
+			'is',
+			'!is',
 		])
 	})
 

@@ -106,6 +106,7 @@ class FieldValueService {
 		return match ($type) {
 			FieldType::TEXT => $this->normalizeTextValue($rawValue),
 			FieldType::NUMBER => $this->normalizeNumberValue($rawValue),
+			FieldType::BOOLEAN => $this->normalizeBooleanValue($rawValue),
 			FieldType::DATE => $this->normalizeDateValue($rawValue),
 			FieldType::SELECT => $this->normalizeSelectValue($rawValue, $definition),
 			FieldType::MULTISELECT => $this->normalizeMultiSelectValue($rawValue, $definition),
@@ -297,6 +298,37 @@ class FieldValueService {
 		}
 
 		return ['value' => str_contains((string)$rawValue, '.') ? (float)$rawValue : (int)$rawValue];
+	}
+
+	/**
+	 * @param array<string, mixed>|scalar $rawValue
+	 * @return array{value: bool}
+	 */
+	private function normalizeBooleanValue(array|string|int|float|bool $rawValue): array {
+		if (is_bool($rawValue)) {
+			return ['value' => $rawValue];
+		}
+
+		if (is_string($rawValue)) {
+			$value = strtolower(trim($rawValue));
+			if ($value === 'true' || $value === '1') {
+				return ['value' => true];
+			}
+			if ($value === 'false' || $value === '0') {
+				return ['value' => false];
+			}
+		}
+
+		if (is_int($rawValue) || is_float($rawValue)) {
+			if ((float)$rawValue === 1.0) {
+				return ['value' => true];
+			}
+			if ((float)$rawValue === 0.0) {
+				return ['value' => false];
+			}
+		}
+
+		throw new InvalidArgumentException($this->l10n->t('Boolean fields require true or false values.'));
 	}
 
 	/**

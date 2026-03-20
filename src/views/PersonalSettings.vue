@@ -100,6 +100,21 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 							:placeholder="placeholderForField(field)"
 							@update:model-value="updateMultiSelectValue(field.definition.id, $event)"
 						/>
+						<NcSelect
+							v-else-if="field.definition.type === 'boolean'"
+							:data-testid="`profile-fields-personal-input-${field.definition.field_key}`"
+							:input-id="fieldInputId(field.definition.id)"
+							class="profile-fields-personal__input-control profile-fields-personal__input-control--embedded"
+							:model-value="booleanOptionFor(field)"
+							:input-label="field.definition.label"
+							label-outside
+							:clearable="true"
+							:searchable="false"
+							:options="booleanOptions"
+							label="label"
+							:placeholder="placeholderForField(field)"
+							@update:model-value="updateBooleanValue(field.definition.id, $event)"
+						/>
 						<NcInputField
 							v-else
 							:data-testid="`profile-fields-personal-input-${field.definition.field_key}`"
@@ -231,12 +246,13 @@ const fieldErrors = reactive<Record<number, string>>({})
 const autoSaveTimers = new Map<number, number>()
 const embeddedVisibilityAnchorReady = ref(false)
 
-const draftValues = reactive<Record<number, string | string[]>>({})
+const draftValues = reactive<Record<number, string | string[] | boolean>>({})
 const draftVisibilities = reactive<Record<number, FieldVisibility>>({})
 
 const inputModesByType: Record<FieldType, 'text' | 'decimal' | 'numeric'> = {
 	text: 'text',
 	number: 'decimal',
+	boolean: 'text',
 	date: 'numeric',
 	select: 'text',
 	multiselect: 'text',
@@ -255,6 +271,7 @@ const fieldInputId = (fieldId: number) => `profile-fields-personal-value-${field
 const componentInputTypesByType: Record<FieldType, 'text' | 'number' | 'date'> = {
 	text: 'text',
 	number: 'number',
+	boolean: 'text',
 	date: 'date',
 	select: 'text',
 	multiselect: 'text',
@@ -277,6 +294,10 @@ const placeholderForField = (field: EditableField) => {
 		return ''
 	}
 
+	if (field.definition.type === 'boolean') {
+		return t('profile_fields', 'Select true or false')
+	}
+
 	if (field.definition.type === 'select') {
 		return t('profile_fields', 'Select an option')
 	}
@@ -292,6 +313,8 @@ const normaliseEditableField = (field: EditableField) => {
 	const existingValue = field.value?.value
 	if (Array.isArray(existingValue?.value)) {
 		draftValues[field.definition.id] = [...existingValue.value]
+	} else if (typeof existingValue?.value === 'boolean') {
+		draftValues[field.definition.id] = existingValue.value
 	} else {
 		draftValues[field.definition.id] = existingValue?.value?.toString() ?? ''
 	}
@@ -359,7 +382,7 @@ const autosaveAnnouncement = (field: EditableField) => {
 	return ''
 }
 
-const currentStoredValue = (field: EditableField): string | string[] => {
+const currentStoredValue = (field: EditableField): string | string[] | boolean => {
 	const existingValue = field.value?.value as unknown
 	if (existingValue === null || existingValue === undefined) {
 		return ''
@@ -367,6 +390,10 @@ const currentStoredValue = (field: EditableField): string | string[] => {
 
 	if (typeof existingValue === 'string' || typeof existingValue === 'number') {
 		return String(existingValue)
+	}
+
+	if (typeof existingValue === 'boolean') {
+		return existingValue
 	}
 
 	if (Array.isArray(existingValue)) {
@@ -381,6 +408,10 @@ const currentStoredValue = (field: EditableField): string | string[] => {
 		return existingValue.value.filter((candidate: unknown): candidate is string => typeof candidate === 'string')
 	}
 
+	if ('value' in existingValue && typeof existingValue.value === 'boolean') {
+		return existingValue.value
+	}
+
 	return 'value' in existingValue && existingValue.value !== null && existingValue.value !== undefined
 		? String(existingValue.value)
 		: ''
@@ -392,9 +423,17 @@ const resolvedDisplayValue = (field: EditableField) => {
 		return value.length === 0 ? t('profile_fields', 'No value set') : value.join(', ')
 	}
 
+	if (typeof value === 'boolean') {
+		return value ? t('profile_fields', 'True') : t('profile_fields', 'False')
+	}
+
 	const fallback = draftValues[field.definition.id]
 	if (Array.isArray(fallback)) {
 		return fallback.length === 0 ? t('profile_fields', 'No value set') : fallback.join(', ')
+	}
+
+	if (typeof fallback === 'boolean') {
+		return fallback ? t('profile_fields', 'True') : t('profile_fields', 'False')
 	}
 
 	const resolved = value || fallback || ''
@@ -414,7 +453,7 @@ const canAutosaveField = (field: EditableField) => {
 		return field.definition.type === 'multiselect'
 	}
 
-	if (field.definition.type === 'text' || field.definition.type === 'select' || field.definition.type === 'date') {
+	if (field.definition.type === 'text' || field.definition.type === 'select' || field.definition.type === 'date' || field.definition.type === 'boolean') {
 		return true
 	}
 
@@ -495,6 +534,44 @@ const updateMultiSelectValue = (fieldId: number, options: Array<{ value: string,
 	}, 900))
 }
 
+const booleanOptions = [
+	{ value: true, label: t('profile_fields', 'True') },
+	{ value: false, label: t('profile_fields', 'False') },
+]
+
+const booleanOptionFor = (field: EditableField) => {
+	const value = draftValues[field.definition.id]
+	if (typeof value !== 'boolean') {
+		return null
+	}
+
+	return booleanOptions.find((option) => option.value === value) ?? null
+}
+
+const updateBooleanValue = (fieldId: number, option: { value: boolean, label: string } | null) => {
+	draftValues[fieldId] = option?.value ?? ''
+	delete fieldErrors[fieldId]
+	const existingTimer = autoSaveTimers.get(fieldId)
+	if (existingTimer !== undefined) {
+		window.clearTimeout(existingTimer)
+		autoSaveTimers.delete(fieldId)
+	}
+
+	if (!embedded) {
+		return
+	}
+
+	const field = findField(fieldId)
+	if (field === undefined || !field.can_edit || !hasFieldChanges(field)) {
+		return
+	}
+
+	autoSaveTimers.set(fieldId, window.setTimeout(() => {
+		autoSaveTimers.delete(fieldId)
+		void saveField(field)
+	}, 900))
+}
+
 const updateVisibility = (fieldId: number, option: { value: FieldVisibility, label: string } | null) => {
 	if (option !== null) {
 		draftVisibilities[fieldId] = option.value
@@ -535,6 +612,13 @@ const buildPayload = (field: EditableField) => {
 	if (field.definition.type === 'date') {
 		return {
 			value: rawValue === '' ? null : rawValue,
+			currentVisibility,
+		}
+	}
+
+	if (field.definition.type === 'boolean') {
+		return {
+			value: typeof rawValue === 'boolean' ? rawValue : null,
 			currentVisibility,
 		}
 	}

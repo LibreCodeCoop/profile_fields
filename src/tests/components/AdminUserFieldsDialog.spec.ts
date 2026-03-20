@@ -37,6 +37,17 @@ vi.mock('../../api', () => ({
 			active: true,
 			options: null,
 		},
+		{
+			id: 2,
+			field_key: 'is_manager',
+			label: 'Is manager',
+			type: 'boolean',
+			edit_policy: 'users',
+			exposure_policy: 'private',
+			sort_order: 1,
+			active: true,
+			options: null,
+		},
 	]),
 	listAdminUserValues: vi.fn().mockResolvedValue([
 		{
@@ -44,6 +55,15 @@ vi.mock('../../api', () => ({
 			field_definition_id: 1,
 			user_uid: 'alice',
 			value: { value: '2026-03-20' },
+			current_visibility: 'private',
+			updated_by_uid: 'admin',
+			updated_at: '2026-03-20T12:00:00+00:00',
+		},
+		{
+			id: 11,
+			field_definition_id: 2,
+			user_uid: 'alice',
+			value: { value: true },
 			current_visibility: 'private',
 			updated_by_uid: 'admin',
 			updated_at: '2026-03-20T12:00:00+00:00',
@@ -72,7 +92,7 @@ vi.mock('@nextcloud/vue', () => ({
 		props: {
 			options: { type: Array, default: () => [] },
 		},
-		template: '<select />',
+		template: '<div><span v-for="option in options" :key="String(option.value)">{{ option.label }}</span></div>',
 	}),
 }))
 
@@ -95,5 +115,20 @@ describe('AdminUserFieldsDialog', () => {
 		const input = wrapper.find('#profile-fields-user-dialog-value-1')
 		expect(input.exists()).toBe(true)
 		expect(input.attributes('type')).toBe('date')
+	})
+
+	it('renders boolean fields with true and false options', async() => {
+		const wrapper = mount(AdminUserFieldsDialog, {
+			props: {
+				open: true,
+				userUid: 'alice',
+				userDisplayName: 'Alice',
+			},
+		})
+
+		await flushPromises()
+
+		expect(wrapper.text()).toContain('tr:True')
+		expect(wrapper.text()).toContain('tr:False')
 	})
 })

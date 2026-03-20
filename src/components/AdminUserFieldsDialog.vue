@@ -73,6 +73,19 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 							:placeholder="placeholderForField(field.definition.type)"
 							@update:model-value="updateMultiSelectValue(field.definition.id, $event)"
 						/>
+						<NcSelect
+							v-else-if="field.definition.type === 'boolean'"
+							class="profile-fields-user-dialog__input"
+							:input-id="`profile-fields-user-dialog-value-${field.definition.id}`"
+							:model-value="booleanOptionFor(field.definition.id)"
+							:aria-label="field.definition.label"
+							:clearable="true"
+							:searchable="false"
+							:options="booleanOptions"
+							label="label"
+							:placeholder="placeholderForField(field.definition.type)"
+							@update:model-value="updateBooleanValue(field.definition.id, $event)"
+						/>
 						<NcInputField
 							v-else
 							class="profile-fields-user-dialog__input"
@@ -166,7 +179,7 @@ export default defineComponent({
 		const savingIds = ref<number[]>([])
 
 		const userValueErrors = reactive<Record<number, string>>({})
-		const userDraftValues = reactive<Record<number, string | string[]>>({})
+		const userDraftValues = reactive<Record<number, string | string[] | boolean>>({})
 		const userDraftVisibilities = reactive<Record<number, FieldVisibility>>({})
 
 		const headerUserName = computed(() => props.userDisplayName.trim() !== '' ? props.userDisplayName : props.userUid)
@@ -196,6 +209,7 @@ export default defineComponent({
 		const descriptionForType = (type: FieldType): string => ({
 			text: t('profile_fields', 'Free text stored as a scalar value.'),
 			number: t('profile_fields', 'Only numeric values are accepted.'),
+			boolean: t('profile_fields', 'Choose either true or false.'),
 			date: t('profile_fields', 'Use a valid date in YYYY-MM-DD format.'),
 			select: t('profile_fields', 'Choose one of the predefined options.'),
 			multiselect: t('profile_fields', 'Choose one or more predefined options.'),
@@ -204,6 +218,7 @@ export default defineComponent({
 		const placeholderForField = (type: FieldType): string => ({
 			text: t('profile_fields', 'Enter a value'),
 			number: t('profile_fields', 'Enter a number'),
+			boolean: t('profile_fields', 'Select true or false'),
 			date: t('profile_fields', 'Select a date'),
 			select: t('profile_fields', 'Select an option'),
 			multiselect: t('profile_fields', 'Select one or more options'),
@@ -215,6 +230,7 @@ export default defineComponent({
 		const inputModeForField = (type: FieldType): string => ({
 			text: 'text',
 			number: 'decimal',
+			boolean: 'text',
 			date: 'numeric',
 			select: 'text',
 			multiselect: 'text',
@@ -223,10 +239,30 @@ export default defineComponent({
 		const componentInputTypeForField = (type: FieldType): string => ({
 			text: 'text',
 			number: 'text',
+			boolean: 'text',
 			date: 'date',
 			select: 'text',
 			multiselect: 'text',
 		} as Record<FieldType, string>)[type]
+
+		const booleanOptions = [
+			{ value: true, label: t('profile_fields', 'True') },
+			{ value: false, label: t('profile_fields', 'False') },
+		]
+
+		const booleanOptionFor = (fieldId: number) => {
+			const current = userDraftValues[fieldId]
+			if (typeof current !== 'boolean') {
+				return null
+			}
+
+			return booleanOptions.find((option) => option.value === current) ?? null
+		}
+
+		const updateBooleanValue = (fieldId: number, option: { value: boolean, label: string } | null) => {
+			userDraftValues[fieldId] = option?.value ?? ''
+			clearFieldError(fieldId)
+		}
 
 		const selectOptionsFor = (definition: FieldDefinition) =>
 			(definition.options ?? []).map((opt: string) => ({ value: opt, label: opt }))
@@ -281,6 +317,13 @@ export default defineComponent({
 				}
 			}
 
+			if (field.definition.type === 'boolean') {
+				const current = userDraftValues[field.definition.id]
+				if (current !== '' && typeof current !== 'boolean') {
+					return t('profile_fields', '{fieldLabel} must be either true or false.', { fieldLabel: field.definition.label })
+				}
+			}
+
 			if (field.definition.type === 'select') {
 				const options = field.definition.options ?? []
 				if (!options.includes(rawValue)) {
@@ -312,7 +355,7 @@ export default defineComponent({
 		const hasInvalidFields = computed(() => invalidFields.value.length > 0)
 
 		const helperTextForField = (field: AdminEditableField) => {
-			return field.definition.type === 'number' || field.definition.type === 'date'
+			return field.definition.type === 'number' || field.definition.type === 'date' || field.definition.type === 'boolean'
 				? descriptionForType(field.definition.type)
 				: ''
 		}
@@ -323,6 +366,8 @@ export default defineComponent({
 			const currentValue = field.value?.value
 			if (Array.isArray(currentValue?.value)) {
 				userDraftValues[field.definition.id] = [...currentValue.value]
+			} else if (typeof currentValue?.value === 'boolean') {
+				userDraftValues[field.definition.id] = currentValue.value
 			} else {
 				userDraftValues[field.definition.id] = currentValue?.value?.toString() ?? ''
 			}
@@ -383,6 +428,7 @@ export default defineComponent({
 			return ({
 				'text fields expect a scalar value': t('profile_fields', '{fieldLabel} must be plain text.', { fieldLabel: field.definition.label }),
 				'number fields expect a numeric value': t('profile_fields', '{fieldLabel} must be a numeric value.', { fieldLabel: field.definition.label }),
+				'Boolean fields require true or false values.': t('profile_fields', '{fieldLabel} must be either true or false.', { fieldLabel: field.definition.label }),
 				'Date fields require a valid ISO-8601 date in YYYY-MM-DD format.': t('profile_fields', '{fieldLabel} must be a valid date in YYYY-MM-DD format.', { fieldLabel: field.definition.label }),
 				'current_visibility is not supported': t('profile_fields', 'The selected visibility is not supported.'),
 			}[message] ?? (message.includes('is not a valid option')
@@ -441,6 +487,13 @@ export default defineComponent({
 			if (field.definition.type === 'date') {
 				return {
 					value: rawValue === '' ? null : rawValue,
+					visibility: userDraftVisibilities[field.definition.id],
+				}
+			}
+
+			if (field.definition.type === 'boolean') {
+				return {
+					value: typeof current === 'boolean' ? current : null,
 					visibility: userDraftVisibilities[field.definition.id],
 				}
 			}
@@ -582,6 +635,9 @@ export default defineComponent({
 				componentInputTypeForField,
 			inputModeForField,
 			placeholderForField,
+			booleanOptions,
+			booleanOptionFor,
+			updateBooleanValue,
 			saveAllFields,
 			successMessage,
 			updateOpen,
