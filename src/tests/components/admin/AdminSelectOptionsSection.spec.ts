@@ -6,6 +6,24 @@ import { mount } from '@vue/test-utils'
 import { defineComponent } from 'vue'
 import AdminSelectOptionsSection from '../../../components/admin/AdminSelectOptionsSection.vue'
 
+vi.mock('@nextcloud/l10n', () => ({
+	n: (_app: string, singular: string, plural: string, count: number, parameters?: Record<string, string | number>) => {
+		const template = count === 1 ? singular : plural
+		if (parameters === undefined) {
+			return `tr:${template}`
+		}
+
+		return Object.entries(parameters).reduce((translated, [key, value]) => translated.replace(`{${key}}`, String(value)), `tr:${template}`)
+	},
+	t: (_app: string, text: string, parameters?: Record<string, string | number>) => {
+		if (parameters === undefined) {
+			return `tr:${text}`
+		}
+
+		return Object.entries(parameters).reduce((translated, [key, value]) => translated.replace(`{${key}}`, String(value)), `tr:${text}`)
+	},
+}))
+
 vi.mock('@nextcloud/vue', () => ({
 	NcActionButton: defineComponent({ template: '<div><slot /><slot name="icon" /></div>' }),
 	NcActions: defineComponent({ template: '<div><slot /><slot name="icon" /></div>' }),
@@ -38,6 +56,30 @@ const DraggableStub = defineComponent({
 })
 
 describe('AdminSelectOptionsSection', () => {
+	it('renders translated headings and pluralized meta', () => {
+		const wrapper = mount(AdminSelectOptionsSection, {
+			props: {
+				modelValue: [{ id: 'option-0', value: 'Alpha' }],
+				isSaving: false,
+			},
+			global: {
+				stubs: {
+					Draggable: DraggableStub,
+					NcDialog: false,
+					NcTextArea: false,
+					NcActionButton: false,
+					NcActions: false,
+					NcIconSvgWrapper: false,
+					NcInputField: false,
+				},
+			},
+		})
+
+		expect(wrapper.text()).toContain('tr:Options')
+		expect(wrapper.text()).toContain('tr:option')
+		expect(wrapper.text()).toContain('tr:Add single option')
+	})
+
 	it('emits updated model when adding a new option', async() => {
 		const wrapper = mount(AdminSelectOptionsSection, {
 			props: {
