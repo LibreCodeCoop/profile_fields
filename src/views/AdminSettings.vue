@@ -7,36 +7,22 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 <template>
 	<section class="profile-fields-admin" data-testid="profile-fields-admin">
 		<header class="profile-fields-admin__hero">
-			<div>
-				<h2>Field catalog administration</h2>
+			<div class="profile-fields-admin__hero-copy">
+				<h2>Profile fields catalog</h2>
 				<p>
-					Create the global field catalog, choose who can edit each field, and define how exposed new values are by default.
+					Create custom profile fields, choose who can edit each one, and define the default visibility for new values.
 				</p>
 			</div>
 			<div class="profile-fields-admin__hero-meta">
 				<strong>{{ definitions.length }}</strong>
-				<span>registered fields</span>
+				<span>fields configured</span>
 			</div>
 		</header>
 
 		<NcNoteCard v-if="errorMessage" type="error" data-testid="profile-fields-admin-error">
 			{{ errorMessage }}
 		</NcNoteCard>
-		<NcNoteCard v-if="showSupportBanner" type="info" data-testid="profile-fields-admin-support-banner">
-			<div class="profile-fields-admin__support-banner">
-				<p>
-					This app is open source and released under the AGPL license.
-					To keep development and maintenance active, please
-					<a href="https://github.com/sponsors/LibreSign" target="_blank" rel="noopener noreferrer">sponsor LibreSign on GitHub Sponsors</a>
-					If possible, choose a monthly sponsorship.
-				</p>
-				<div class="profile-fields-admin__support-banner-actions">
-					<NcButton class="profile-fields-admin__support-banner-action" variant="tertiary-no-background" @click="dismissSupportBanner">
-						Not now
-					</NcButton>
-				</div>
-			</div>
-		</NcNoteCard>
+		<AdminSupportBanner />
 		<span
 			class="profile-fields-admin__success-announcement"
 			data-testid="profile-fields-admin-success"
@@ -50,16 +36,16 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 		<div v-else class="profile-fields-admin__layout">
 			<aside class="profile-fields-admin__list-panel">
 				<div class="profile-fields-admin__panel-header">
-					<div>
-						<h3>Defined fields</h3>
-						<p>Pick a field to edit it or create a new one.</p>
+					<div class="profile-fields-admin__panel-header-copy">
+						<h3>Configured fields</h3>
+						<p>Select a field to edit, or create a new one.</p>
 					</div>
 					<NcButton variant="secondary" data-testid="profile-fields-admin-new-field" @click="startCreatingField">
-						New field
+						Create field
 					</NcButton>
 				</div>
 
-				<NcEmptyContent v-if="sortedDefinitions.length === 0" name="No fields yet" description="The catalog is empty. Create the first field to make it available to users." />
+				<NcEmptyContent v-if="sortedDefinitions.length === 0" name="No fields configured" description="Create your first field to make it available in user profiles." />
 
 				<Draggable
 					v-else
@@ -106,7 +92,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 											<template #icon>
 												<NcIconSvgWrapper :path="definition.active ? mdiEyeOffOutline : mdiEyeOutline" :size="18" />
 											</template>
-											{{ definition.active ? 'Deactivate field' : 'Activate field' }}
+											{{ definition.active ? 'Disable field' : 'Enable field' }}
 										</NcActionButton>
 										<NcActionButton :disabled="isSaving" @click="removeDefinitionByItem(definition)">
 											<template #icon>
@@ -118,7 +104,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 									<NcButton
 										class="profile-fields-admin__definition-handle"
 										:data-testid="`profile-fields-admin-definition-handle-${definition.field_key}`"
-										aria-label="Drag to reorder field"
+										aria-label="Drag to reorder"
 										variant="tertiary-no-background"
 										:disabled="isSaving"
 										tabindex="-1"
@@ -144,7 +130,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 					:class="{ 'profile-fields-admin__editor--dialog': isCompactLayout }">
 				<template v-if="isEditorVisible">
 					<div class="profile-fields-admin__panel-header">
-						<div>
+						<div class="profile-fields-admin__panel-header-copy">
 							<h3>{{ isEditing ? 'Edit field' : 'Create field' }}</h3>
 							<p>{{ editorDescription }}</p>
 						</div>
@@ -170,7 +156,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 									label="Field key"
 									label-outside
 									:disabled="isEditing"
-									helper-text="Used as the stable API identifier for this field."
+									helper-text="Stable identifier used in APIs and integrations."
 								/>
 							</div>
 
@@ -181,7 +167,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 									v-model="form.label"
 									label="Label"
 									label-outside
-									helper-text="Displayed to admins and users as the field name."
+									helper-text="Visible name shown in settings and profile forms."
 								/>
 							</div>
 						</div>
@@ -204,7 +190,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 									:searchable="false"
 									:options="editPolicyOptions"
 									label="label"
-									placeholder="Choose edit policy"
+									placeholder="Select who can edit"
 								/>
 								<p class="profile-fields-admin__field-helper">{{ editPolicyDescription }}</p>
 							</div>
@@ -220,7 +206,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 									:searchable="false"
 									:options="exposurePolicyOptions"
 									label="label"
-									placeholder="Choose visibility"
+									placeholder="Select default visibility"
 								/>
 								<p class="profile-fields-admin__field-helper">{{ exposurePolicyDescription }}</p>
 							</div>
@@ -237,101 +223,17 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 									:searchable="false"
 									:options="fieldTypeOptions"
 									label="label"
-									placeholder="Choose a field type"
+									placeholder="Select field type"
 								/>
 							</div>
 						</div>
 					</section>
 
-					<section v-if="form.type === 'select'" class="profile-fields-admin__form-section">
-						<div class="profile-fields-admin__section-heading profile-fields-admin__section-heading--split">
-							<div>
-								<h4>Options</h4>
-							</div>
-							<div class="profile-fields-admin__options-meta">
-								<strong>{{ normalizedOptionCount }}</strong>
-								<span>{{ normalizedOptionCount === 1 ? 'option' : 'options' }}</span>
-							</div>
-						</div>
-
-						<Draggable
-							v-model="form.options"
-							class="profile-fields-admin__options-editor"
-							data-testid="profile-fields-admin-options-editor"
-							item-key="id"
-							handle=".profile-fields-admin__option-handle"
-							ghost-class="profile-fields-admin__option-row--ghost"
-							chosen-class="profile-fields-admin__option-row--chosen"
-							:animation="180"
-							:disabled="isSaving">
-							<template #item="{ element, index }">
-								<div class="profile-fields-admin__option-row" :data-testid="`profile-fields-admin-option-row-${index}`">
-									<div class="profile-fields-admin__option-leading">
-										<NcActions
-											v-if="hasOptionValue(index)"
-											class="profile-fields-admin__option-handle"
-											:data-testid="`profile-fields-admin-option-handle-${index}`"
-											variant="tertiary-no-background"
-											size="small"
-											:aria-label="`Reorder option ${element.value}`">
-											<template #icon>
-												<NcIconSvgWrapper :path="mdiDragVertical" :size="18" />
-											</template>
-											<NcActionButton :disabled="!canMoveOptionUp(index) || isSaving" @click="moveOption(index, -1)">
-												<template #icon>
-													<NcIconSvgWrapper :path="mdiArrowUp" :size="18" />
-												</template>
-												Move up
-											</NcActionButton>
-											<NcActionButton :disabled="!canMoveOptionDown(index) || isSaving" @click="moveOption(index, 1)">
-												<template #icon>
-													<NcIconSvgWrapper :path="mdiArrowDown" :size="18" />
-												</template>
-												Move down
-											</NcActionButton>
-										</NcActions>
-										<div v-else class="profile-fields-admin__option-handle-spacer" aria-hidden="true" />
-									</div>
-									<NcInputField
-										:model-value="element.value"
-										label="Option value"
-										label-outside
-										:placeholder="`Option ${index + 1}`"
-										:error="isOptionDuplicate(index)"
-										:helper-text="isOptionDuplicate(index) ? 'Duplicate option' : ''"
-										@update:model-value="updateOption(index, $event)"
-										@keydown.enter.prevent="addOptionFromEnter(index, $event)"
-										@keydown.backspace="removeEmptyOptionFromKeyboard(index, $event)"
-										@keydown.delete="removeEmptyOptionFromKeyboard(index, $event)"
-										@blur="cleanupEmptyOptionOnBlur(element.id)"
-									/>
-									<div class="profile-fields-admin__option-actions">
-										<NcButton
-											variant="tertiary-no-background"
-											:aria-label="`Remove option ${element.value || String(index + 1)}`"
-											@click.prevent="removeOption(index)">
-											<template #icon>
-												<NcIconSvgWrapper :path="mdiClose" :size="20" />
-											</template>
-										</NcButton>
-									</div>
-								</div>
-							</template>
-						</Draggable>
-
-						<div class="profile-fields-admin__option-toolbar">
-							<NcButton variant="secondary" data-testid="profile-fields-admin-add-option" @click.prevent="addOption">
-								Add option
-							</NcButton>
-							<NcButton variant="secondary" data-testid="profile-fields-admin-add-multiple-options" @click.prevent="openBulkOptionsDialog">
-								Add multiple options
-							</NcButton>
-						</div>
-					</section>
+					<AdminSelectOptionsSection v-if="form.type === 'select'" v-model="form.options" :is-saving="isSaving" />
 
 					<div v-if="!isCompactLayout" class="profile-fields-admin__submit-row">
 						<NcButton type="submit" variant="primary" data-testid="profile-fields-admin-save" :disabled="isSaveDisabled">
-							{{ isSaving ? 'Saving...' : (isEditing ? 'Save changes' : 'Create field') }}
+							{{ isSaving ? 'Saving changes...' : (isEditing ? 'Save changes' : 'Create field') }}
 						</NcButton>
 						<NcButton v-if="isEditing" variant="error" data-testid="profile-fields-admin-delete" :disabled="isSaving" @click.prevent="removeDefinition">
 							Delete field
@@ -360,59 +262,26 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 						Delete field
 					</NcButton>
 					<NcButton type="submit" form="profile-fields-admin-form" variant="primary" data-testid="profile-fields-admin-save" :disabled="isSaveDisabled">
-						{{ isSaving ? 'Saving...' : (isEditing ? 'Save changes' : 'Create field') }}
+						{{ isSaving ? 'Saving changes...' : (isEditing ? 'Save changes' : 'Create field') }}
 					</NcButton>
 				</template>
 			</component>
 		</div>
 
-		<NcDialog
-			:open="isBulkOptionsDialogOpen"
-			name="Add multiple options"
-			content-classes="profile-fields-admin__bulk-options-dialog"
-			size="normal"
-			@update:open="updateBulkOptionsDialogOpen">
-			<div class="profile-fields-admin__bulk-options-content">
-				<NcTextArea
-					data-testid="profile-fields-admin-bulk-options-input"
-					:model-value="bulkOptionInput"
-					label="Add multiple options (one per line)"
-					placeholder="Add multiple options (one per line)"
-					resize="vertical"
-					rows="10"
-					@update:model-value="bulkOptionInput = $event" />
-				<p class="profile-fields-admin__bulk-options-summary">
-					{{ bulkOptionValues.length === 1 ? '1 option ready to add.' : `${bulkOptionValues.length} options ready to add.` }}
-				</p>
-			</div>
-
-			<template #actions>
-				<NcButton @click="closeBulkOptionsDialog">
-					Cancel
-				</NcButton>
-				<NcButton
-					variant="primary"
-					data-testid="profile-fields-admin-bulk-options-submit"
-					:disabled="bulkOptionValues.length === 0"
-					@click="applyBulkOptions">
-					Add options
-				</NcButton>
-			</template>
-		</NcDialog>
 	</section>
 </template>
 
 <script setup lang="ts">
-import { mdiArrowDown, mdiArrowUp, mdiClose, mdiDeleteOutline, mdiDragVertical, mdiEyeOffOutline, mdiEyeOutline, mdiPencilOutline } from '@mdi/js'
-import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { mdiDeleteOutline, mdiDragVertical, mdiEyeOffOutline, mdiEyeOutline, mdiPencilOutline } from '@mdi/js'
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import NcDialog from '@nextcloud/vue/components/NcDialog'
-import NcTextArea from '@nextcloud/vue/components/NcTextArea'
 import Draggable from 'vuedraggable'
+import AdminSupportBanner from '../components/AdminSupportBanner.vue'
+import AdminSelectOptionsSection from '../components/admin/AdminSelectOptionsSection.vue'
 import { NcActionButton, NcActions, NcButton, NcCheckboxRadioSwitch, NcChip, NcEmptyContent, NcIconSvgWrapper, NcInputField, NcListItem, NcLoadingIcon, NcNoteCard, NcSelect } from '@nextcloud/vue'
 import { createDefinition, deleteDefinition, listDefinitions, updateDefinition } from '../api'
 import type { FieldDefinition, FieldEditPolicy, FieldExposurePolicy, FieldType } from '../types'
-import { createEditableSelectOptions, extractEditableSelectOptionValues, moveEditableSelectOption, normalizeEditableSelectOptionValue, parseEditableSelectOptionValues } from '../utils/selectFieldOptions.js'
-import type { EditableSelectOption } from '../utils/selectFieldOptions.js'
+import { createEditableSelectOptions, extractEditableSelectOptionValues } from '../utils/selectFieldOptions.js'
 
 const fieldTypeOptions: Array<{ value: FieldType, label: string }> = [
 	{ value: 'text', label: 'Text' },
@@ -436,22 +305,11 @@ const definitions = ref<FieldDefinition[]>([])
 const isLoading = ref(true)
 const isSaving = ref(false)
 const errorMessage = ref('')
-const supportBannerStorageKey = 'profile_fields_support_banner_dismissed'
-const showSupportBanner = ref(true)
 const selectedId = ref<number | null>(null)
 const justSavedId = ref<number | null>(null)
 let justSavedTimeout: ReturnType<typeof setTimeout> | null = null
 const successMessage = ref('')
 let successMessageTimeout: ReturnType<typeof setTimeout> | null = null
-
-const dismissSupportBanner = () => {
-	showSupportBanner.value = false
-	try {
-		window.localStorage.setItem(supportBannerStorageKey, '1')
-	} catch {
-		// Ignore storage errors and keep only in-memory dismissal.
-	}
-}
 
 const setSuccessMessage = (message: string) => {
 	if (successMessageTimeout !== null) {
@@ -475,9 +333,7 @@ const markJustSaved = (id: number) => {
 	}, 2000)
 }
 const isCreatingNew = ref(false)
-const isBulkOptionsDialogOpen = ref(false)
 const isCompactLayout = ref(false)
-const bulkOptionInput = ref('')
 let nextOptionId = 0
 let compactLayoutMediaQuery: MediaQueryList | null = null
 
@@ -495,23 +351,23 @@ const form = reactive({
 })
 
 const editPolicyDescription = computed(() => form.editPolicy === 'admins'
-	? 'Only administrators can create or update stored values for this field.'
-	: 'Users can maintain their own value for this field from personal settings.')
+	? 'Only administrators can create or update values for this field.'
+	: 'Users can update their own value in personal settings.')
 const exposurePolicyDescription = computed(() => {
 	switch (form.exposurePolicy) {
 	case 'hidden':
-		return 'The field stays out of personal settings and regular global search.'
+		return 'The field is hidden from personal settings and global search.'
 	case 'users':
-		return 'The field appears in personal settings. New values are shared with logged-in users.'
+		return 'Shown in personal settings. New values are shared with signed-in users.'
 	case 'public':
-		return 'The field appears in personal settings. New values are public.'
+		return 'Shown in personal settings. New values are visible to everyone.'
 	default:
-		return 'The field appears in personal settings. New values start private.'
+		return 'Shown in personal settings. New values start as private.'
 	}
 })
 const editorDescription = computed(() => isEditing.value
-	? 'Update the selected field and its policies.'
-	: 'Define the field and its policies.')
+	? 'Update the selected field and its rules.'
+	: 'Set up a new field and its rules.')
 const selectedDefinition = computed(() => definitions.value.find((definition: FieldDefinition) => definition.id === selectedId.value) ?? null)
 const sortedDefinitions = computed(() => [...definitions.value].sort((left, right) => left.sort_order - right.sort_order || left.id - right.id))
 const isEditing = computed(() => selectedDefinition.value !== null)
@@ -527,12 +383,12 @@ const editorShellProps = computed(() => isCompactLayout.value
 	: {})
 const editorEmptyState = computed(() => sortedDefinitions.value.length === 0
 	? {
-		title: 'No fields yet',
-		description: 'Create the first field definition to start building the catalog.',
+		title: 'No fields configured',
+		description: 'Create your first field to start building the catalog.',
 	}
 	: {
 		title: 'No field selected',
-		description: 'Choose a field from the list to edit it, or create a new one.',
+		description: 'Select a field from the list, or create a new one.',
 	})
 
 const buildFormState = () => ({
@@ -574,30 +430,20 @@ const buildDefinitionState = (definition: FieldDefinition | null) => {
 
 const isFormDirty = computed(() => JSON.stringify(buildFormState()) !== JSON.stringify(buildDefinitionState(selectedDefinition.value)))
 
-const duplicateOptionIndices = computed(() => {
-	const seen = new Map<string, number>()
-	const duplicates = new Set<number>()
-	form.options.forEach((option: EditableSelectOption, index: number) => {
-		const normalized = normalizeEditableSelectOptionValue(option.value)
+const hasDuplicateOptions = computed(() => {
+	const seen = new Set<string>()
+	for (const option of form.options) {
+		const normalized = option.value.trim().toLocaleLowerCase()
 		if (normalized === '') {
-			return
+			continue
 		}
 		if (seen.has(normalized)) {
-			duplicates.add(seen.get(normalized) as number)
-			duplicates.add(index)
-		} else {
-			seen.set(normalized, index)
+			return true
 		}
-	})
-	return duplicates
+		seen.add(normalized)
+	}
+	return false
 })
-
-const isOptionDuplicate = (index: number) => duplicateOptionIndices.value.has(index)
-const hasDuplicateOptions = computed(() => duplicateOptionIndices.value.size > 0)
-const hasOptionValue = (index: number) => form.options[index]?.value.trim() !== ''
-const canMoveOptionUp = (index: number) => index > 0
-const canMoveOptionDown = (index: number) => index < form.options.length - 1
-const bulkOptionValues = computed(() => parseEditableSelectOptionValues(bulkOptionInput.value))
 const normalizedOptionCount = computed(() => extractEditableSelectOptionValues(form.options).filter((optionValue: string) => optionValue.trim() !== '').length)
 const hasRequiredFields = computed(() => {
 	if (form.fieldKey.trim() === '' || form.label.trim() === '') {
@@ -611,16 +457,6 @@ const hasRequiredFields = computed(() => {
 	return true
 })
 const isSaveDisabled = computed(() => isSaving.value || !isFormDirty.value || hasDuplicateOptions.value || !hasRequiredFields.value)
-
-const focusOptionInput = async(index: number) => {
-	await nextTick()
-	requestAnimationFrame(() => {
-		const input = document.querySelector<HTMLInputElement>(`[data-testid="profile-fields-admin-option-row-${index}"] input`)
-		input?.focus()
-	})
-}
-
-const firstEmptyOptionIndex = () => form.options.findIndex((option: EditableSelectOption) => option.value.trim() === '')
 
 const selectedTypeOption = computed({
 	get: () => fieldTypeOptions.find((option) => option.value === form.type) ?? fieldTypeOptions[0],
@@ -745,7 +581,7 @@ const loadDefinitions = async() => {
 			resetForm()
 		}
 	} catch (error) {
-		errorMessage.value = error instanceof Error ? error.message : 'Failed to load field definitions.'
+		errorMessage.value = error instanceof Error ? error.message : 'Could not load field definitions.'
 	} finally {
 		isLoading.value = false
 	}
@@ -779,7 +615,7 @@ const persistDefinition = async() => {
 			selectedId.value = created.id
 			populateForm(created)
 			markJustSaved(created.id)
-			setSuccessMessage('Field definition created.')
+			setSuccessMessage('Field created successfully.')
 		} else {
 			const updated = await updateDefinition(selectedDefinition.value.id, {
 				label: payload.label,
@@ -793,13 +629,13 @@ const persistDefinition = async() => {
 			replaceDefinitionInState(updated)
 			populateForm(updated)
 			markJustSaved(updated.id)
-			setSuccessMessage('Field definition updated.')
+			setSuccessMessage('Field updated successfully.')
 		}
 		if (isCompactLayout.value) {
 			closeEditor()
 		}
 	} catch (error: any) {
-		errorMessage.value = error?.response?.data?.ocs?.data?.message ?? error?.message ?? 'Failed to save field definition.'
+		errorMessage.value = error?.response?.data?.ocs?.data?.message ?? error?.message ?? 'Could not save this field. Please try again.'
 	} finally {
 		isSaving.value = false
 	}
@@ -817,9 +653,9 @@ const removeDefinition = async() => {
 		removeDefinitionFromState(selectedDefinition.value.id)
 		isCreatingNew.value = false
 		resetForm()
-		setSuccessMessage('Field definition deleted.')
+		setSuccessMessage('Field deleted successfully.')
 	} catch (error: any) {
-		errorMessage.value = error?.response?.data?.ocs?.data?.message ?? error?.message ?? 'Failed to delete field definition.'
+		errorMessage.value = error?.response?.data?.ocs?.data?.message ?? error?.message ?? 'Could not delete this field. Please try again.'
 	} finally {
 		isSaving.value = false
 	}
@@ -868,112 +704,10 @@ const reorderDefinitions = async(event: { moved?: { oldIndex: number, newIndex: 
 		}
 	} catch (error: any) {
 		definitions.value = previousDefinitions
-		errorMessage.value = error?.response?.data?.ocs?.data?.message ?? error?.message ?? 'Failed to reorder field definitions.'
+		errorMessage.value = error?.response?.data?.ocs?.data?.message ?? error?.message ?? 'Could not save the new order. Please try again.'
 	} finally {
 		isSaving.value = false
 	}
-}
-
-const addOption = async() => {
-	const existingEmptyIndex = firstEmptyOptionIndex()
-	if (existingEmptyIndex !== -1) {
-		await focusOptionInput(existingEmptyIndex)
-		return
-	}
-
-	form.options.push({
-		id: createOptionId(),
-		value: '',
-	})
-
-	await focusOptionInput(form.options.length - 1)
-}
-
-const updateOption = (index: number, value: string) => {
-	if (form.options[index] === undefined) {
-		return
-	}
-
-	form.options[index].value = value
-}
-
-const addOptionFromEnter = async(index: number, event: KeyboardEvent) => {
-	const input = event.target instanceof HTMLInputElement ? event.target : null
-	if (input !== null) {
-		updateOption(index, input.value)
-	}
-
-	await addOption()
-}
-
-const cleanupEmptyOptionOnBlur = (optionId: string) => {
-	window.setTimeout(() => {
-		const index = form.options.findIndex((option: EditableSelectOption) => option.id === optionId)
-		if (index === -1) {
-			return
-		}
-
-		if (form.options[index].value.trim() !== '') {
-			return
-		}
-
-		const hasNonEmptySibling = form.options.some((option: EditableSelectOption, optionIndex: number) => optionIndex !== index && option.value.trim() !== '')
-		if (!hasNonEmptySibling) {
-			return
-		}
-
-		removeOption(index)
-	}, 0)
-}
-
-const openBulkOptionsDialog = () => {
-	bulkOptionInput.value = ''
-	isBulkOptionsDialogOpen.value = true
-}
-
-const closeBulkOptionsDialog = () => {
-	bulkOptionInput.value = ''
-	isBulkOptionsDialogOpen.value = false
-}
-
-const updateBulkOptionsDialogOpen = (open: boolean) => {
-	isBulkOptionsDialogOpen.value = open
-	if (!open) {
-		bulkOptionInput.value = ''
-	}
-}
-
-const applyBulkOptions = async() => {
-	if (bulkOptionValues.value.length === 0) {
-		return
-	}
-
-	form.options = [
-		...form.options.filter((option: EditableSelectOption) => option.value.trim() !== ''),
-		...createEditableSelectOptions(bulkOptionValues.value, createOptionId),
-	]
-
-	closeBulkOptionsDialog()
-	await addOption()
-}
-
-const removeEmptyOptionFromKeyboard = async(index: number, event: KeyboardEvent) => {
-	const input = event.target instanceof HTMLInputElement ? event.target : null
-	if (input === null || input.value !== '' || form.options.length <= 1) {
-		return
-	}
-
-	event.preventDefault()
-	removeOption(index)
-	await focusOptionInput(Math.max(0, index - 1))
-}
-
-const moveOption = (index: number, direction: -1 | 1) => {
-	form.options = moveEditableSelectOption(form.options, index, direction)
-}
-
-const removeOption = (index: number) => {
-	form.options.splice(index, 1)
 }
 
 const toggleDefinitionActive = async(definition: FieldDefinition) => {
@@ -990,7 +724,7 @@ const toggleDefinitionActive = async(definition: FieldDefinition) => {
 			populateForm(updated)
 		}
 	} catch (error: any) {
-		errorMessage.value = error?.response?.data?.ocs?.data?.message ?? error?.message ?? 'Failed to update field definition.'
+		errorMessage.value = error?.response?.data?.ocs?.data?.message ?? error?.message ?? 'Could not update this field. Please try again.'
 	} finally {
 		isSaving.value = false
 	}
@@ -1007,7 +741,7 @@ const removeDefinitionByItem = async(definition: FieldDefinition) => {
 			resetForm()
 		}
 	} catch (error: any) {
-		errorMessage.value = error?.response?.data?.ocs?.data?.message ?? error?.message ?? 'Failed to delete field definition.'
+		errorMessage.value = error?.response?.data?.ocs?.data?.message ?? error?.message ?? 'Could not delete this field. Please try again.'
 	} finally {
 		isSaving.value = false
 	}
@@ -1016,23 +750,15 @@ const removeDefinitionByItem = async(definition: FieldDefinition) => {
 watch(() => form.type, (newType: FieldType) => {
 	if (newType === 'select') {
 		if (form.options.length === 0) {
-			void addOption()
+			form.options = createEditableSelectOptions([''], createOptionId)
 		}
-		return
-	}
-
-	if (newType !== 'select') {
+	} else {
 		form.options = createEditableSelectOptions([], createOptionId)
 	}
 })
 
 onMounted(() => {
 	loadDefinitions()
-	try {
-		showSupportBanner.value = window.localStorage.getItem(supportBannerStorageKey) !== '1'
-	} catch {
-		showSupportBanner.value = true
-	}
 	compactLayoutMediaQuery = window.matchMedia('(max-width: 1024px)')
 	updateCompactLayout(compactLayoutMediaQuery.matches)
 	compactLayoutMediaQuery.addEventListener('change', handleCompactLayoutChange)
@@ -1068,9 +794,10 @@ onBeforeUnmount(() => {
 		border: 1px solid color-mix(in srgb, var(--color-primary-element) 24%, var(--color-border-default) 76%);
 		box-shadow: 0 12px 32px rgba(15, 23, 42, 0.1);
 
-		> div:first-child {
-			padding-inline-start: clamp(18px, 2.4vw, 28px);
-		}
+	}
+
+	&__hero-copy {
+		padding-inline-start: clamp(18px, 2.4vw, 28px);
 
 		h2 {
 			margin: 0 0 8px;
@@ -1110,35 +837,6 @@ onBeforeUnmount(() => {
 		display: grid;
 		grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
 		gap: 20px;
-	}
-
-	&__support-banner {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr);
-		gap: 10px;
-		width: 100%;
-
-		p {
-			margin: 0;
-			overflow-wrap: anywhere;
-			line-height: 1.5;
-		}
-
-		a {
-			font-weight: 600;
-			overflow-wrap: anywhere;
-		}
-	}
-
-	&__support-banner-actions {
-		display: flex;
-		justify-content: flex-end;
-		width: 100%;
-	}
-
-	&__support-banner-action {
-		flex: 0 0 auto;
-		white-space: nowrap;
 	}
 
 	&__field-helper {
@@ -1183,14 +881,16 @@ onBeforeUnmount(() => {
 		gap: 12px;
 		margin-bottom: 16px;
 
-		> div:first-child {
-			flex: 1 1 auto;
-			min-width: 0;
-		}
-
 		> :deep(.button-vue) {
 			flex: 0 0 auto;
+			width: auto;
+			min-width: max-content;
 		}
+	}
+
+	&__panel-header-copy {
+		flex: 1 1 auto;
+		min-width: 0;
 
 		h3 {
 			margin: 0;
@@ -1200,6 +900,7 @@ onBeforeUnmount(() => {
 			margin: 6px 0 0;
 			color: var(--color-text-maxcontrast);
 		}
+
 	}
 
 	&__editor-actions {
@@ -1357,45 +1058,6 @@ onBeforeUnmount(() => {
 		}
 	}
 
-	&__section-heading--split {
-		display: flex;
-		justify-content: space-between;
-		align-items: flex-start;
-		gap: 16px;
-	}
-
-	&__options-meta {
-		display: inline-flex;
-		align-items: center;
-		gap: 8px;
-		min-width: auto;
-		padding: 6px 10px;
-		border-radius: 999px;
-		background: color-mix(in srgb, var(--color-main-background) 88%, var(--color-background-hover) 12%);
-		border: 1px solid color-mix(in srgb, var(--color-border-default) 86%, transparent);
-
-		strong {
-			font-size: 14px;
-			line-height: 1;
-		}
-
-		span {
-			font-size: 12px;
-			color: var(--color-text-maxcontrast);
-		}
-	}
-
-	&__bulk-options-content {
-		display: grid;
-		gap: 12px;
-	}
-
-	&__bulk-options-summary {
-		margin: 0;
-		font-size: 13px;
-		color: var(--color-text-maxcontrast);
-	}
-
 	&__form label {
 		display: grid;
 		gap: 8px;
@@ -1477,71 +1139,6 @@ onBeforeUnmount(() => {
 		width: 100%;
 	}
 
-	&__option-toolbar {
-		display: flex;
-		gap: 10px;
-		flex-wrap: wrap;
-	}
-
-	&__options-editor {
-		display: grid;
-		gap: 8px;
-	}
-
-	&__option-row {
-		display: flex;
-		align-items: flex-start;
-		gap: 8px;
-		padding: 10px 12px;
-		border-radius: 14px;
-		border: 1px solid color-mix(in srgb, var(--color-border-default) 84%, transparent);
-		background: color-mix(in srgb, var(--color-main-background) 94%, var(--color-background-hover) 6%);
-
-		:deep(.input-field) {
-			flex: 1;
-			margin-bottom: 0;
-		}
-	}
-
-	&__option-leading,
-	&__option-actions {
-		display: flex;
-		align-items: flex-start;
-		flex: 0 0 auto;
-	}
-
-	&__option-leading {
-		min-width: 42px;
-	}
-
-	&__option-handle,
-	&__option-handle-spacer {
-		width: 42px;
-	}
-
-	&__option-handle {
-		:deep(.action-item),
-		:deep(.action-item__wrapper) {
-			width: 100%;
-		}
-
-		:deep(.button-vue) {
-			width: 100%;
-			cursor: grab;
-		}
-	}
-
-	&__option-handle-spacer {
-		height: 34px;
-	}
-
-	&__option-row--ghost {
-		opacity: 0.45;
-	}
-
-	&__option-row--chosen {
-		box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary-element) 22%, transparent);
-	}
 
 	&__empty-editor {
 		display: grid;
@@ -1626,21 +1223,6 @@ onBeforeUnmount(() => {
 			justify-content: flex-start;
 		}
 
-		&__section-heading--split {
-			flex-direction: column;
-		}
-
-		&__options-meta {
-			justify-items: start;
-		}
-	}
-}
-
-@media (max-width: 1280px) {
-	.profile-fields-admin {
-		&__layout {
-			grid-template-columns: 1fr;
-		}
 	}
 }
 
@@ -1661,18 +1243,6 @@ onBeforeUnmount(() => {
 			width: 100%;
 		}
 
-		&__support-banner {
-			gap: 8px;
-
-			:deep(.button-vue) {
-				max-width: 100%;
-			}
-		}
-
-		&__support-banner-actions {
-			justify-content: flex-start;
-		}
-
 		&__submit-row,
 		&__editor-actions {
 			flex-wrap: wrap;
@@ -1689,10 +1259,10 @@ onBeforeUnmount(() => {
 	.profile-fields-admin {
 		&__hero {
 			padding: 18px;
+		}
 
-			> div:first-child {
-				padding-inline-start: 28px;
-			}
+		&__hero-copy {
+			padding-inline-start: 28px;
 		}
 	}
 }
