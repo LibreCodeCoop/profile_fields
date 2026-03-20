@@ -9,7 +9,9 @@
     "build": "NODE_ENV=production vite --mode production build",
     "dev": "NODE_ENV=development vite --mode development build",
     "screenshots:refresh": "node playwright/generate-screenshots.mjs",
+    "screenshots:refresh:changed": "node playwright/generate-screenshots.mjs --changed",
     "typescript:generate": "npx openapi-typescript -t",
+    "ts:check": "npx tsc --noEmit",
     "watch": "NODE_ENV=development vite --mode development build --watch",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -33,9 +35,12 @@
     "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
+    "@vue/test-utils": "^2.4.6",
+    "@vitejs/plugin-vue": "^6.0.4",
     "@nextcloud/browserslist-config": "^3.1.2",
     "@nextcloud/vite-config": "^2.5.2",
     "@playwright/test": "^1.54.2",
+    "jsdom": "^26.1.0",
     "openapi-typescript": "^7.13.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
