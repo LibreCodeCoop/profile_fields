@@ -211,6 +211,7 @@ export default defineComponent({
 			number: t('profile_fields', 'Only numeric values are accepted.'),
 			boolean: t('profile_fields', 'Choose either true or false.'),
 			date: t('profile_fields', 'Use a valid date in YYYY-MM-DD format.'),
+			url: t('profile_fields', 'Enter a valid URL (e.g. https://example.com).'),
 			select: t('profile_fields', 'Choose one of the predefined options.'),
 			multiselect: t('profile_fields', 'Choose one or more predefined options.'),
 		} as Record<FieldType, string>)[type]
@@ -220,6 +221,7 @@ export default defineComponent({
 			number: t('profile_fields', 'Enter a number'),
 			boolean: t('profile_fields', 'Select true or false'),
 			date: t('profile_fields', 'Select a date'),
+			url: t('profile_fields', 'Enter a URL'),
 			select: t('profile_fields', 'Select an option'),
 			multiselect: t('profile_fields', 'Select one or more options'),
 		} as Record<FieldType, string>)[type]
@@ -232,6 +234,7 @@ export default defineComponent({
 			number: 'decimal',
 			boolean: 'text',
 			date: 'numeric',
+			url: 'url',
 			select: 'text',
 			multiselect: 'text',
 		} as Record<FieldType, string>)[type]
@@ -241,6 +244,7 @@ export default defineComponent({
 			number: 'text',
 			boolean: 'text',
 			date: 'date',
+			url: 'url',
 			select: 'text',
 			multiselect: 'text',
 		} as Record<FieldType, string>)[type]
@@ -324,6 +328,15 @@ export default defineComponent({
 				}
 			}
 
+			if (field.definition.type === 'url') {
+				try {
+					// eslint-disable-next-line no-new
+					new URL(rawValue)
+				} catch {
+					return t('profile_fields', '{fieldLabel} must be a valid URL.', { fieldLabel: field.definition.label })
+				}
+			}
+
 			if (field.definition.type === 'select') {
 				const options = field.definition.options ?? []
 				if (!options.includes(rawValue)) {
@@ -355,7 +368,7 @@ export default defineComponent({
 		const hasInvalidFields = computed(() => invalidFields.value.length > 0)
 
 		const helperTextForField = (field: AdminEditableField) => {
-			return field.definition.type === 'number' || field.definition.type === 'date' || field.definition.type === 'boolean'
+			return field.definition.type === 'number' || field.definition.type === 'date' || field.definition.type === 'boolean' || field.definition.type === 'url'
 				? descriptionForType(field.definition.type)
 				: ''
 		}
@@ -430,6 +443,7 @@ export default defineComponent({
 				'number fields expect a numeric value': t('profile_fields', '{fieldLabel} must be a numeric value.', { fieldLabel: field.definition.label }),
 				'Boolean fields require true or false values.': t('profile_fields', '{fieldLabel} must be either true or false.', { fieldLabel: field.definition.label }),
 				'Date fields require a valid ISO-8601 date in YYYY-MM-DD format.': t('profile_fields', '{fieldLabel} must be a valid date in YYYY-MM-DD format.', { fieldLabel: field.definition.label }),
+				'URL fields require a valid URL.': t('profile_fields', '{fieldLabel} must be a valid URL.', { fieldLabel: field.definition.label }),
 				'current_visibility is not supported': t('profile_fields', 'The selected visibility is not supported.'),
 			}[message] ?? (message.includes('is not a valid option')
 				? t('profile_fields', '{fieldLabel}: invalid option selected.', { fieldLabel: field.definition.label })
