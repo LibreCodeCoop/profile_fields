@@ -229,7 +229,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 						</div>
 					</section>
 
-					<AdminSelectOptionsSection v-if="form.type === 'select'" v-model="form.options" :is-saving="isSaving" />
+					<AdminSelectOptionsSection v-if="form.type === 'select' || form.type === 'multiselect'" v-model="form.options" :is-saving="isSaving" />
 
 					<div v-if="!isCompactLayout" class="profile-fields-admin__submit-row">
 						<NcButton type="submit" variant="primary" data-testid="profile-fields-admin-save" :disabled="isSaveDisabled">
@@ -288,6 +288,7 @@ const fieldTypeOptions: Array<{ value: FieldType, label: string }> = [
 	{ value: 'text', label: t('profile_fields', 'Text') },
 	{ value: 'number', label: t('profile_fields', 'Number') },
 	{ value: 'select', label: t('profile_fields', 'Select') },
+	{ value: 'multiselect', label: t('profile_fields', 'Multiselect') },
 ]
 
 const editPolicyOptions: Array<{ value: FieldEditPolicy, label: string }> = [
@@ -407,7 +408,7 @@ const buildFormState = () => ({
 	exposurePolicy: form.exposurePolicy,
 	sortOrder: Number(form.sortOrder),
 	active: form.active,
-	options: form.type === 'select' ? extractEditableSelectOptionValues(form.options).filter((optionValue: string) => optionValue.trim() !== '') : [],
+	options: (form.type === 'select' || form.type === 'multiselect') ? extractEditableSelectOptionValues(form.options).filter((optionValue: string) => optionValue.trim() !== '') : [],
 })
 
 const buildDefinitionState = (definition: FieldDefinition | null) => {
@@ -432,7 +433,7 @@ const buildDefinitionState = (definition: FieldDefinition | null) => {
 		exposurePolicy: definition.exposure_policy,
 		sortOrder: definition.sort_order,
 		active: definition.active,
-		options: definition.type === 'select' ? (definition.options ?? []) : [],
+		options: (definition.type === 'select' || definition.type === 'multiselect') ? (definition.options ?? []) : [],
 	}
 }
 
@@ -458,7 +459,7 @@ const hasRequiredFields = computed(() => {
 		return false
 	}
 
-	if (form.type === 'select' && normalizedOptionCount.value === 0) {
+	if ((form.type === 'select' || form.type === 'multiselect') && normalizedOptionCount.value === 0) {
 		return false
 	}
 
@@ -546,7 +547,7 @@ const buildDefinitionUpdatePayload = (definition: FieldDefinition, sortOrder: nu
 	exposurePolicy: definition.exposure_policy,
 	sortOrder,
 	active: definition.active,
-	...(definition.type === 'select' ? { options: definition.options ?? [] } : {}),
+	...((definition.type === 'select' || definition.type === 'multiselect') ? { options: definition.options ?? [] } : {}),
 })
 
 const replaceDefinitionInState = (definition: FieldDefinition) => {
@@ -573,7 +574,7 @@ const populateForm = (definition: FieldDefinition) => {
 	form.exposurePolicy = definition.exposure_policy
 	form.sortOrder = definition.sort_order
 	form.active = definition.active
-	form.options = definition.type === 'select'
+	form.options = (definition.type === 'select' || definition.type === 'multiselect')
 		? createEditableSelectOptions(definition.options ?? [], createOptionId)
 		: createEditableSelectOptions([], createOptionId)
 }
@@ -611,7 +612,7 @@ const persistDefinition = async() => {
 		exposurePolicy: form.exposurePolicy,
 		sortOrder: Number(form.sortOrder),
 		active: form.active,
-		...(form.type === 'select'
+		...((form.type === 'select' || form.type === 'multiselect')
 			? { options: extractEditableSelectOptionValues(form.options).filter((optionValue: string) => optionValue.trim() !== '') }
 			: {}),
 	}
@@ -632,7 +633,7 @@ const persistDefinition = async() => {
 				exposurePolicy: payload.exposurePolicy,
 				sortOrder: payload.sortOrder,
 				active: payload.active,
-				...(payload.type === 'select' ? { options: payload.options } : {}),
+				...((payload.type === 'select' || payload.type === 'multiselect') ? { options: payload.options } : {}),
 			})
 			replaceDefinitionInState(updated)
 			populateForm(updated)
@@ -756,7 +757,7 @@ const removeDefinitionByItem = async(definition: FieldDefinition) => {
 }
 
 watch(() => form.type, (newType: FieldType) => {
-	if (newType === 'select') {
+	if (newType === 'select' || newType === 'multiselect') {
 		if (form.options.length === 0) {
 			form.options = createEditableSelectOptions([''], createOptionId)
 		}

@@ -29,7 +29,7 @@ class FieldDefinitionValidator {
 	 * @return array{
 	 *     field_key: non-empty-string,
 	 *     label: non-empty-string,
-	 *     type: 'text'|'number'|'select',
+	 *     type: 'text'|'number'|'select'|'multiselect',
 	 *     edit_policy: 'admins'|'users',
 	 *     exposure_policy: 'hidden'|'private'|'users'|'public',
 	 *     sort_order: int,
@@ -78,12 +78,13 @@ class FieldDefinitionValidator {
 	 * @return list<string>|null
 	 */
 	private function validateOptions(string $type, mixed $options): ?array {
-		if ($type !== FieldType::SELECT->value) {
+		$isSelectLike = in_array($type, [FieldType::SELECT->value, FieldType::MULTISELECT->value], true);
+		if (!$isSelectLike) {
 			return null;
 		}
 
 		if (!is_array($options) || count($options) === 0) {
-			throw new InvalidArgumentException('select fields require at least one option');
+			throw new InvalidArgumentException($type . ' fields require at least one option');
 		}
 
 		$normalized = [];

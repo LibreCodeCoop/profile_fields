@@ -59,6 +59,20 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 							:placeholder="placeholderForField(field.definition.type)"
 							@update:model-value="updateSelectValue(field.definition.id, $event)"
 						/>
+						<NcSelect
+							v-else-if="field.definition.type === 'multiselect'"
+							class="profile-fields-user-dialog__input"
+							:input-id="`profile-fields-user-dialog-value-${field.definition.id}`"
+							:model-value="multiselectOptionValuesFor(field.definition.id)"
+							:aria-label="field.definition.label"
+							:clearable="true"
+							:searchable="false"
+							:multiple="true"
+							:options="selectOptionsFor(field.definition)"
+							label="label"
+							:placeholder="placeholderForField(field.definition.type)"
+							@update:model-value="updateMultiSelectValue(field.definition.id, $event)"
+						/>
 						<NcInputField
 							v-else
 							class="profile-fields-user-dialog__input"
@@ -152,7 +166,7 @@ export default defineComponent({
 		const savingIds = ref<number[]>([])
 
 		const userValueErrors = reactive<Record<number, string>>({})
-		const userDraftValues = reactive<Record<number, string>>({})
+		const userDraftValues = reactive<Record<number, string | string[]>>({})
 		const userDraftVisibilities = reactive<Record<number, FieldVisibility>>({})
 
 		const headerUserName = computed(() => props.userDisplayName.trim() !== '' ? props.userDisplayName : props.userUid)
@@ -183,12 +197,14 @@ export default defineComponent({
 			text: t('profile_fields', 'Free text stored as a scalar value.'),
 			number: t('profile_fields', 'Only numeric values are accepted.'),
 			select: t('profile_fields', 'Choose one of the predefined options.'),
+			multiselect: t('profile_fields', 'Choose one or more predefined options.'),
 		} as Record<FieldType, string>)[type]
 
 		const placeholderForField = (type: FieldType): string => ({
 			text: t('profile_fields', 'Enter a value'),
 			number: t('profile_fields', 'Enter a number'),
 			select: t('profile_fields', 'Select an option'),
+			multiselect: t('profile_fields', 'Select one or more options'),
 		} as Record<FieldType, string>)[type]
 
 		const plainNumberPattern = /^-?\d+(\.\d+)?$/
@@ -197,13 +213,15 @@ export default defineComponent({
 			text: 'text',
 			number: 'decimal',
 			select: 'text',
+			multiselect: 'text',
 		} as Record<FieldType, string>)[type]
 
 		const selectOptionsFor = (definition: FieldDefinition) =>
 			(definition.options ?? []).map((opt: string) => ({ value: opt, label: opt }))
 
 		const selectOptionFor = (fieldId: number) => {
-			const value = userDraftValues[fieldId]?.trim()
+			const current = userDraftValues[fieldId]
+			const value = typeof current === 'string' ? current.trim() : ''
 			return value ? { value, label: value } : null
 		}
 
@@ -212,7 +230,24 @@ export default defineComponent({
 			clearFieldError(fieldId)
 		}
 
-		const rawDraftValueFor = (fieldId: number) => userDraftValues[fieldId]?.trim() ?? ''
+		const multiselectOptionValuesFor = (fieldId: number) => {
+			const current = userDraftValues[fieldId]
+			if (!Array.isArray(current)) {
+				return []
+			}
+
+			return current.map((value: string) => ({ value, label: value }))
+		}
+
+		const updateMultiSelectValue = (fieldId: number, options: Array<{ value: string, label: string }> | null) => {
+			userDraftValues[fieldId] = options?.map((option) => option.value) ?? []
+			clearFieldError(fieldId)
+		}
+
+		const rawDraftValueFor = (fieldId: number) => {
+			const current = userDraftValues[fieldId]
+			return typeof current === 'string' ? current.trim() : ''
+		}
 
 		const validateField = (field: AdminEditableField): string | null => {
 			const rawValue = rawDraftValueFor(field.definition.id)
@@ -230,6 +265,18 @@ export default defineComponent({
 				const options = field.definition.options ?? []
 				if (!options.includes(rawValue)) {
 					// TRANSLATORS "{fieldLabel}" is a profile field label.
+					return t('profile_fields', '{fieldLabel} must be one of the allowed options.', { fieldLabel: field.definition.label })
+				}
+			}
+
+			if (field.definition.type === 'multiselect') {
+				const current = userDraftValues[field.definition.id]
+				if (!Array.isArray(current)) {
+					return t('profile_fields', '{fieldLabel} must be one of the allowed options.', { fieldLabel: field.definition.label })
+				}
+
+				const options = field.definition.options ?? []
+				if (current.some((value: string) => !options.includes(value))) {
 					return t('profile_fields', '{fieldLabel} must be one of the allowed options.', { fieldLabel: field.definition.label })
 				}
 			}
@@ -254,7 +301,11 @@ export default defineComponent({
 
 		const normaliseDraft = (field: AdminEditableField) => {
 			const currentValue = field.value?.value
-			userDraftValues[field.definition.id] = currentValue?.value?.toString() ?? ''
+			if (Array.isArray(currentValue?.value)) {
+				userDraftValues[field.definition.id] = [...currentValue.value]
+			} else {
+				userDraftValues[field.definition.id] = currentValue?.value?.toString() ?? ''
+			}
 
 			userDraftVisibilities[field.definition.id] = field.value?.current_visibility ?? definitionDefaultVisibility(field.definition)
 			delete userValueErrors[field.definition.id]
@@ -343,13 +394,14 @@ export default defineComponent({
 		}
 
 		const payloadsMatch = (
-			left: { value?: string | number | null, visibility: FieldVisibility },
-			right: { value?: string | number | null, visibility: FieldVisibility },
+			left: { value?: string | number | string[] | null, visibility: FieldVisibility },
+			right: { value?: string | number | string[] | null, visibility: FieldVisibility },
 		) => left.visibility === right.visibility
-			&& (left.value ?? null) === (right.value ?? null)
+			&& JSON.stringify(left.value ?? null) === JSON.stringify(right.value ?? null)
 
 		const buildPayload = (field: AdminEditableField) => {
-			const rawValue = userDraftValues[field.definition.id]?.trim() ?? ''
+			const current = userDraftValues[field.definition.id]
+			const rawValue = typeof current === 'string' ? current.trim() : ''
 
 			if (field.definition.type === 'number') {
 				if (rawValue === '') {
@@ -363,6 +415,18 @@ export default defineComponent({
 				const numericValue = Number(rawValue)
 
 				return { value: numericValue, visibility: userDraftVisibilities[field.definition.id] }
+			}
+
+			if (field.definition.type === 'multiselect') {
+				const selectedValues = userDraftValues[field.definition.id]
+				if (!Array.isArray(selectedValues)) {
+					throw new Error(t('profile_fields', 'Multiselect fields must use predefined options.'))
+				}
+
+				return {
+					value: selectedValues,
+					visibility: userDraftVisibilities[field.definition.id],
+				}
 			}
 
 			return {
@@ -505,7 +569,9 @@ export default defineComponent({
 			visibilityOptions,
 			selectOptionsFor,
 			selectOptionFor,
+			multiselectOptionValuesFor,
 			updateSelectValue,
+			updateMultiSelectValue,
 		}
 	},
 })
