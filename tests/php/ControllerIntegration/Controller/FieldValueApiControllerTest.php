@@ -27,6 +27,7 @@ use OCP\AppFramework\App;
 use OCP\AppFramework\Http;
 use OCP\DB\ISchemaWrapper;
 use OCP\IDBConnection;
+use OCP\IL10N;
 use OCP\IRequest;
 use OCP\IUser;
 use OCP\IUserManager;
@@ -108,6 +109,7 @@ class FieldValueApiControllerTest extends TestCase {
 			$this->fieldDefinitionService,
 			$this->fieldValueService,
 			$this->fieldAccessService,
+			$this->createL10n(),
 			$this->currentUserId,
 		);
 
@@ -169,6 +171,12 @@ class FieldValueApiControllerTest extends TestCase {
 		}
 
 		return $userId;
+	}
+
+	private function createL10n(): IL10N {
+		$l10n = $this->createStub(IL10N::class);
+		$l10n->method('t')->willReturnCallback(static fn (string $text, array $parameters = []): string => $parameters === [] ? $text : vsprintf($text, $parameters));
+		return $l10n;
 	}
 
 	private function insertValue(int $fieldDefinitionId, string $userId, string $valueJson, string $visibility): FieldValue {
