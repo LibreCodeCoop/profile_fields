@@ -19,7 +19,7 @@ type ApiOperationRequestBody<TOperation> = TOperation extends {
 
 type ApiRequestJsonBody<TOperation> = ApiJsonBody<ApiOperationRequestBody<TOperation>>
 
-export type FieldType = ApiComponents['schemas']['Type']
+export type FieldType = ApiComponents['schemas']['Type'] | 'multiselect'
 export type FieldVisibility = ApiComponents['schemas']['Visibility']
 export type FieldEditPolicy = 'admins' | 'users'
 export type FieldExposurePolicy = 'hidden' | FieldVisibility
@@ -34,7 +34,7 @@ export type FieldDefinition = Omit<ApiFieldDefinition, 'admin_only' | 'user_edit
 // openapi-typescript collapses the loose `value: mixed` schema to Record<string, never>.
 // Keep the surrounding contract generated and widen only this payload leaf for frontend use.
 export type FieldValuePayload = Omit<ApiComponents['schemas']['ValuePayload'], 'value'> & {
-	value?: string | number | null
+	value?: string | number | string[] | null
 }
 export type FieldValueRecord = Omit<ApiComponents['schemas']['ValueRecord'], 'value'> & {
 	value: FieldValuePayload
@@ -70,9 +70,13 @@ export type UpdateDefinitionPayload = {
 	active?: boolean
 	options?: string[]
 }
-export type UpsertOwnValuePayload = ApiRequestJsonBody<ApiOperations['field_value_api-upsert']>
+export type UpsertOwnValuePayload = Omit<ApiRequestJsonBody<ApiOperations['field_value_api-upsert']>, 'value'> & {
+	value?: string | number | string[] | null
+}
 export type UpdateOwnVisibilityPayload = ApiRequestJsonBody<ApiOperations['field_value_api-update-visibility']>
-export type UpsertAdminUserValuePayload = ApiRequestJsonBody<ApiOperations['field_value_admin_api-upsert']>
+export type UpsertAdminUserValuePayload = Omit<ApiRequestJsonBody<ApiOperations['field_value_admin_api-upsert']>, 'value'> & {
+	value?: string | number | string[] | null
+}
 
 export type AdminEditableField = {
 	definition: FieldDefinition
