@@ -48,6 +48,23 @@ class FieldValueServiceTest extends TestCase {
 		$this->assertSame(['value' => 42], $normalized);
 	}
 
+	public function testNormalizeDateValueAcceptsIsoDate(): void {
+		$definition = $this->buildDefinition(FieldType::DATE->value);
+
+		$normalized = $this->service->normalizeValue($definition, '2026-03-20');
+
+		$this->assertSame(['value' => '2026-03-20'], $normalized);
+	}
+
+	public function testNormalizeDateValueRejectsInvalidDate(): void {
+		$definition = $this->buildDefinition(FieldType::DATE->value);
+
+		$this->expectException(InvalidArgumentException::class);
+		$this->expectExceptionMessage('Date fields require a valid ISO-8601 date in YYYY-MM-DD format.');
+
+		$this->service->normalizeValue($definition, '2026-02-30');
+	}
+
 	public function testNormalizeMissingValueAsNull(): void {
 		$definition = $this->buildDefinition(FieldType::TEXT->value);
 
