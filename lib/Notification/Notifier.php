@@ -48,8 +48,9 @@ class Notifier implements INotifier {
 		}
 
 		if ($notification->getMessage() === 'profile_field_updated_message') {
+			// TRANSLATORS %1$s is the actor user ID, %2$s is the affected user ID, %3$s is the profile field label.
 			$notification->setParsedMessage($l10n->t(
-				'%1$s changed %2$s\'s %3$s profile field.',
+				'%1$s changed profile field "%3$s" for user %2$s.',
 				$notification->getMessageParameters(),
 			));
 		} elseif ($notification->getMessage() !== '' && $notification->getParsedMessage() === '') {

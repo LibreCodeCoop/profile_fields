@@ -75,7 +75,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 						/>
 
 						<div class="profile-fields-user-dialog__visibility-control" :class="{ 'profile-fields-user-dialog__visibility-control--error': fieldHasError(field) }">
-							<label class="profile-fields-user-dialog__control-label" :for="`profile-fields-user-dialog-visibility-${field.definition.id}`">{{ t('profile_fields', 'Who can see this') }}</label>
+							<label class="profile-fields-user-dialog__control-label" :for="`profile-fields-user-dialog-visibility-${field.definition.id}`">{{ visibilityFieldLabel }}</label>
 							<NcSelect
 								:input-id="`profile-fields-user-dialog-visibility-${field.definition.id}`"
 								:model-value="visibilityOptionFor(field.definition.id)"
@@ -156,6 +156,7 @@ export default defineComponent({
 		const userDraftVisibilities = reactive<Record<number, FieldVisibility>>({})
 
 		const headerUserName = computed(() => props.userDisplayName.trim() !== '' ? props.userDisplayName : props.userUid)
+		const visibilityFieldLabel = t('profile_fields', 'Who can view this field value')
 		const loadingMessage = computed(() => t('profile_fields', 'Loading profile fields for {userUid}...', { userUid: props.userUid }))
 		const editableFields = computed<AdminEditableField[]>(() => buildAdminEditableFields(definitions.value, userValues.value))
 		const isSavingAny = computed(() => savingIds.value.length > 0)
@@ -165,6 +166,7 @@ export default defineComponent({
 			}
 
 			const count = editableFields.value.length
+			// TRANSLATORS "{count}" is the number of editable fields and "{userUid}" is the account ID (without @).
 			return n('profile_fields', '{count} editable field for @{userUid}.', '{count} editable fields for @{userUid}.', count, {
 				count,
 				userUid: props.userUid,
@@ -220,12 +222,14 @@ export default defineComponent({
 			}
 
 			if (field.definition.type === 'number' && !plainNumberPattern.test(rawValue)) {
+				// TRANSLATORS "{fieldLabel}" is a profile field label.
 				return t('profile_fields', '{fieldLabel} must be a plain numeric value.', { fieldLabel: field.definition.label })
 			}
 
 			if (field.definition.type === 'select') {
 				const options = field.definition.options ?? []
 				if (!options.includes(rawValue)) {
+					// TRANSLATORS "{fieldLabel}" is a profile field label.
 					return t('profile_fields', '{fieldLabel} must be one of the allowed options.', { fieldLabel: field.definition.label })
 				}
 			}
@@ -311,6 +315,7 @@ export default defineComponent({
 				'current_visibility is not supported': t('profile_fields', 'The selected visibility is not supported.'),
 			}[message] ?? (message.includes('is not a valid option')
 				? t('profile_fields', '{fieldLabel}: invalid option selected.', { fieldLabel: field.definition.label })
+				// TRANSLATORS "{fieldLabel}" is the field label and "{message}" is a backend error message.
 				: t('profile_fields', '{fieldLabel}: {message}', { fieldLabel: field.definition.label, message })))
 		}
 
@@ -444,6 +449,7 @@ export default defineComponent({
 
 			const hasFieldErrors = changedFields.some((field: AdminEditableField) => Boolean(userValueErrors[field.definition.id]))
 			if (!hasFieldErrors) {
+				// TRANSLATORS "{userUid}" is the account ID whose fields were saved.
 				successMessage.value = t('profile_fields', 'Saved profile fields for {userUid}.', { userUid: props.userUid })
 			} else {
 				errorMessage.value = n('profile_fields', 'The field could not be saved.', 'Some fields could not be saved. Review the messages below.', changedFields.length, {
@@ -475,6 +481,7 @@ export default defineComponent({
 			headerDescription,
 			headerUserName,
 			loadingMessage,
+			visibilityFieldLabel,
 			hasPendingChanges,
 			hasInvalidFields,
 			helperTextForField,

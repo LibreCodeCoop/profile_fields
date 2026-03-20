@@ -70,7 +70,7 @@ class NotifyAdminsOrGroupsProfileFieldChangeOperationTest extends TestCase {
 
 	public function testValidateOperationRejectsInvalidTargets(): void {
 		$this->expectException(\UnexpectedValueException::class);
-		$this->expectExceptionMessage('A valid target list is required');
+		$this->expectExceptionMessage('A valid recipient list is required.');
 
 		$this->operation->validateOperation('notify-admins-or-groups', [], '{"targets":"invalid"}');
 	}
@@ -120,7 +120,7 @@ class NotifyAdminsOrGroupsProfileFieldChangeOperationTest extends TestCase {
 				$notification->method('setSubject')->with('profile_field_updated')->willReturnSelf();
 				$notification->method('setMessage')->with('profile_field_updated_message', ['admin', 'alice', 'Department'])->willReturnSelf();
 				$notification->method('setParsedSubject')->with('Profile field updated')->willReturnSelf();
-				$notification->method('setParsedMessage')->with('admin changed alice\'s Department profile field.')->willReturnSelf();
+				$notification->method('setParsedMessage')->with('admin changed profile field "Department" for user alice.')->willReturnSelf();
 				$notification->method('setIcon')->willReturnSelf();
 				$notification->expects($this->once())->method('setUser')->with($this->logicalOr('bob', 'carol'))->willReturnSelf();
 				$notifications[] = $notification;

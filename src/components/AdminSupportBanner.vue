@@ -7,9 +7,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 	<NcNoteCard v-if="isVisible" type="info" data-testid="profile-fields-admin-support-banner">
 		<div class="profile-fields-admin-support-banner">
 			<div class="profile-fields-admin-support-banner__copy">
-				<p><strong>{{ t('profile_fields', 'Help keep Profile Fields sustainable.') }}</strong></p>
+				<p><strong>{{ t('profile_fields', 'Help sustain Profile Fields development.') }}</strong></p>
 				<p>{{ t('profile_fields', 'Profile Fields is open source under the AGPL license and maintained by the LibreCode team, creators of LibreSign.') }}</p>
-				<p>{{ t('profile_fields', 'If your organization depends on it, please help us sustain its development and maintenance.') }}</p>
+				<p>{{ t('profile_fields', 'If your organization depends on this app, please help fund ongoing development and maintenance.') }}</p>
 
 				<div class="profile-fields-admin-support-banner__actions">
 					<NcButton class="profile-fields-admin-support-banner__action" variant="primary" @click="openSponsorPage">
@@ -23,9 +23,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 				<div class="profile-fields-admin-support-banner__links">
 					<a href="https://github.com/LibreCodeCoop/profile_fields" target="_blank" rel="noopener noreferrer nofollow">
-						{{ t('profile_fields', 'Give Profile Fields a {star} on GitHub', {star: '⭐'}) }}
+						{{ githubStarCtaLabel }}
 					</a>
-					<a href="mailto:contact@librecode.coop">{{ t('profile_fields', 'Contact us for support or custom development') }}</a>
+					<a href="mailto:contact@librecode.coop">{{ t('profile_fields', 'Contact us for support or custom development services') }}</a>
 				</div>
 			</div>
 		</div>
@@ -33,7 +33,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { t } from '@nextcloud/l10n'
 import { NcButton, NcNoteCard } from '@nextcloud/vue'
 
@@ -46,6 +46,9 @@ const props = withDefaults(defineProps<{
 })
 
 const isVisible = ref(true)
+
+// TRANSLATORS "{star}" is replaced with a star symbol (for example: "⭐").
+const githubStarCtaLabel = computed(() => t('profile_fields', 'Star Profile Fields on GitHub {star}', { star: '⭐' }))
 
 const dismissBanner = () => {
 	isVisible.value = false

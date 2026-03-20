@@ -60,7 +60,7 @@ Feature: profile field workflows
     And the response should be a JSON array with the following mandatory values
       | key                                                                                                                                                              | value                                                                  |
       | (jq).ocs.data[] \| select(.app == "profile_fields" and .user == "admin" and .object_type == "profile-field-admin-change" and .subject == "Profile field updated") \| .app      | profile_fields                                                         |
-      | (jq).ocs.data[] \| select(.app == "profile_fields" and .user == "admin" and .object_type == "profile-field-admin-change" and .subject == "Profile field updated") \| .message  | workflow_subject changed workflow_subject's Workflow Notify Department <WORKFLOW_NOTIFY_FIELD_ID> profile field. |
+      | (jq).ocs.data[] \| select(.app == "profile_fields" and .user == "admin" and .object_type == "profile-field-admin-change" and .subject == "Profile field updated") \| .message  | workflow_subject changed profile field \"Workflow Notify Department <WORKFLOW_NOTIFY_FIELD_ID>\" for user workflow_subject. |
 
   Scenario: matching field updates write workflow log entries
     Given as user "admin"
@@ -307,10 +307,10 @@ Feature: profile field workflows
     Then the response should have a status code 200
     And the response should be a JSON array with the following mandatory values
       | key                                                                                                             | value                                       |
-      | (jq).ocs.data[] \| select(.displayName == "Profile field change: Workflow Talk Department <WORKFLOW_TALK_FIELD_ID> for workflow_subject") \| .displayName | Profile field change: Workflow Talk Department <WORKFLOW_TALK_FIELD_ID> for workflow_subject |
+      | (jq).ocs.data[] \| select(.displayName == "Profile field changed: Workflow Talk Department <WORKFLOW_TALK_FIELD_ID> for user workflow_subject") \| .displayName | Profile field changed: Workflow Talk Department <WORKFLOW_TALK_FIELD_ID> for user workflow_subject |
     Given as user "workflow_subject"
     When sending "get" to ocs "/apps/spreed/api/v4/room"
     Then the response should have a status code 200
     And the response should be a JSON array with the following mandatory values
       | key                                                                                                             | value                                       |
-      | (jq).ocs.data[] \| select(.displayName == "Profile field change: Workflow Talk Department <WORKFLOW_TALK_FIELD_ID> for workflow_subject") \| .displayName | Profile field change: Workflow Talk Department <WORKFLOW_TALK_FIELD_ID> for workflow_subject |
+      | (jq).ocs.data[] \| select(.displayName == "Profile field changed: Workflow Talk Department <WORKFLOW_TALK_FIELD_ID> for user workflow_subject") \| .displayName | Profile field changed: Workflow Talk Department <WORKFLOW_TALK_FIELD_ID> for user workflow_subject |

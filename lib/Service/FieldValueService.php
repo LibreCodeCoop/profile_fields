@@ -53,7 +53,7 @@ class FieldValueService {
 		$valueJson = $this->encodeValue($normalizedValue);
 		$visibility = $currentVisibility ?? FieldExposurePolicy::from($definition->getExposurePolicy())->initialVisibility()->value;
 		if (!FieldVisibility::isValid($visibility)) {
-			throw new InvalidArgumentException($this->l10n->t('current_visibility is not supported'));
+			throw new InvalidArgumentException($this->l10n->t('The provided visibility value is not supported.'));
 		}
 
 		$entity = $this->fieldValueMapper->findByFieldDefinitionIdAndUserUid($definition->getId(), $userUid) ?? new FieldValue();
@@ -145,16 +145,17 @@ class FieldValueService {
 		int $offset,
 	): array {
 		if ($limit < 1 || $limit > self::SEARCH_MAX_LIMIT) {
+			// TRANSLATORS %d is the maximum supported search limit.
 			throw new InvalidArgumentException($this->l10n->t('limit must be between 1 and %d', [self::SEARCH_MAX_LIMIT]));
 		}
 
 		if ($offset < 0) {
-			throw new InvalidArgumentException($this->l10n->t('offset must be greater than or equal to 0'));
+			throw new InvalidArgumentException($this->l10n->t('The offset must be greater than or equal to 0.'));
 		}
 
 		$normalizedOperator = strtolower(trim($operator));
 		if (!in_array($normalizedOperator, [self::SEARCH_OPERATOR_EQ, self::SEARCH_OPERATOR_CONTAINS], true)) {
-			throw new InvalidArgumentException($this->l10n->t('search operator is not supported'));
+			throw new InvalidArgumentException($this->l10n->t('The search operator is not supported.'));
 		}
 
 		$searchValue = $this->normalizeSearchValue($definition, $normalizedOperator, $rawValue);
@@ -177,12 +178,12 @@ class FieldValueService {
 
 	public function updateVisibility(FieldDefinition $definition, string $userUid, string $updatedByUid, string $currentVisibility): FieldValue {
 		if (!FieldVisibility::isValid($currentVisibility)) {
-			throw new InvalidArgumentException($this->l10n->t('current_visibility is not supported'));
+			throw new InvalidArgumentException($this->l10n->t('The provided visibility value is not supported.'));
 		}
 
 		$entity = $this->fieldValueMapper->findByFieldDefinitionIdAndUserUid($definition->getId(), $userUid);
 		if ($entity === null) {
-			throw new InvalidArgumentException($this->l10n->t('field value not found'));
+			throw new InvalidArgumentException($this->l10n->t('No profile field value was found.'));
 		}
 
 		$previousValue = $this->extractScalarValue($entity->getValueJson());
@@ -229,7 +230,7 @@ class FieldValueService {
 	 */
 	private function normalizeTextValue(array|string|int|float|bool $rawValue): array {
 		if (is_array($rawValue)) {
-			throw new InvalidArgumentException($this->l10n->t('text fields expect a scalar value'));
+			throw new InvalidArgumentException($this->l10n->t('Text fields require a single text value.'));
 		}
 
 		return ['value' => trim((string)$rawValue)];
@@ -241,12 +242,13 @@ class FieldValueService {
 	 */
 	private function normalizeSelectValue(array|string|int|float|bool $rawValue, FieldDefinition $definition): array {
 		if (!is_string($rawValue)) {
-			throw new InvalidArgumentException($this->l10n->t('select fields expect a string value'));
+			throw new InvalidArgumentException($this->l10n->t('Select fields require one of the configured option values.'));
 		}
 
 		$value = trim($rawValue);
 		$options = json_decode($definition->getOptions() ?? '[]', true);
 		if (!in_array($value, $options, true)) {
+			// TRANSLATORS %s is an invalid option value provided by the user.
 			throw new InvalidArgumentException($this->l10n->t('"%s" is not a valid option for this field', [$value]));
 		}
 
@@ -259,7 +261,7 @@ class FieldValueService {
 	 */
 	private function normalizeNumberValue(array|string|int|float|bool $rawValue): array {
 		if (is_array($rawValue) || is_bool($rawValue) || !is_numeric($rawValue)) {
-			throw new InvalidArgumentException($this->l10n->t('number fields expect a numeric value'));
+			throw new InvalidArgumentException($this->l10n->t('Number fields require a numeric value.'));
 		}
 
 		return ['value' => str_contains((string)$rawValue, '.') ? (float)$rawValue : (int)$rawValue];
@@ -272,7 +274,7 @@ class FieldValueService {
 		try {
 			return json_encode($value, JSON_THROW_ON_ERROR);
 		} catch (JsonException $exception) {
-			throw new InvalidArgumentException($this->l10n->t('value_json could not be encoded'), 0, $exception);
+			throw new InvalidArgumentException($this->l10n->t('The stored value payload could not be encoded as JSON.'), 0, $exception);
 		}
 	}
 
@@ -283,11 +285,11 @@ class FieldValueService {
 		try {
 			$decoded = json_decode($valueJson, true, 512, JSON_THROW_ON_ERROR);
 		} catch (JsonException $exception) {
-			throw new InvalidArgumentException($this->l10n->t('value_json could not be decoded'), 0, $exception);
+			throw new InvalidArgumentException($this->l10n->t('The stored value payload could not be decoded from JSON.'), 0, $exception);
 		}
 
 		if (!is_array($decoded)) {
-			throw new InvalidArgumentException($this->l10n->t('value_json must decode to an object payload'));
+			throw new InvalidArgumentException($this->l10n->t('The stored value payload must decode to a JSON object.'));
 		}
 
 		return $decoded;
@@ -328,13 +330,13 @@ class FieldValueService {
 		}
 
 		if (FieldType::from($definition->getType()) !== FieldType::TEXT) {
-			throw new InvalidArgumentException($this->l10n->t('contains operator is only supported for text fields'));
+			throw new InvalidArgumentException($this->l10n->t('The "contains" operator is only available for text fields.'));
 		}
 
 		$normalized = $this->normalizeValue($definition, $rawValue);
 		$value = $normalized['value'] ?? null;
 		if (!is_string($value) || $value === '') {
-			throw new InvalidArgumentException($this->l10n->t('contains operator requires a non-empty text value'));
+			throw new InvalidArgumentException($this->l10n->t('The "contains" operator requires a non-empty text value.'));
 		}
 
 		return ['value' => $value];

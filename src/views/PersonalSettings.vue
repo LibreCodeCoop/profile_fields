@@ -41,7 +41,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 							<span class="profile-fields-personal__readonly-text">{{ resolvedDisplayValue(field) }}</span>
 							<NcPopover placement="bottom" :triggers="['hover', 'focus']" :popover-triggers="['hover']" no-focus-trap>
 								<template #trigger="{ attrs }">
-									<span v-bind="attrs" class="profile-fields-personal__info-trigger" :aria-label="t('profile_fields', '{fieldLabel}: managed by your administrator', { fieldLabel: field.definition.label })">
+									<span v-bind="attrs" class="profile-fields-personal__info-trigger" :aria-label="managedByAdminAriaLabel(field.definition.label)">
 										<NcIconSvgWrapper :path="mdiInformationOutline" :size="14" />
 									</span>
 								</template>
@@ -57,7 +57,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 							<label :for="field.can_edit ? fieldInputId(field.definition.id) : undefined">{{ field.definition.label }}</label>
 							<NcPopover v-if="!embedded && !field.can_edit" placement="end" :triggers="['hover', 'focus']" :popover-triggers="['hover']" no-focus-trap>
 								<template #trigger="{ attrs }">
-									<span v-bind="attrs" class="profile-fields-personal__chip-trigger" :aria-label="t('profile_fields', 'Read-only field')">
+									<span v-bind="attrs" class="profile-fields-personal__chip-trigger" :aria-label="t('profile_fields', 'Read-only field value')">
 										<span class="profile-fields-personal__readonly-indicator" aria-hidden="true">
 											<NcIconSvgWrapper :path="mdiLockOutline" :size="12" />
 										</span>
@@ -105,7 +105,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 						</span>
 
 						<div v-if="!embedded" class="profile-fields-personal__embedded-toolbar">
-							<label class="profile-fields-personal__embedded-visibility-label" :for="`profile-fields-personal-visibility-${field.definition.id}`">{{ t('profile_fields', 'Who can see this') }}</label>
+							<label class="profile-fields-personal__embedded-visibility-label" :for="`profile-fields-personal-visibility-${field.definition.id}`">{{ visibilityFieldLabel }}</label>
 							<NcSelect
 								:input-id="`profile-fields-personal-visibility-${field.definition.id}`"
 								class="profile-fields-personal__visibility-select"
@@ -228,6 +228,10 @@ const inputModeForType = (type: FieldType): 'text' | 'decimal' => {
 	return inputModesByType[type]
 }
 
+const visibilityFieldLabel = t('profile_fields', 'Who can view this field value')
+// TRANSLATORS "{fieldLabel}" is replaced with a profile field label such as "Department".
+const managedByAdminAriaLabel = (fieldLabel: string) => t('profile_fields', '{fieldLabel}: managed by your administrator', { fieldLabel })
+
 const fieldInputId = (fieldId: number) => `profile-fields-personal-value-${fieldId}`
 
 const componentInputTypesByType: Record<FieldType, 'text' | 'number'> = {
@@ -281,6 +285,7 @@ const isSaved = (fieldId: number) => successIds.value.includes(fieldId)
 const fieldHasError = (fieldId: number) => Boolean(fieldErrors[fieldId])
 const fieldHelperText = (fieldId: number) => fieldErrors[fieldId] ?? ''
 const fieldSaveSucceeded = (fieldId: number) => isSaved(fieldId) && !fieldHasError(fieldId)
+// TRANSLATORS "{fieldLabel}" is replaced with a profile field label shown in the settings form.
 const visibilityInputLabel = (fieldLabel: string) => t('profile_fields', 'Visibility for {fieldLabel}', { fieldLabel })
 const fieldSaveState = (fieldId: number) => {
 	if (fieldHasError(fieldId)) {
@@ -302,6 +307,7 @@ const currentDraftValue = (field: EditableField) => draftValues[field.definition
 const autosaveAnnouncement = (field: EditableField) => {
 	const fieldId = field.definition.id
 	if (fieldHasError(fieldId)) {
+		// TRANSLATORS "{fieldLabel}" is the field label and "{message}" is a validation or API error message.
 		return t('profile_fields', '{fieldLabel}: {message}', {
 			fieldLabel: field.definition.label,
 			message: fieldHelperText(fieldId),
@@ -309,10 +315,12 @@ const autosaveAnnouncement = (field: EditableField) => {
 	}
 
 	if (fieldSaveSucceeded(fieldId)) {
+		// TRANSLATORS "{fieldLabel}" is the field label that was saved.
 		return t('profile_fields', '{fieldLabel} saved.', { fieldLabel: field.definition.label })
 	}
 
 	if (isSaving(fieldId)) {
+		// TRANSLATORS "{fieldLabel}" is the field label currently being saved.
 		return t('profile_fields', 'Saving {fieldLabel}.', { fieldLabel: field.definition.label })
 	}
 
@@ -340,7 +348,7 @@ const currentStoredValue = (field: EditableField) => {
 
 const resolvedDisplayValue = (field: EditableField) => {
 	const value = currentStoredValue(field) || draftValues[field.definition.id] || ''
-	return value === '' ? t('profile_fields', 'Not set') : value
+	return value === '' ? t('profile_fields', 'No value set') : value
 }
 
 const findField = (fieldId: number) => fields.value.find((field: EditableField) => field.definition.id === fieldId)

@@ -196,7 +196,7 @@ class FieldValueServiceTest extends TestCase {
 		$value->setUpdatedAt(new \DateTime());
 
 		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage('value_json could not be decoded');
+		$this->expectExceptionMessage('The stored value payload could not be decoded from JSON.');
 
 		$this->service->serializeForResponse($value);
 	}
@@ -251,7 +251,7 @@ class FieldValueServiceTest extends TestCase {
 			->willReturn(null);
 
 		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage('field value not found');
+		$this->expectExceptionMessage('No profile field value was found.');
 
 		$this->service->updateVisibility($definition, 'alice', 'admin', 'users');
 	}
@@ -372,7 +372,7 @@ class FieldValueServiceTest extends TestCase {
 		$definition = $this->buildSelectDefinition(['CLT', 'PJ']);
 
 		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage('select fields expect a string value');
+		$this->expectExceptionMessage('Select fields require one of the configured option values.');
 
 		$this->service->normalizeValue($definition, ['CLT']);
 	}
@@ -381,7 +381,7 @@ class FieldValueServiceTest extends TestCase {
 		$definition = $this->buildSelectDefinition(['1', '2']);
 
 		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage('select fields expect a string value');
+		$this->expectExceptionMessage('Select fields require one of the configured option values.');
 
 		$this->service->normalizeValue($definition, 1);
 	}
@@ -390,7 +390,7 @@ class FieldValueServiceTest extends TestCase {
 		$definition = $this->buildSelectDefinition(['1.5', '2.5']);
 
 		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage('select fields expect a string value');
+		$this->expectExceptionMessage('Select fields require one of the configured option values.');
 
 		$this->service->normalizeValue($definition, 1.5);
 	}
