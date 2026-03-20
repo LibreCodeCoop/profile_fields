@@ -17,6 +17,7 @@ use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attribute\ApiRoute;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\OCSController;
+use OCP\IL10N;
 use OCP\IRequest;
 
 /**
@@ -26,6 +27,7 @@ class FieldDefinitionApiController extends OCSController {
 	public function __construct(
 		IRequest $request,
 		private FieldDefinitionService $fieldDefinitionService,
+		private IL10N $l10n,
 	) {
 		parent::__construct(Application::APP_ID, $request);
 	}
@@ -129,7 +131,7 @@ class FieldDefinitionApiController extends OCSController {
 	): DataResponse {
 		$existing = $this->fieldDefinitionService->findById($id);
 		if ($existing === null) {
-			return new DataResponse(['message' => 'Field definition not found'], Http::STATUS_NOT_FOUND);
+			return new DataResponse(['message' => $this->l10n->t('Field definition not found')], Http::STATUS_NOT_FOUND);
 		}
 
 		try {
@@ -167,7 +169,7 @@ class FieldDefinitionApiController extends OCSController {
 	public function delete(int $id): DataResponse {
 		$definition = $this->fieldDefinitionService->delete($id);
 		if ($definition === null) {
-			return new DataResponse(['message' => 'Field definition not found'], Http::STATUS_NOT_FOUND);
+			return new DataResponse(['message' => $this->l10n->t('Field definition not found')], Http::STATUS_NOT_FOUND);
 		}
 
 		return new DataResponse($definition->jsonSerialize(), Http::STATUS_OK);
