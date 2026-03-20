@@ -23,11 +23,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 				<div class="profile-fields-admin-support-banner__links">
 					<a href="https://github.com/LibreCodeCoop/profile_fields" target="_blank" rel="noopener noreferrer nofollow">
-						{{ t('profile_fields', 'Give Profile Fields a ⭐ on GitHub') }}
+						{{ t('profile_fields', 'Give Profile Fields a {star} on GitHub', {star: '⭐'}) }}
 					</a>
-					<a href="mailto:contact@librecode.coop">
-						{{ t('profile_fields', 'Contact us for support or custom development') }}
-					</a>
+					<a href="mailto:contact@librecode.coop">{{ t('profile_fields', 'Contact us for support or custom development') }}</a>
 				</div>
 			</div>
 		</div>
