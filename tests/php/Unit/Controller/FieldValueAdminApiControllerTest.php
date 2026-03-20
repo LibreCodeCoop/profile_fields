@@ -19,6 +19,7 @@ use OCA\ProfileFields\Service\FieldDefinitionService;
 use OCA\ProfileFields\Service\FieldValueService;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
+use OCP\IL10N;
 use OCP\IRequest;
 use OCP\IUser;
 use OCP\IUserManager;
@@ -30,6 +31,7 @@ class FieldValueAdminApiControllerTest extends TestCase {
 	private FieldDefinitionService&MockObject $fieldDefinitionService;
 	private FieldValueService&MockObject $fieldValueService;
 	private IUserManager&MockObject $userManager;
+	private IL10N&MockObject $l10n;
 	private FieldValueAdminApiController $controller;
 
 	protected function setUp(): void {
@@ -38,11 +40,16 @@ class FieldValueAdminApiControllerTest extends TestCase {
 		$this->fieldDefinitionService = $this->createMock(FieldDefinitionService::class);
 		$this->fieldValueService = $this->createMock(FieldValueService::class);
 		$this->userManager = $this->createMock(IUserManager::class);
+		$this->l10n = $this->createMock(IL10N::class);
+		$this->l10n->method('t')->willReturnCallback(static function (string $text, array $parameters = []): string {
+			return $parameters === [] ? "tr:$text" : vsprintf("tr:$text", $parameters);
+		});
 		$this->controller = new FieldValueAdminApiController(
 			$this->request,
 			$this->fieldDefinitionService,
 			$this->fieldValueService,
 			$this->userManager,
+			$this->l10n,
 			'admin',
 		);
 	}
@@ -83,7 +90,7 @@ class FieldValueAdminApiControllerTest extends TestCase {
 		$response = $this->controller->upsert('alice', 7, 'A+', FieldVisibility::USERS->value);
 
 		$this->assertSame(Http::STATUS_NOT_FOUND, $response->getStatus());
-		$this->assertSame(['message' => 'Field definition not found'], $response->getData());
+		$this->assertSame(['message' => 'tr:Field definition not found'], $response->getData());
 	}
 
 	public function testUpsertReturnsNotFoundWhenDefinitionIsInactive(): void {
@@ -98,7 +105,7 @@ class FieldValueAdminApiControllerTest extends TestCase {
 		$response = $this->controller->upsert('alice', 7, 'A+', FieldVisibility::USERS->value);
 
 		$this->assertSame(Http::STATUS_NOT_FOUND, $response->getStatus());
-		$this->assertSame(['message' => 'Field definition not found'], $response->getData());
+		$this->assertSame(['message' => 'tr:Field definition not found'], $response->getData());
 	}
 
 	public function testUpsertReturnsUnauthorizedWithoutAuthenticatedAdminUser(): void {
@@ -107,13 +114,14 @@ class FieldValueAdminApiControllerTest extends TestCase {
 			$this->fieldDefinitionService,
 			$this->fieldValueService,
 			$this->userManager,
+			$this->l10n,
 			null,
 		);
 
 		$response = $controller->upsert('alice', 7, 'A+', FieldVisibility::USERS->value);
 
 		$this->assertSame(Http::STATUS_UNAUTHORIZED, $response->getStatus());
-		$this->assertSame(['message' => 'Authenticated admin user is required'], $response->getData());
+		$this->assertSame(['message' => 'tr:Authenticated admin user is required'], $response->getData());
 	}
 
 	public function testUpsertReturnsSerializedValue(): void {
@@ -244,7 +252,7 @@ class FieldValueAdminApiControllerTest extends TestCase {
 		$response = $this->controller->lookup('cpf', '12345678900');
 
 		$this->assertSame(Http::STATUS_CONFLICT, $response->getStatus());
-		$this->assertSame(['message' => 'Multiple users match the lookup field value'], $response->getData());
+		$this->assertSame(['message' => 'tr:Multiple users match the lookup field value'], $response->getData());
 	}
 
 	public function testSearchReturnsPaginatedMatchesWithDisplayNames(): void {
@@ -310,7 +318,7 @@ class FieldValueAdminApiControllerTest extends TestCase {
 		$response = $this->controller->search('region', 'eq', 'LATAM');
 
 		$this->assertSame(Http::STATUS_NOT_FOUND, $response->getStatus());
-		$this->assertSame(['message' => 'Search field definition not found'], $response->getData());
+		$this->assertSame(['message' => 'tr:Search field definition not found'], $response->getData());
 	}
 
 	private function buildDefinition(): FieldDefinition {
