@@ -55,7 +55,7 @@ class CreateTalkConversationProfileFieldChangeOperation implements IOperation {
 	#[\Override]
 	public function validateOperation(string $name, array $checks, string $operation): void {
 		if (trim($operation) !== '') {
-			throw new \UnexpectedValueException($this->l10n->t('This workflow operation does not accept custom configuration'));
+			throw new \UnexpectedValueException($this->l10n->t('This workflow operation does not support custom configuration.'));
 		}
 	}
 
@@ -90,7 +90,8 @@ class CreateTalkConversationProfileFieldChangeOperation implements IOperation {
 			}
 
 			$this->broker->createConversation(
-				$this->l10n->t('Profile field change: %1$s for %2$s', [
+				// TRANSLATORS %1$s is the profile field label, %2$s is the affected user ID.
+				$this->l10n->t('Profile field changed: %1$s for user %2$s', [
 					$fieldLabel,
 					$subject->getUserUid(),
 				]),
