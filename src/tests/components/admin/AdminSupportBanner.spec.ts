@@ -42,19 +42,19 @@ describe("AdminSupportBanner", () => {
     const wrapper = mount(AdminSupportBanner);
 
     expect(wrapper.text()).toContain(
-      "tr:Help keep Profile Fields sustainable.",
+      "tr:Help sustain Profile Fields development.",
     );
     expect(wrapper.text()).toContain(
       "tr:Profile Fields is open source under the AGPL license and maintained by the LibreCode team, creators of LibreSign.",
     );
     expect(wrapper.text()).toContain(
-      "tr:If your organization depends on it, please help us sustain its development and maintenance.",
+      "tr:If your organization depends on this app, please help fund ongoing development and maintenance.",
     );
     expect(wrapper.text()).toContain("tr:Sponsor LibreSign");
     expect(wrapper.text()).toContain("tr:Maybe later");
-    expect(wrapper.text()).toContain("tr:Give Profile Fields a ⭐ on GitHub");
+    expect(wrapper.text()).toContain("tr:Star Profile Fields on GitHub ⭐");
     expect(wrapper.text()).toContain(
-      "tr:Contact us for support or custom development",
+      "tr:Contact us for support or custom development services",
     );
   });
 
