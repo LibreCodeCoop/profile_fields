@@ -84,6 +84,22 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 							:placeholder="placeholderForField(field)"
 							@update:model-value="updateSelectValue(field.definition.id, $event)"
 						/>
+						<NcSelect
+							v-else-if="field.definition.type === 'multiselect'"
+							:data-testid="`profile-fields-personal-input-${field.definition.field_key}`"
+							:input-id="fieldInputId(field.definition.id)"
+							class="profile-fields-personal__input-control profile-fields-personal__input-control--embedded"
+							:model-value="multiselectOptionValuesFor(field)"
+							:input-label="field.definition.label"
+							label-outside
+							:clearable="true"
+							:searchable="false"
+							:multiple="true"
+							:options="multiselectOptionsFor(field.definition)"
+							label="label"
+							:placeholder="placeholderForField(field)"
+							@update:model-value="updateMultiSelectValue(field.definition.id, $event)"
+						/>
 						<NcInputField
 							v-else
 							:data-testid="`profile-fields-personal-input-${field.definition.field_key}`"
@@ -215,13 +231,14 @@ const fieldErrors = reactive<Record<number, string>>({})
 const autoSaveTimers = new Map<number, number>()
 const embeddedVisibilityAnchorReady = ref(false)
 
-const draftValues = reactive<Record<number, string>>({})
+const draftValues = reactive<Record<number, string | string[]>>({})
 const draftVisibilities = reactive<Record<number, FieldVisibility>>({})
 
 const inputModesByType: Record<FieldType, 'text' | 'decimal'> = {
 	text: 'text',
 	number: 'decimal',
 	select: 'text',
+	multiselect: 'text',
 }
 
 const inputModeForType = (type: FieldType): 'text' | 'decimal' => {
@@ -238,6 +255,7 @@ const componentInputTypesByType: Record<FieldType, 'text' | 'number'> = {
 	text: 'text',
 	number: 'number',
 	select: 'text',
+	multiselect: 'text',
 }
 
 const componentInputTypeForType = (type: FieldType): 'text' | 'number' => {
@@ -257,12 +275,20 @@ const placeholderForField = (field: EditableField) => {
 		return t('profile_fields', 'Select an option')
 	}
 
+	if (field.definition.type === 'multiselect') {
+		return t('profile_fields', 'Select one or more options')
+	}
+
 	return ''
 }
 
 const normaliseEditableField = (field: EditableField) => {
 	const existingValue = field.value?.value
-	draftValues[field.definition.id] = existingValue?.value?.toString() ?? ''
+	if (Array.isArray(existingValue?.value)) {
+		draftValues[field.definition.id] = [...existingValue.value]
+	} else {
+		draftValues[field.definition.id] = existingValue?.value?.toString() ?? ''
+	}
 	draftVisibilities[field.definition.id] = field.value?.current_visibility ?? definitionDefaultVisibility(field.definition)
 	delete fieldErrors[field.definition.id]
 }
@@ -327,7 +353,7 @@ const autosaveAnnouncement = (field: EditableField) => {
 	return ''
 }
 
-const currentStoredValue = (field: EditableField) => {
+const currentStoredValue = (field: EditableField): string | string[] => {
 	const existingValue = field.value?.value as unknown
 	if (existingValue === null || existingValue === undefined) {
 		return ''
@@ -337,8 +363,16 @@ const currentStoredValue = (field: EditableField) => {
 		return String(existingValue)
 	}
 
+	if (Array.isArray(existingValue)) {
+		return existingValue.filter((candidate: unknown): candidate is string => typeof candidate === 'string')
+	}
+
 	if (typeof existingValue !== 'object') {
 		return ''
+	}
+
+	if ('value' in existingValue && Array.isArray(existingValue.value)) {
+		return existingValue.value.filter((candidate: unknown): candidate is string => typeof candidate === 'string')
 	}
 
 	return 'value' in existingValue && existingValue.value !== null && existingValue.value !== undefined
@@ -347,8 +381,18 @@ const currentStoredValue = (field: EditableField) => {
 }
 
 const resolvedDisplayValue = (field: EditableField) => {
-	const value = currentStoredValue(field) || draftValues[field.definition.id] || ''
-	return value === '' ? t('profile_fields', 'No value set') : value
+	const value = currentStoredValue(field)
+	if (Array.isArray(value)) {
+		return value.length === 0 ? t('profile_fields', 'No value set') : value.join(', ')
+	}
+
+	const fallback = draftValues[field.definition.id]
+	if (Array.isArray(fallback)) {
+		return fallback.length === 0 ? t('profile_fields', 'No value set') : fallback.join(', ')
+	}
+
+	const resolved = value || fallback || ''
+	return resolved === '' ? t('profile_fields', 'No value set') : resolved
 }
 
 const findField = (fieldId: number) => fields.value.find((field: EditableField) => field.definition.id === fieldId)
@@ -358,6 +402,10 @@ const canAutosaveField = (field: EditableField) => {
 
 	if (rawValue === '') {
 		return true
+	}
+
+	if (Array.isArray(rawValue)) {
+		return field.definition.type === 'multiselect'
 	}
 
 	if (field.definition.type === 'text' || field.definition.type === 'select') {
@@ -384,7 +432,13 @@ const hasFieldChanges = (field: EditableField) => {
 	}
 
 	const visibilityChanged = draftVisibilities[field.definition.id] !== (field.value?.current_visibility ?? definitionDefaultVisibility(field.definition))
-	return visibilityChanged || currentDraftValue(field) !== currentStoredValue(field)
+	const draft = currentDraftValue(field)
+	const stored = currentStoredValue(field)
+	const valueChanged = Array.isArray(draft) || Array.isArray(stored)
+		? JSON.stringify(draft) !== JSON.stringify(stored)
+		: draft !== stored
+
+	return visibilityChanged || valueChanged
 }
 
 const updateDraftValue = (fieldId: number, value: string | number | null) => {
@@ -402,6 +456,30 @@ const updateDraftValue = (fieldId: number, value: string | number | null) => {
 
 	const field = findField(fieldId)
 	if (field === undefined || !field.can_edit || !hasFieldChanges(field) || !canAutosaveField(field)) {
+		return
+	}
+
+	autoSaveTimers.set(fieldId, window.setTimeout(() => {
+		autoSaveTimers.delete(fieldId)
+		void saveField(field)
+	}, 900))
+}
+
+const updateMultiSelectValue = (fieldId: number, options: Array<{ value: string, label: string }> | null) => {
+	draftValues[fieldId] = options?.map((option) => option.value) ?? []
+	delete fieldErrors[fieldId]
+	const existingTimer = autoSaveTimers.get(fieldId)
+	if (existingTimer !== undefined) {
+		window.clearTimeout(existingTimer)
+		autoSaveTimers.delete(fieldId)
+	}
+
+	if (!embedded) {
+		return
+	}
+
+	const field = findField(fieldId)
+	if (field === undefined || !field.can_edit || !hasFieldChanges(field)) {
 		return
 	}
 
@@ -448,6 +526,13 @@ const buildPayload = (field: EditableField) => {
 		}
 	}
 
+	if (field.definition.type === 'multiselect') {
+		return {
+			value: Array.isArray(rawValue) ? rawValue : [],
+			currentVisibility,
+		}
+	}
+
 	return {
 		value: rawValue === '' ? null : rawValue,
 		currentVisibility,
@@ -459,7 +544,23 @@ const selectOptionsFor = (definition: { options: string[] | null }) =>
 
 const selectOptionFor = (field: EditableField) => {
 	const value = draftValues[field.definition.id]
-	return value ? { value, label: value } : null
+	if (typeof value !== 'string' || value === '') {
+		return null
+	}
+
+	return { value, label: value }
+}
+
+const multiselectOptionsFor = (definition: { options: string[] | null }) =>
+	(definition.options ?? []).map((opt: string) => ({ value: opt, label: opt }))
+
+const multiselectOptionValuesFor = (field: EditableField) => {
+	const value = draftValues[field.definition.id]
+	if (!Array.isArray(value)) {
+		return []
+	}
+
+	return value.map((item) => ({ value: item, label: item }))
 }
 
 const updateSelectValue = (fieldId: number, option: { value: string, label: string } | null) => {
