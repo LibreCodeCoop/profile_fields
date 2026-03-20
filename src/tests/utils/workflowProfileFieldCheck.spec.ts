@@ -13,6 +13,7 @@ import {
 const definitions = [
 	{ field_key: 'region', label: 'Region', type: 'text', active: true },
 	{ field_key: 'score', label: 'Score', type: 'number', active: true },
+	{ field_key: 'start_date', label: 'Start date', type: 'date', active: true },
 ] as const
 
 describe('workflowProfileFieldCheck', () => {
@@ -35,6 +36,19 @@ describe('workflowProfileFieldCheck', () => {
 
 	it('returns numeric operators for number definitions', () => {
 		expect(getWorkflowOperatorKeys(serializeWorkflowCheckValue({ field_key: 'score', value: '9' }), definitions)).toEqual([
+			'is-set',
+			'!is-set',
+			'is',
+			'!is',
+			'less',
+			'!greater',
+			'greater',
+			'!less',
+		])
+	})
+
+	it('returns numeric-style comparison operators for date definitions', () => {
+		expect(getWorkflowOperatorKeys(serializeWorkflowCheckValue({ field_key: 'start_date', value: '2026-03-20' }), definitions)).toEqual([
 			'is-set',
 			'!is-set',
 			'is',
