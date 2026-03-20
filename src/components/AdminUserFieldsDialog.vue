@@ -82,7 +82,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 							:error="fieldHasError(field)"
 							:helper-text="helperMessageForField(field)"
 							label-outside
-							type="text"
+							:type="componentInputTypeForField(field.definition.type)"
 							:inputmode="inputModeForField(field.definition.type)"
 							:placeholder="placeholderForField(field.definition.type)"
 							@update:model-value="clearFieldError(field.definition.id)"
@@ -196,6 +196,7 @@ export default defineComponent({
 		const descriptionForType = (type: FieldType): string => ({
 			text: t('profile_fields', 'Free text stored as a scalar value.'),
 			number: t('profile_fields', 'Only numeric values are accepted.'),
+			date: t('profile_fields', 'Use a valid date in YYYY-MM-DD format.'),
 			select: t('profile_fields', 'Choose one of the predefined options.'),
 			multiselect: t('profile_fields', 'Choose one or more predefined options.'),
 		} as Record<FieldType, string>)[type]
@@ -203,15 +204,26 @@ export default defineComponent({
 		const placeholderForField = (type: FieldType): string => ({
 			text: t('profile_fields', 'Enter a value'),
 			number: t('profile_fields', 'Enter a number'),
+			date: t('profile_fields', 'Select a date'),
 			select: t('profile_fields', 'Select an option'),
 			multiselect: t('profile_fields', 'Select one or more options'),
 		} as Record<FieldType, string>)[type]
 
 		const plainNumberPattern = /^-?\d+(\.\d+)?$/
+		const isoDatePattern = /^\d{4}-\d{2}-\d{2}$/
 
 		const inputModeForField = (type: FieldType): string => ({
 			text: 'text',
 			number: 'decimal',
+			date: 'numeric',
+			select: 'text',
+			multiselect: 'text',
+		} as Record<FieldType, string>)[type]
+
+		const componentInputTypeForField = (type: FieldType): string => ({
+			text: 'text',
+			number: 'text',
+			date: 'date',
 			select: 'text',
 			multiselect: 'text',
 		} as Record<FieldType, string>)[type]
@@ -261,6 +273,14 @@ export default defineComponent({
 				return t('profile_fields', '{fieldLabel} must be a plain numeric value.', { fieldLabel: field.definition.label })
 			}
 
+			if (field.definition.type === 'date') {
+				const parsed = isoDatePattern.test(rawValue) ? new Date(`${rawValue}T00:00:00Z`) : null
+				const normalized = parsed instanceof Date && !Number.isNaN(parsed.getTime()) ? parsed.toISOString().slice(0, 10) : ''
+				if (normalized !== rawValue) {
+					return t('profile_fields', '{fieldLabel} must be a valid date in YYYY-MM-DD format.', { fieldLabel: field.definition.label })
+				}
+			}
+
 			if (field.definition.type === 'select') {
 				const options = field.definition.options ?? []
 				if (!options.includes(rawValue)) {
@@ -292,7 +312,7 @@ export default defineComponent({
 		const hasInvalidFields = computed(() => invalidFields.value.length > 0)
 
 		const helperTextForField = (field: AdminEditableField) => {
-			return field.definition.type === 'number'
+			return field.definition.type === 'number' || field.definition.type === 'date'
 				? descriptionForType(field.definition.type)
 				: ''
 		}
@@ -363,6 +383,7 @@ export default defineComponent({
 			return ({
 				'text fields expect a scalar value': t('profile_fields', '{fieldLabel} must be plain text.', { fieldLabel: field.definition.label }),
 				'number fields expect a numeric value': t('profile_fields', '{fieldLabel} must be a numeric value.', { fieldLabel: field.definition.label }),
+				'Date fields require a valid ISO-8601 date in YYYY-MM-DD format.': t('profile_fields', '{fieldLabel} must be a valid date in YYYY-MM-DD format.', { fieldLabel: field.definition.label }),
 				'current_visibility is not supported': t('profile_fields', 'The selected visibility is not supported.'),
 			}[message] ?? (message.includes('is not a valid option')
 				? t('profile_fields', '{fieldLabel}: invalid option selected.', { fieldLabel: field.definition.label })
@@ -415,6 +436,13 @@ export default defineComponent({
 				const numericValue = Number(rawValue)
 
 				return { value: numericValue, visibility: userDraftVisibilities[field.definition.id] }
+			}
+
+			if (field.definition.type === 'date') {
+				return {
+					value: rawValue === '' ? null : rawValue,
+					visibility: userDraftVisibilities[field.definition.id],
+				}
 			}
 
 			if (field.definition.type === 'multiselect') {
@@ -551,6 +579,7 @@ export default defineComponent({
 			helperTextForField,
 			isLoading,
 			isSavingAny,
+				componentInputTypeForField,
 			inputModeForField,
 			placeholderForField,
 			saveAllFields,
