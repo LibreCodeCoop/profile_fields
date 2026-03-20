@@ -57,7 +57,7 @@ class NotifyAdminsOrGroupsProfileFieldChangeOperation implements IOperation {
 	public function validateOperation(string $name, array $checks, string $operation): void {
 		$config = $this->parseConfig($operation);
 		if ($config === null || $this->resolveRecipientUids($config['targets']) === []) {
-			throw new \UnexpectedValueException($this->l10n->t('A valid target list is required'));
+			throw new \UnexpectedValueException($this->l10n->t('A valid recipient list is required.'));
 		}
 	}
 
@@ -85,8 +85,9 @@ class NotifyAdminsOrGroupsProfileFieldChangeOperation implements IOperation {
 
 				foreach ($this->resolveRecipientUids($config['targets']) as $recipientUid) {
 					$subjectText = $this->l10n->t('Profile field updated');
+					// TRANSLATORS %1$s is the actor user ID, %2$s is the affected user ID, %3$s is the profile field label.
 					$messageText = $this->l10n->t(
-						'%1$s changed %2$s\'s %3$s profile field.',
+						'%1$s changed profile field "%3$s" for user %2$s.',
 						[
 							$subject->getActorUid(),
 							$subject->getUserUid(),
