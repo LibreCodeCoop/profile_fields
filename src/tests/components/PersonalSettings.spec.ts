@@ -64,6 +64,29 @@ vi.mock('../../api', () => ({
 			},
 			can_edit: true,
 		},
+		{
+			definition: {
+				id: 5,
+				field_key: 'website',
+				label: 'Website',
+				type: 'url',
+				edit_policy: 'users',
+				exposure_policy: 'private',
+				sort_order: 2,
+				active: true,
+				options: null,
+			},
+			value: {
+				id: 12,
+				field_definition_id: 5,
+				user_uid: 'alice',
+				value: { value: 'https://example.com' },
+				current_visibility: 'private',
+				updated_by_uid: 'alice',
+				updated_at: '2026-03-20T12:00:00+00:00',
+			},
+			can_edit: true,
+		},
 	]),
 	upsertOwnValue: vi.fn(),
 }))
@@ -133,5 +156,21 @@ describe('PersonalSettings', () => {
 
 		expect(wrapper.text()).toContain('tr:True')
 		expect(wrapper.text()).toContain('tr:False')
+	})
+
+	it('renders url fields with type=url input', async() => {
+		const wrapper = mount(PersonalSettings, {
+			global: {
+				stubs: {
+					Teleport: true,
+				},
+			},
+		})
+
+		await flushPromises()
+
+		const input = wrapper.find('[data-testid="profile-fields-personal-input-website"]')
+		expect(input.exists()).toBe(true)
+		expect(input.attributes('type')).toBe('url')
 	})
 })
