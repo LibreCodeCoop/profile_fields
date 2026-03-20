@@ -8,6 +8,10 @@ import { spawnSync } from 'node:child_process'
 import { chromium, request } from '@playwright/test'
 import { pedroPotiPersona } from '../src/utils/pedroPotiPersona.js'
 
+const cliArgs = new Set(process.argv.slice(2))
+const changedOnly = cliArgs.has('--changed') || process.env.SCREENSHOTS_CHANGED_ONLY === '1'
+const diffBase = process.env.SCREENSHOTS_DIFF_BASE?.trim() ?? ''
+
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'https://localhost'
 const adminUser = process.env.NEXTCLOUD_ADMIN_USER ?? 'admin'
 const adminPassword = process.env.NEXTCLOUD_ADMIN_PASSWORD ?? 'admin'
@@ -24,6 +28,122 @@ const showcaseFields = pedroPotiPersona.showcaseFields
 const showcaseKeys = new Set(showcaseFields.map((field) => field.fieldKey))
 const showcaseLabels = new Set(showcaseFields.map((field) => field.label))
 const transientFieldKeyPrefixes = ['showcase_', 'playwright_']
+
+const screenshotTargets = {
+	admin: {
+		image: 'admin-catalog.png',
+		thumb: 'admin-catalog-thumb.png',
+	},
+	personal: {
+		image: 'personal-settings.png',
+		thumb: 'personal-settings-thumb.png',
+	},
+	userManagement: {
+		image: 'user-management-dialog.png',
+		thumb: 'user-management-dialog-thumb.png',
+	},
+	workflow: {
+		image: 'workflow-notify-admins.png',
+		thumb: 'workflow-notify-admins-thumb.png',
+	},
+}
+
+const allScreenshotTargetIds = new Set(Object.keys(screenshotTargets))
+
+const gitDiffFiles = (...args) => {
+	const result = spawnSync('git', ['diff', '--name-only', '--relative', ...args], { encoding: 'utf8' })
+	if (result.status !== 0) {
+		return []
+	}
+
+	return result.stdout
+		.split('\n')
+		.map((line) => line.trim())
+		.filter((line) => line !== '')
+}
+
+const collectChangedFiles = () => {
+	const changed = new Set([
+		...gitDiffFiles('HEAD'),
+		...gitDiffFiles('--cached'),
+	])
+
+	if (diffBase !== '') {
+		for (const file of gitDiffFiles(`${diffBase}...HEAD`)) {
+			changed.add(file)
+		}
+	}
+
+	return changed
+}
+
+const affectedScreensFromChangedFiles = (changedFiles) => {
+	if (changedFiles.size === 0) {
+		return new Set()
+	}
+
+	const affectsAllScreens = (file) => (
+		file === 'src/api.ts'
+		|| file.startsWith('src/types/')
+		|| file.startsWith('lib/')
+		|| file.startsWith('openapi')
+	)
+
+	const affected = new Set()
+	for (const file of changedFiles) {
+		if (affectsAllScreens(file)) {
+			return new Set(allScreenshotTargetIds)
+		}
+
+		if (
+			file.includes('AdminSettings')
+			|| file === 'src/settings-admin.ts'
+			|| file === 'templates/settings-admin.php'
+		) {
+			affected.add('admin')
+		}
+
+		if (
+			file.includes('PersonalSettings')
+			|| file === 'src/settings-personal.ts'
+			|| file === 'templates/settings-personal-info.php'
+		) {
+			affected.add('personal')
+		}
+
+		if (
+			file.includes('AdminUserFieldsDialog')
+			|| file === 'src/user-management-action.ts'
+		) {
+			affected.add('userManagement')
+		}
+
+		if (
+			file === 'src/workflow.ts'
+			|| file.includes('WorkflowTargetsSelect')
+			|| file.includes('workflowProfileFieldCheck')
+		) {
+			affected.add('workflow')
+		}
+	}
+
+	return affected
+}
+
+const resolveRequestedScreens = () => {
+	if (!changedOnly) {
+		return {
+			targets: new Set(allScreenshotTargetIds),
+			changedFiles: new Set(),
+		}
+	}
+
+	const changedFiles = collectChangedFiles()
+	return {
+		targets: affectedScreensFromChangedFiles(changedFiles),
+		changedFiles,
+	}
+}
 
 const isTransientScreenshotDefinition = (definition) => transientFieldKeyPrefixes
 	.some((prefix) => definition.field_key.startsWith(prefix))
@@ -284,18 +404,32 @@ const generateThumbnail = (inputName, outputName) => {
 	}
 }
 
-const cleanupOutput = async() => {
-	rmSync(join(screenshotDir, 'admin-catalog.png'), { force: true })
-	rmSync(join(screenshotDir, 'admin-catalog-thumb.png'), { force: true })
-	rmSync(join(screenshotDir, 'personal-settings.png'), { force: true })
-	rmSync(join(screenshotDir, 'personal-settings-thumb.png'), { force: true })
-	rmSync(join(screenshotDir, 'user-management-dialog.png'), { force: true })
-	rmSync(join(screenshotDir, 'user-management-dialog-thumb.png'), { force: true })
-	rmSync(join(screenshotDir, 'workflow-notify-admins.png'), { force: true })
-	rmSync(join(screenshotDir, 'workflow-notify-admins-thumb.png'), { force: true })
+const cleanupOutput = async(targets) => {
+	for (const target of targets) {
+		const asset = screenshotTargets[target]
+		if (!asset) {
+			continue
+		}
+
+		rmSync(join(screenshotDir, asset.image), { force: true })
+		rmSync(join(screenshotDir, asset.thumb), { force: true })
+	}
 }
 
 const run = async() => {
+	const { targets, changedFiles } = resolveRequestedScreens()
+	if (changedOnly) {
+		console.log('Changed-only mode enabled')
+		if (changedFiles.size > 0) {
+			console.log('Detected changed files:', [...changedFiles].sort().join(', '))
+		}
+		if (targets.size === 0) {
+			console.log('No screenshot-affecting changes detected. Nothing to generate.')
+			return
+		}
+		console.log('Generating screenshots for targets:', [...targets].join(', '))
+	}
+
 	const api = await loginApi()
 	let demoApi
 	const createdIds = []
@@ -303,7 +437,7 @@ const run = async() => {
 
 	try {
 		await mkdir(screenshotDir, { recursive: true })
-		await cleanupOutput()
+		await cleanupOutput(targets)
 
 		const existingDefinitions = await appRequest(api, 'GET', './ocs/v2.php/apps/profile_fields/api/v1/definitions')
 		for (const definition of existingDefinitions) {
@@ -355,42 +489,50 @@ const run = async() => {
 			deviceScaleFactor: 2,
 		})
 
-		const adminPage = await adminContext.newPage()
-		await adminPage.goto('./settings/admin/profile_fields')
-		await adminPage.getByTestId('profile-fields-admin-definition-showcase_support_region').waitFor({ state: 'visible', timeout: 60_000 })
-		await hideNonShowcaseAdminDefinitions(adminPage)
-		await adminPage.getByTestId('profile-fields-admin-definition-showcase_council_channel').click()
-		await adminPage.locator('[data-testid="profile-fields-admin"]').screenshot({ path: join(screenshotDir, 'admin-catalog.png'), type: 'png' })
+		if (targets.has('admin')) {
+			const adminPage = await adminContext.newPage()
+			await adminPage.goto('./settings/admin/profile_fields')
+			await adminPage.getByTestId('profile-fields-admin-definition-showcase_support_region').waitFor({ state: 'visible', timeout: 60_000 })
+			await hideNonShowcaseAdminDefinitions(adminPage)
+			await adminPage.getByTestId('profile-fields-admin-definition-showcase_council_channel').click()
+			await adminPage.locator('[data-testid="profile-fields-admin"]').screenshot({ path: join(screenshotDir, screenshotTargets.admin.image), type: 'png' })
+		}
 
-		const personalPage = await demoContext.newPage()
-		await personalPage.goto('./settings/user/personal-info')
-		await waitForAvatarImage(personalPage)
-		await personalPage.getByTestId('profile-fields-personal-field-showcase_support_region').waitFor({ state: 'visible', timeout: 60_000 })
-		await seedPedroPotiAccountProfile(personalPage)
-		await hideNonShowcasePersonalFields(personalPage)
-		await personalPage.locator('main').screenshot({ path: join(screenshotDir, 'personal-settings.png'), type: 'png' })
+		if (targets.has('personal')) {
+			const personalPage = await demoContext.newPage()
+			await personalPage.goto('./settings/user/personal-info')
+			await waitForAvatarImage(personalPage)
+			await personalPage.getByTestId('profile-fields-personal-field-showcase_support_region').waitFor({ state: 'visible', timeout: 60_000 })
+			await seedPedroPotiAccountProfile(personalPage)
+			await hideNonShowcasePersonalFields(personalPage)
+			await personalPage.locator('main').screenshot({ path: join(screenshotDir, screenshotTargets.personal.image), type: 'png' })
+		}
 
-		const usersPage = await adminContext.newPage()
-		await usersPage.goto('./settings/users')
-		const demoRow = usersPage.getByRole('row', { name: new RegExp(demoUser.displayName) })
-		await demoRow.waitFor({ state: 'visible', timeout: 60_000 })
-		await demoRow.getByRole('button', { name: 'Toggle account actions menu' }).click()
-		await usersPage.getByRole('menuitem', { name: 'Edit profile fields' }).click()
-		const dialog = usersPage.locator('.profile-fields-user-dialog')
-		await dialog.waitFor({ state: 'visible', timeout: 60_000 })
-		await usersPage.locator('.profile-fields-user-dialog__loading').waitFor({ state: 'hidden', timeout: 60_000 }).catch(() => {})
-		await dialog.locator('.profile-fields-user-dialog__row').first().waitFor({ state: 'visible', timeout: 60_000 })
-		await hideNonShowcaseDialogFields(usersPage)
-		await dialog.screenshot({ path: join(screenshotDir, 'user-management-dialog.png'), type: 'png' })
+		if (targets.has('userManagement')) {
+			const usersPage = await adminContext.newPage()
+			await usersPage.goto('./settings/users')
+			const demoRow = usersPage.getByRole('row', { name: new RegExp(demoUser.displayName) })
+			await demoRow.waitFor({ state: 'visible', timeout: 60_000 })
+			await demoRow.getByRole('button', { name: 'Toggle account actions menu' }).click()
+			await usersPage.getByRole('menuitem', { name: 'Edit additional profile fields' }).click()
+			const dialog = usersPage.locator('.profile-fields-user-dialog')
+			await dialog.waitFor({ state: 'visible', timeout: 60_000 })
+			await usersPage.locator('.profile-fields-user-dialog__loading').waitFor({ state: 'hidden', timeout: 60_000 }).catch(() => {})
+			await dialog.locator('.profile-fields-user-dialog__row').first().waitFor({ state: 'visible', timeout: 60_000 })
+			await hideNonShowcaseDialogFields(usersPage)
+			await dialog.screenshot({ path: join(screenshotDir, screenshotTargets.userManagement.image), type: 'png' })
+		}
 
-		const workflowPage = await adminContext.newPage()
-		const workflowSection = await prepareWorkflowScreenshot(workflowPage)
-		await workflowSection.screenshot({ path: join(screenshotDir, 'workflow-notify-admins.png'), type: 'png' })
+		if (targets.has('workflow')) {
+			const workflowPage = await adminContext.newPage()
+			const workflowSection = await prepareWorkflowScreenshot(workflowPage)
+			await workflowSection.screenshot({ path: join(screenshotDir, screenshotTargets.workflow.image), type: 'png' })
+		}
 
-		generateThumbnail('admin-catalog.png', 'admin-catalog-thumb.png')
-		generateThumbnail('personal-settings.png', 'personal-settings-thumb.png')
-		generateThumbnail('user-management-dialog.png', 'user-management-dialog-thumb.png')
-		generateThumbnail('workflow-notify-admins.png', 'workflow-notify-admins-thumb.png')
+		for (const target of targets) {
+			const asset = screenshotTargets[target]
+			generateThumbnail(asset.image, asset.thumb)
+		}
 
 		console.log('Generated screenshots in', screenshotDir)
 	} finally {
