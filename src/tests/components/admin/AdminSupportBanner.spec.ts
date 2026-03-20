@@ -6,6 +6,16 @@ import { mount } from '@vue/test-utils'
 import { defineComponent, nextTick } from 'vue'
 import AdminSupportBanner from '../../../components/AdminSupportBanner.vue'
 
+vi.mock('@nextcloud/l10n', () => ({
+	t: (_app: string, text: string, parameters?: Record<string, string>) => {
+		if (parameters === undefined) {
+			return `tr:${text}`
+		}
+
+		return Object.entries(parameters).reduce((translated, [key, value]) => translated.replace(`{${key}}`, value), `tr:${text}`)
+	},
+}))
+
 vi.mock('@nextcloud/vue', () => ({
 	NcButton: defineComponent({
 		name: 'NcButton',
@@ -24,6 +34,15 @@ afterEach(() => {
 })
 
 describe('AdminSupportBanner', () => {
+	it('renders translated copy and actions', () => {
+		const wrapper = mount(AdminSupportBanner)
+
+		expect(wrapper.text()).toContain('tr:Help keep Profile Fields sustainable.')
+		expect(wrapper.text()).toContain('tr:Sponsor LibreSign')
+		expect(wrapper.text()).toContain('tr:Maybe later')
+		expect(wrapper.text()).toContain('tr:Give Profile Fields a star on GitHub')
+	})
+
 	it('opens sponsor page when sponsor button is clicked', async() => {
 		const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null)
 		const wrapper = mount(AdminSupportBanner)
