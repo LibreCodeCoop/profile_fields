@@ -533,7 +533,7 @@ class WorkflowProfileFieldElement extends HTMLElement {
 		placeholder.value = ''
 		placeholder.textContent = definitions.length === 0
 			? t('profile_fields', 'Loading profile fields…')
-			: t('profile_fields', 'Select a profile field')
+			: t('profile_fields', 'Choose a profile field')
 		fieldSelect.append(placeholder)
 
 		for (const definition of definitions) {
@@ -550,8 +550,8 @@ class WorkflowProfileFieldElement extends HTMLElement {
 		valueInput.disabled = this.disabledInternal || selectedDefinition === null || !operatorNeedsValue
 		valueInput.hidden = !operatorNeedsValue
 		valueInput.placeholder = selectedDefinition?.type === 'number'
-			? t('profile_fields', 'Enter a numeric value')
-			: t('profile_fields', 'Enter a comparison value')
+			? t('profile_fields', 'Enter the numeric value to compare')
+			: t('profile_fields', 'Enter the value to compare')
 		valueInput.className = !isValid && operatorNeedsValue ? 'invalid' : ''
 
 		fieldSelect.addEventListener('change', () => {
@@ -677,21 +677,21 @@ class WorkflowWebhookOperationElement extends HTMLElement {
 		urlInput.type = 'url'
 		urlInput.value = config.url
 		urlInput.disabled = this.disabledInternal
-		urlInput.placeholder = t('profile_fields', 'Enter a webhook URL')
+		urlInput.placeholder = t('profile_fields', 'Webhook URL (https://...)')
 		urlInput.className = config.url === '' || isUrlValid ? '' : 'invalid'
 
 		const secretInput = document.createElement('input')
 		secretInput.type = 'text'
 		secretInput.value = config.secret
 		secretInput.disabled = this.disabledInternal
-		secretInput.placeholder = t('profile_fields', 'Optional shared secret for HMAC signatures')
+		secretInput.placeholder = t('profile_fields', 'Optional shared secret (for request signing)')
 
 		const timeoutInput = document.createElement('input')
 		timeoutInput.type = 'number'
 		timeoutInput.min = '1'
 		timeoutInput.value = config.timeout
 		timeoutInput.disabled = this.disabledInternal
-		timeoutInput.placeholder = t('profile_fields', 'Timeout in seconds')
+		timeoutInput.placeholder = t('profile_fields', 'Timeout (seconds)')
 		timeoutInput.className = timeout === null || timeout > 0 ? '' : 'invalid'
 
 		const retriesInput = document.createElement('input')
@@ -699,13 +699,13 @@ class WorkflowWebhookOperationElement extends HTMLElement {
 		retriesInput.min = '0'
 		retriesInput.value = config.retries
 		retriesInput.disabled = this.disabledInternal
-		retriesInput.placeholder = t('profile_fields', 'Retry count')
+		retriesInput.placeholder = t('profile_fields', 'Retries (0 or more)')
 		retriesInput.className = Number.isNaN(retries) || retries >= 0 ? '' : 'invalid'
 
 		const headersInput = document.createElement('textarea')
 		headersInput.value = config.headers
 		headersInput.disabled = this.disabledInternal
-		headersInput.placeholder = t('profile_fields', 'Optional headers, one per line, for example X-Key: value')
+		headersInput.placeholder = t('profile_fields', 'Optional headers, one per line. Example: X-Key: value')
 
 		const syncValue = () => {
 			dispatchModelValue(this, serializeWebhookOperationConfig({
@@ -805,7 +805,7 @@ class WorkflowEmailOperationElement extends HTMLElement {
 		const bodyInput = document.createElement('textarea')
 		bodyInput.value = config.bodyTemplate
 		bodyInput.disabled = this.disabledInternal
-		bodyInput.placeholder = t('profile_fields', 'Optional email body template with placeholders like {{fieldLabel}}')
+		bodyInput.placeholder = t('profile_fields', 'Optional email body template. You can use placeholders like {{fieldLabel}}')
 		bodyInput.className = isValid || config.bodyTemplate.trim() !== '' ? '' : 'invalid'
 
 		const syncValue = () => {
@@ -952,8 +952,8 @@ class WorkflowTargetsOperationElement extends HTMLElement {
 					modelValue: this.viewStateInternal.selected,
 					disabled: this.viewStateInternal.disabled,
 					options: this.viewStateInternal.options,
-					inputLabel: t('profile_fields', 'Search admins, groups, or users'),
-					helperText: t('profile_fields', 'Search and select target groups or users. If left empty, administrators are used by default.'),
+					inputLabel: t('profile_fields', 'Search for admins, groups, or users'),
+					helperText: t('profile_fields', 'Select who should be notified. If empty, administrators are notified by default.'),
 					loading: this.viewStateInternal.loading,
 					onSearch: (value: string) => this.handleSearch(value),
 					'onUpdate:modelValue': (value: unknown) => this.handleSelection(Array.isArray(value)
