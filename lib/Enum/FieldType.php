@@ -13,6 +13,7 @@ enum FieldType: string {
 	case TEXT = 'text';
 	case NUMBER = 'number';
 	case SELECT = 'select';
+	case MULTISELECT = 'multiselect';
 
 	/**
 	 * @return list<string>
@@ -22,6 +23,7 @@ enum FieldType: string {
 			self::TEXT->value,
 			self::NUMBER->value,
 			self::SELECT->value,
+			self::MULTISELECT->value,
 		];
 	}
 
