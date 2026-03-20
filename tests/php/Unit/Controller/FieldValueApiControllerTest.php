@@ -20,6 +20,7 @@ use OCA\ProfileFields\Service\FieldDefinitionService;
 use OCA\ProfileFields\Service\FieldValueService;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
+use OCP\IL10N;
 use OCP\IRequest;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -30,6 +31,7 @@ class FieldValueApiControllerTest extends TestCase {
 	private FieldDefinitionService&MockObject $fieldDefinitionService;
 	private FieldValueService&MockObject $fieldValueService;
 	private FieldAccessService&MockObject $fieldAccessService;
+	private IL10N&MockObject $l10n;
 	private FieldValueApiController $controller;
 
 	protected function setUp(): void {
@@ -38,11 +40,16 @@ class FieldValueApiControllerTest extends TestCase {
 		$this->fieldDefinitionService = $this->createMock(FieldDefinitionService::class);
 		$this->fieldValueService = $this->createMock(FieldValueService::class);
 		$this->fieldAccessService = $this->createMock(FieldAccessService::class);
+		$this->l10n = $this->createMock(IL10N::class);
+		$this->l10n->method('t')->willReturnCallback(static function (string $text, array $parameters = []): string {
+			return $parameters === [] ? "tr:$text" : vsprintf("tr:$text", $parameters);
+		});
 		$this->controller = new FieldValueApiController(
 			$this->request,
 			$this->fieldDefinitionService,
 			$this->fieldValueService,
 			$this->fieldAccessService,
+			$this->l10n,
 			'alice',
 		);
 	}
@@ -96,13 +103,14 @@ class FieldValueApiControllerTest extends TestCase {
 			$this->fieldDefinitionService,
 			$this->fieldValueService,
 			$this->fieldAccessService,
+			$this->l10n,
 			null,
 		);
 
 		$response = $controller->index();
 
 		$this->assertSame(Http::STATUS_UNAUTHORIZED, $response->getStatus());
-		$this->assertSame(['message' => 'Authenticated user is required'], $response->getData());
+		$this->assertSame(['message' => 'tr:Authenticated user is required'], $response->getData());
 	}
 
 	#[DataProvider('forbiddenUpsertProvider')]
@@ -142,9 +150,9 @@ class FieldValueApiControllerTest extends TestCase {
 		$forbidden->setActive(true);
 
 		return [
-			'missing definition' => [null, Http::STATUS_NOT_FOUND, 'Field definition not found'],
-			'inactive definition' => [$inactive, Http::STATUS_NOT_FOUND, 'Field definition not found'],
-			'not editable by user' => [$forbidden, Http::STATUS_FORBIDDEN, 'Field cannot be edited by the user'],
+			'missing definition' => [null, Http::STATUS_NOT_FOUND, 'tr:Field definition not found'],
+			'inactive definition' => [$inactive, Http::STATUS_NOT_FOUND, 'tr:Field definition not found'],
+			'not editable by user' => [$forbidden, Http::STATUS_FORBIDDEN, 'tr:Field cannot be edited by the user'],
 		];
 	}
 
@@ -154,13 +162,14 @@ class FieldValueApiControllerTest extends TestCase {
 			$this->fieldDefinitionService,
 			$this->fieldValueService,
 			$this->fieldAccessService,
+			$this->l10n,
 			null,
 		);
 
 		$response = $controller->upsert(7, 'A+');
 
 		$this->assertSame(Http::STATUS_UNAUTHORIZED, $response->getStatus());
-		$this->assertSame(['message' => 'Authenticated user is required'], $response->getData());
+		$this->assertSame(['message' => 'tr:Authenticated user is required'], $response->getData());
 	}
 
 	public function testUpsertStoresOwnValueWhenFieldIsEditable(): void {
@@ -271,10 +280,10 @@ class FieldValueApiControllerTest extends TestCase {
 		$editableButVisibilityForbidden->setExposurePolicy(\OCA\ProfileFields\Enum\FieldExposurePolicy::PRIVATE->value);
 
 		return [
-			'missing definition' => [null, null, null, Http::STATUS_NOT_FOUND, 'Field definition not found'],
-			'inactive definition' => [$inactive, null, null, Http::STATUS_NOT_FOUND, 'Field definition not found'],
-			'not editable by user' => [$forbidden, false, null, Http::STATUS_FORBIDDEN, 'Field cannot be edited by the user'],
-			'visibility forbidden' => [$editableButVisibilityForbidden, true, false, Http::STATUS_FORBIDDEN, 'Field visibility cannot be changed by the user'],
+			'missing definition' => [null, null, null, Http::STATUS_NOT_FOUND, 'tr:Field definition not found'],
+			'inactive definition' => [$inactive, null, null, Http::STATUS_NOT_FOUND, 'tr:Field definition not found'],
+			'not editable by user' => [$forbidden, false, null, Http::STATUS_FORBIDDEN, 'tr:Field cannot be edited by the user'],
+			'visibility forbidden' => [$editableButVisibilityForbidden, true, false, Http::STATUS_FORBIDDEN, 'tr:Field visibility cannot be changed by the user'],
 		];
 	}
 
@@ -284,13 +293,14 @@ class FieldValueApiControllerTest extends TestCase {
 			$this->fieldDefinitionService,
 			$this->fieldValueService,
 			$this->fieldAccessService,
+			$this->l10n,
 			null,
 		);
 
 		$response = $controller->updateVisibility(7, FieldVisibility::USERS->value);
 
 		$this->assertSame(Http::STATUS_UNAUTHORIZED, $response->getStatus());
-		$this->assertSame(['message' => 'Authenticated user is required'], $response->getData());
+		$this->assertSame(['message' => 'tr:Authenticated user is required'], $response->getData());
 	}
 
 	public function testUpdateVisibilityStoresUpdatedVisibility(): void {
