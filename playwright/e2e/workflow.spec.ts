@@ -73,7 +73,7 @@ const configureDraftRule = async(page: Page, actionName: string, label: string, 
 	await expect(page.locator('.section.rule')).toHaveCount(initialRuleCount + 1)
 	const savedRule = page.locator('.section.rule').nth(configuredRuleIndex)
 	await expect(savedRule.getByText('Profile field value updated', { exact: true })).toBeVisible()
-	await expect(savedRule.getByRole('button', { name: 'Active' })).toBeVisible()
+	await expect(savedRule.getByText('Active', { exact: true })).toBeVisible()
 
 	return { savedRule, initialRuleCount }
 }
@@ -121,8 +121,8 @@ test('admin can create a send webhook workflow rule', async ({ page }) => {
 	await page.goto('./settings/admin/workflow')
 	await expect(page.getByRole('heading', { name: 'Available flows' })).toBeVisible()
 	const { savedRule, initialRuleCount } = await configureDraftRule(page, 'Send webhook', label, fieldValue, async (configuredRule) => {
-		await configuredRule.locator(`input[placeholder="Optional shared secret for HMAC signatures"]`).fill(`secret-${suffix}`)
-		await configuredRule.locator(`input[placeholder="Timeout in seconds"]`).fill('10')
+		await configuredRule.locator(`input[placeholder="Optional shared secret (for request signing)"]`).fill(`secret-${suffix}`)
+		await configuredRule.locator(`input[placeholder="Timeout (seconds)"]`).fill('10')
 	}, webhookUrl)
 
 	await savedRule.getByRole('button', { name: 'Delete' }).click()
