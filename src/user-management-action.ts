@@ -63,7 +63,7 @@ const registerAction = (attempt = 0) => {
 	mountDialog()
 	register(
 		'icon-user',
-		t('profile_fields', 'Edit profile fields'),
+		t('profile_fields', 'Edit additional profile fields'),
 		openDialog,
 		(user) => typeof user.id === 'string' && user.id.length > 0,
 	)
