@@ -107,6 +107,7 @@ class FieldValueService {
 			FieldType::TEXT => $this->normalizeTextValue($rawValue),
 			FieldType::NUMBER => $this->normalizeNumberValue($rawValue),
 			FieldType::SELECT => $this->normalizeSelectValue($rawValue, $definition),
+			FieldType::MULTISELECT => $this->normalizeMultiSelectValue($rawValue, $definition),
 		};
 	}
 
@@ -253,6 +254,36 @@ class FieldValueService {
 		}
 
 		return ['value' => $value];
+	}
+
+	/**
+	 * @param array<string, mixed>|scalar $rawValue
+	 * @return array{value: list<string>}
+	 */
+	private function normalizeMultiSelectValue(array|string|int|float|bool $rawValue, FieldDefinition $definition): array {
+		if (!is_array($rawValue) || !array_is_list($rawValue)) {
+			throw new InvalidArgumentException($this->l10n->t('Multiselect fields require one or more configured option values.'));
+		}
+
+		$options = json_decode($definition->getOptions() ?? '[]', true);
+		$normalized = [];
+		foreach ($rawValue as $candidate) {
+			if (!is_string($candidate) || trim($candidate) === '') {
+				throw new InvalidArgumentException($this->l10n->t('Multiselect fields require one or more configured option values.'));
+			}
+
+			$value = trim($candidate);
+			if (!in_array($value, $options, true)) {
+				// TRANSLATORS %s is an invalid option value provided by the user.
+				throw new InvalidArgumentException($this->l10n->t('"%s" is not a valid option for this field', [$value]));
+			}
+
+			if (!in_array($value, $normalized, true)) {
+				$normalized[] = $value;
+			}
+		}
+
+		return ['value' => $normalized];
 	}
 
 	/**
