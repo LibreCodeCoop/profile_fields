@@ -14,6 +14,7 @@ enum FieldType: string {
 	case NUMBER = 'number';
 	case BOOLEAN = 'boolean';
 	case DATE = 'date';
+	case URL = 'url';
 	case SELECT = 'select';
 	case MULTISELECT = 'multiselect';
 
@@ -26,6 +27,7 @@ enum FieldType: string {
 			self::NUMBER->value,
 			self::BOOLEAN->value,
 			self::DATE->value,
+			self::URL->value,
 			self::SELECT->value,
 			self::MULTISELECT->value,
 		];
