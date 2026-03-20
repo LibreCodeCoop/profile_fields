@@ -307,10 +307,10 @@ Feature: profile field workflows
     Then the response should have a status code 200
     And the response should be a JSON array with the following mandatory values
       | key                                                                                                             | value                                       |
-      | (jq).ocs.data[] \| select(.displayName == "Profile field change: Workflow Talk Department <WORKFLOW_TALK_FIELD_ID> for workflow_subject") \| .displayName | Profile field change: Workflow Talk Department <WORKFLOW_TALK_FIELD_ID> for workflow_subject |
+      | (jq).ocs.data[] \| select(.displayName == "Profile field changed: Workflow Talk Department <WORKFLOW_TALK_FIELD_ID> for user workflow_subject") \| .displayName | Profile field changed: Workflow Talk Department <WORKFLOW_TALK_FIELD_ID> for user workflow_subject |
     Given as user "workflow_subject"
     When sending "get" to ocs "/apps/spreed/api/v4/room"
     Then the response should have a status code 200
     And the response should be a JSON array with the following mandatory values
       | key                                                                                                             | value                                       |
-      | (jq).ocs.data[] \| select(.displayName == "Profile field change: Workflow Talk Department <WORKFLOW_TALK_FIELD_ID> for workflow_subject") \| .displayName | Profile field change: Workflow Talk Department <WORKFLOW_TALK_FIELD_ID> for workflow_subject |
+      | (jq).ocs.data[] \| select(.displayName == "Profile field changed: Workflow Talk Department <WORKFLOW_TALK_FIELD_ID> for user workflow_subject") \| .displayName | Profile field changed: Workflow Talk Department <WORKFLOW_TALK_FIELD_ID> for user workflow_subject |
