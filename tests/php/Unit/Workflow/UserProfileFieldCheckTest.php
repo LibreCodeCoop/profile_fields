@@ -193,6 +193,35 @@ class UserProfileFieldCheckTest extends TestCase {
 		$this->check->validateCheck('contains', $this->encodeConfig('is_manager', true));
 	}
 
+	public function testExecuteCheckMatchesUrlContains(): void {
+		$definition = $this->buildDefinition(8, 'website', FieldType::URL->value);
+		$value = $this->buildStoredValue(8, 'alice', '{"value":"https://example.com/page"}');
+
+		$this->fieldDefinitionService->expects($this->once())
+			->method('findByFieldKey')
+			->with('website')
+			->willReturn($definition);
+		$this->fieldValueMapper->expects($this->once())
+			->method('findByFieldDefinitionIdAndUserUid')
+			->with(8, 'alice')
+			->willReturn($value);
+
+		$this->userSession->method('getUser')->willReturn($this->buildUser('alice'));
+
+		$this->assertTrue($this->check->executeCheck('contains', $this->encodeConfig('website', 'example.com')));
+	}
+
+	public function testValidateCheckAcceptsContainsForUrlField(): void {
+		$this->fieldDefinitionService->expects($this->once())
+			->method('findByFieldKey')
+			->with('website')
+			->willReturn($this->buildDefinition(8, 'website', FieldType::URL->value));
+
+		// Should not throw
+		$this->check->validateCheck('contains', $this->encodeConfig('website', 'example.com'));
+		$this->addToAssertionCount(1);
+	}
+
 	public function testExecuteCheckTreatsMissingValueAsNotSet(): void {
 		$definition = $this->buildDefinition(7, 'region', FieldType::TEXT->value);
 
