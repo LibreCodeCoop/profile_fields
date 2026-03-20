@@ -48,6 +48,17 @@ vi.mock('../../api', () => ({
 			active: true,
 			options: null,
 		},
+		{
+			id: 5,
+			field_key: 'website',
+			label: 'Website',
+			type: 'url',
+			edit_policy: 'users',
+			exposure_policy: 'private',
+			sort_order: 2,
+			active: true,
+			options: null,
+		},
 	]),
 	listAdminUserValues: vi.fn().mockResolvedValue([
 		{
@@ -130,5 +141,41 @@ describe('AdminUserFieldsDialog', () => {
 
 		expect(wrapper.text()).toContain('tr:True')
 		expect(wrapper.text()).toContain('tr:False')
+	})
+
+	it('renders url fields with type=url input', async() => {
+		const wrapper = mount(AdminUserFieldsDialog, {
+			props: {
+				open: true,
+				userUid: 'alice',
+				userDisplayName: 'Alice',
+			},
+		})
+
+		await flushPromises()
+
+		const urlInput = wrapper.find('#profile-fields-user-dialog-value-5')
+		expect(urlInput.exists()).toBe(true)
+		expect(urlInput.attributes('type')).toBe('url')
+	})
+
+	it('shows url helper text for url fields', async() => {
+		const wrapper = mount(AdminUserFieldsDialog, {
+			props: {
+				open: true,
+				userUid: 'alice',
+				userDisplayName: 'Alice',
+			},
+		})
+
+		await flushPromises()
+
+		// The helper text is passed via the :helper-text prop on NcInputField for the url field.
+		// Verify the URL field renders its description via a data-testid selector approach:
+		// the NcInputField mock renders with all bound attrs so helper-text appears as a DOM attribute.
+		const urlInput = wrapper.find('#profile-fields-user-dialog-value-5')
+		expect(urlInput.exists()).toBe(true)
+		// helper-text is bound as an attribute through v-bind="$attrs"
+		expect(urlInput.attributes('helper-text')).toBeTruthy()
 	})
 })
