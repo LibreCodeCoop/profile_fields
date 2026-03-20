@@ -193,7 +193,7 @@ export type components = {
             };
         };
         /** @enum {string} */
-        Type: "text" | "number" | "select";
+        Type: "text" | "number" | "select" | "multiselect";
         ValuePayload: {
             value: Record<string, never>;
         };
