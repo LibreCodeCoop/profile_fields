@@ -19,6 +19,7 @@ use OCP\AppFramework\Http\Attribute\ApiRoute;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\OCSController;
+use OCP\IL10N;
 use OCP\IRequest;
 
 /**
@@ -32,6 +33,7 @@ class FieldValueApiController extends OCSController {
 		private FieldDefinitionService $fieldDefinitionService,
 		private FieldValueService $fieldValueService,
 		private FieldAccessService $fieldAccessService,
+		private IL10N $l10n,
 		private ?string $userId,
 	) {
 		parent::__construct(Application::APP_ID, $request);
@@ -52,7 +54,7 @@ class FieldValueApiController extends OCSController {
 	#[ApiRoute(verb: 'GET', url: '/api/v1/me/values')]
 	public function index(): DataResponse {
 		if ($this->userId === null) {
-			return new DataResponse(['message' => 'Authenticated user is required'], 401);
+			return new DataResponse(['message' => $this->l10n->t('Authenticated user is required')], 401);
 		}
 
 		$definitions = $this->fieldDefinitionService->findActiveOrdered();
@@ -113,20 +115,20 @@ class FieldValueApiController extends OCSController {
 		?string $currentVisibility = null,
 	): DataResponse {
 		if ($this->userId === null) {
-			return new DataResponse(['message' => 'Authenticated user is required'], 401);
+			return new DataResponse(['message' => $this->l10n->t('Authenticated user is required')], 401);
 		}
 
 		$definition = $this->fieldDefinitionService->findById($fieldDefinitionId);
 		if ($definition === null || !$definition->getActive()) {
-			return new DataResponse(['message' => 'Field definition not found'], 404);
+			return new DataResponse(['message' => $this->l10n->t('Field definition not found')], 404);
 		}
 
 		if (!$this->fieldAccessService->canEditValue($this->userId, $this->userId, $definition, false)) {
-			return new DataResponse(['message' => 'Field cannot be edited by the user'], 403);
+			return new DataResponse(['message' => $this->l10n->t('Field cannot be edited by the user')], 403);
 		}
 
 		if ($currentVisibility !== null && !$this->fieldAccessService->canChangeVisibility($this->userId, $this->userId, false)) {
-			return new DataResponse(['message' => 'Field visibility cannot be changed by the user'], 403);
+			return new DataResponse(['message' => $this->l10n->t('Field visibility cannot be changed by the user')], 403);
 		}
 
 		try {
@@ -160,20 +162,20 @@ class FieldValueApiController extends OCSController {
 		string $currentVisibility,
 	): DataResponse {
 		if ($this->userId === null) {
-			return new DataResponse(['message' => 'Authenticated user is required'], 401);
+			return new DataResponse(['message' => $this->l10n->t('Authenticated user is required')], 401);
 		}
 
 		$definition = $this->fieldDefinitionService->findById($fieldDefinitionId);
 		if ($definition === null || !$definition->getActive()) {
-			return new DataResponse(['message' => 'Field definition not found'], 404);
+			return new DataResponse(['message' => $this->l10n->t('Field definition not found')], 404);
 		}
 
 		if (!$this->fieldAccessService->canEditValue($this->userId, $this->userId, $definition, false)) {
-			return new DataResponse(['message' => 'Field cannot be edited by the user'], 403);
+			return new DataResponse(['message' => $this->l10n->t('Field cannot be edited by the user')], 403);
 		}
 
 		if (!$this->fieldAccessService->canChangeVisibility($this->userId, $this->userId, false)) {
-			return new DataResponse(['message' => 'Field visibility cannot be changed by the user'], 403);
+			return new DataResponse(['message' => $this->l10n->t('Field visibility cannot be changed by the user')], 403);
 		}
 
 		try {
