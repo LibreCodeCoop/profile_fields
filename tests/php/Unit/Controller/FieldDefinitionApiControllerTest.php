@@ -18,6 +18,7 @@ use OCA\ProfileFields\Enum\FieldType;
 use OCA\ProfileFields\Service\FieldDefinitionService;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
+use OCP\IL10N;
 use OCP\IRequest;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -25,13 +26,18 @@ use PHPUnit\Framework\TestCase;
 class FieldDefinitionApiControllerTest extends TestCase {
 	private IRequest&MockObject $request;
 	private FieldDefinitionService&MockObject $service;
+	private IL10N&MockObject $l10n;
 	private FieldDefinitionApiController $controller;
 
 	protected function setUp(): void {
 		parent::setUp();
 		$this->request = $this->createMock(IRequest::class);
 		$this->service = $this->createMock(FieldDefinitionService::class);
-		$this->controller = new FieldDefinitionApiController($this->request, $this->service);
+		$this->l10n = $this->createMock(IL10N::class);
+		$this->l10n->method('t')->willReturnCallback(static function (string $text, array $parameters = []): string {
+			return $parameters === [] ? "tr:$text" : vsprintf("tr:$text", $parameters);
+		});
+		$this->controller = new FieldDefinitionApiController($this->request, $this->service, $this->l10n);
 	}
 
 	public function testListReturnsSerializedDefinitions(): void {
@@ -178,7 +184,7 @@ class FieldDefinitionApiControllerTest extends TestCase {
 		);
 
 		$this->assertSame(Http::STATUS_NOT_FOUND, $response->getStatus());
-		$this->assertSame(['message' => 'Field definition not found'], $response->getData());
+		$this->assertSame(['message' => 'tr:Field definition not found'], $response->getData());
 	}
 
 	public function testDeleteReturnsDeletedDefinition(): void {
