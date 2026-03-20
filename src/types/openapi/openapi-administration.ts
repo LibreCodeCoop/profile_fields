@@ -193,7 +193,7 @@ export type components = {
             };
         };
         /** @enum {string} */
-        Type: "text" | "number" | "boolean" | "date" | "select" | "multiselect";
+        Type: "text" | "number" | "boolean" | "date" | "url" | "select" | "multiselect";
         ValuePayload: {
             value: Record<string, never>;
         };
