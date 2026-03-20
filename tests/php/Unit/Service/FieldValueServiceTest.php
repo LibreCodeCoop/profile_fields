@@ -19,19 +19,25 @@ use OCA\ProfileFields\Workflow\Event\ProfileFieldValueCreatedEvent;
 use OCA\ProfileFields\Workflow\Event\ProfileFieldValueUpdatedEvent;
 use OCA\ProfileFields\Workflow\Event\ProfileFieldVisibilityUpdatedEvent;
 use OCP\EventDispatcher\IEventDispatcher;
+use OCP\IL10N;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class FieldValueServiceTest extends TestCase {
 	private FieldValueMapper&MockObject $fieldValueMapper;
 	private IEventDispatcher&MockObject $eventDispatcher;
+	private IL10N&MockObject $l10n;
 	private FieldValueService $service;
 
 	protected function setUp(): void {
 		parent::setUp();
 		$this->fieldValueMapper = $this->createMock(FieldValueMapper::class);
 		$this->eventDispatcher = $this->createMock(IEventDispatcher::class);
-		$this->service = new FieldValueService($this->fieldValueMapper, $this->eventDispatcher);
+		$this->l10n = $this->createMock(IL10N::class);
+		$this->l10n->method('t')->willReturnCallback(
+			static fn (string $text, array $parameters = []): string => $parameters === [] ? $text : vsprintf($text, $parameters),
+		);
+		$this->service = new FieldValueService($this->fieldValueMapper, $this->eventDispatcher, $this->l10n);
 	}
 
 	public function testNormalizeNumberValue(): void {
