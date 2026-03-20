@@ -81,6 +81,40 @@ class FieldValueServiceTest extends TestCase {
 		$this->service->normalizeValue($definition, 'yes');
 	}
 
+	public function testNormalizeUrlValueAcceptsValidUrl(): void {
+		$definition = $this->buildDefinition(FieldType::URL->value);
+
+		$normalized = $this->service->normalizeValue($definition, 'https://example.com');
+
+		$this->assertSame(['value' => 'https://example.com'], $normalized);
+	}
+
+	public function testNormalizeUrlValueTrimsWhitespace(): void {
+		$definition = $this->buildDefinition(FieldType::URL->value);
+
+		$normalized = $this->service->normalizeValue($definition, '  https://example.com  ');
+
+		$this->assertSame(['value' => 'https://example.com'], $normalized);
+	}
+
+	public function testNormalizeUrlValueRejectsNonUrl(): void {
+		$definition = $this->buildDefinition(FieldType::URL->value);
+
+		$this->expectException(InvalidArgumentException::class);
+		$this->expectExceptionMessage('URL fields require a valid URL.');
+
+		$this->service->normalizeValue($definition, 'not-a-url');
+	}
+
+	public function testNormalizeUrlValueRejectsArray(): void {
+		$definition = $this->buildDefinition(FieldType::URL->value);
+
+		$this->expectException(InvalidArgumentException::class);
+		$this->expectExceptionMessage('URL fields require a valid URL.');
+
+		$this->service->normalizeValue($definition, ['https://example.com']);
+	}
+
 	public function testNormalizeMissingValueAsNull(): void {
 		$definition = $this->buildDefinition(FieldType::TEXT->value);
 
