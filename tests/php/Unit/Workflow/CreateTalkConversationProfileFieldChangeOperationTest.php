@@ -86,7 +86,7 @@ class CreateTalkConversationProfileFieldChangeOperationTest extends TestCase {
 		$this->broker->expects($this->once())
 			->method('createConversation')
 			->with(
-				'Profile field change: Department for alice',
+				'Profile field changed: Department for user alice',
 				$this->callback(function (array $moderators): bool {
 					$this->assertCount(2, $moderators);
 					return true;
@@ -95,6 +95,7 @@ class CreateTalkConversationProfileFieldChangeOperationTest extends TestCase {
 			);
 
 		$this->operation->onEvent(ProfileFieldValueUpdatedEvent::class, $event, $ruleMatcher);
+		$this->addToAssertionCount(1);
 	}
 
 	public function testOnEventSkipsWhenTalkBackendIsUnavailable(): void {
