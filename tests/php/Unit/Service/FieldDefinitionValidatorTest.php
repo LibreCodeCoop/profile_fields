@@ -96,6 +96,30 @@ class FieldDefinitionValidatorTest extends TestCase {
 		]);
 	}
 
+	public function testValidateMultiSelectFieldDefinition(): void {
+		$validated = $this->validator->validate([
+			'field_key' => 'support_regions',
+			'label' => 'Support Regions',
+			'type' => FieldType::MULTISELECT->value,
+			'options' => ['LATAM', 'EMEA', 'APAC'],
+		]);
+
+		$this->assertSame(FieldType::MULTISELECT->value, $validated['type']);
+		$this->assertSame(['LATAM', 'EMEA', 'APAC'], $validated['options']);
+	}
+
+	public function testRejectMultiSelectWithNoOptions(): void {
+		$this->expectException(InvalidArgumentException::class);
+		$this->expectExceptionMessage('multiselect fields require at least one option');
+
+		$this->validator->validate([
+			'field_key' => 'support_regions',
+			'label' => 'Support Regions',
+			'type' => FieldType::MULTISELECT->value,
+			'options' => [],
+		]);
+	}
+
 	public function testNonSelectTypesDoNotRequireOptions(): void {
 		$validated = $this->validator->validate([
 			'field_key' => 'cpf',
