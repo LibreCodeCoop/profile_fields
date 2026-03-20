@@ -130,6 +130,8 @@ const workflowCardClassName = 'profile-fields-workflow-card'
 const workflowItemClassName = 'profile-fields-workflow-item'
 const workflowCardThemeStyleId = 'profile-fields-workflow-card-theme'
 
+// TRANSLATORS The labels below are technical workflow operators shown in filter dropdowns.
+// Keep them short to avoid truncation in compact UI layouts.
 const operatorLabels: Record<string, string> = {
 	'is-set': t('profile_fields', 'is set'),
 	'!is-set': t('profile_fields', 'is not set'),
@@ -261,14 +263,16 @@ const getWorkflowTargetDescription = (token: string): string => {
 	}
 
 	if (token.startsWith('group:')) {
+		// TRANSLATORS {groupId} is the technical group identifier.
 		return t('profile_fields', 'Group: {groupId}', { groupId: token.slice(6) })
 	}
 
 	if (token.startsWith('user:')) {
+		// TRANSLATORS {userId} is the technical user identifier.
 		return t('profile_fields', 'User: {userId}', { userId: token.slice(5) })
 	}
 
-	return t('profile_fields', 'Custom target')
+	return t('profile_fields', 'Custom recipient token')
 }
 
 const getWorkflowTargetId = (token: string): string => {
@@ -486,7 +490,7 @@ class WorkflowProfileFieldElement extends HTMLElement {
 
 		const style = document.createElement('style')
 		style.textContent = `
-			:host {
+			${workflowElementId} {
 				display: flex;
 				flex: 1 1 22rem;
 				gap: .5rem;
@@ -494,8 +498,8 @@ class WorkflowProfileFieldElement extends HTMLElement {
 				min-width: 0;
 			}
 
-			select,
-			input {
+			${workflowElementId} select,
+			${workflowElementId} input {
 				border: 1px solid var(--color-border-maxcontrast);
 				border-radius: var(--border-radius-element, 6px);
 				background: var(--color-main-background);
@@ -505,22 +509,22 @@ class WorkflowProfileFieldElement extends HTMLElement {
 				min-height: 2.25rem;
 			}
 
-			select {
+			${workflowElementId} select {
 				flex: 1 1 14rem;
 				min-width: 10rem;
 			}
 
-			input {
+			${workflowElementId} input {
 				flex: 1 1 10rem;
 				min-width: 8rem;
 			}
 
-			input[hidden] {
+			${workflowElementId} input[hidden] {
 				display: none;
 			}
 
-			input.invalid,
-			select.invalid {
+			${workflowElementId} input.invalid,
+			${workflowElementId} select.invalid {
 				border-color: var(--color-error);
 			}
 		`
@@ -551,7 +555,7 @@ class WorkflowProfileFieldElement extends HTMLElement {
 		valueInput.hidden = !operatorNeedsValue
 		valueInput.placeholder = selectedDefinition?.type === 'number'
 			? t('profile_fields', 'Enter the numeric value to compare')
-			: t('profile_fields', 'Enter the value to compare')
+			: t('profile_fields', 'Enter the comparison value')
 		valueInput.className = !isValid && operatorNeedsValue ? 'invalid' : ''
 
 		fieldSelect.addEventListener('change', () => {
@@ -643,15 +647,15 @@ class WorkflowWebhookOperationElement extends HTMLElement {
 
 		const style = document.createElement('style')
 		style.textContent = `
-			:host {
+			${webhookOperationElementId} {
 				display: grid;
 				flex: 1 1 22rem;
 				gap: .5rem;
 				min-width: 0;
 			}
 
-			input,
-			textarea {
+			${webhookOperationElementId} input,
+			${webhookOperationElementId} textarea {
 				width: 100%;
 				border: 1px solid var(--color-border-maxcontrast);
 				border-radius: var(--border-radius-element, 6px);
@@ -662,13 +666,13 @@ class WorkflowWebhookOperationElement extends HTMLElement {
 				min-height: 2.25rem;
 			}
 
-			textarea {
+			${webhookOperationElementId} textarea {
 				min-height: 5rem;
 				resize: vertical;
 			}
 
-			input.invalid,
-			textarea.invalid {
+			${webhookOperationElementId} input.invalid,
+			${webhookOperationElementId} textarea.invalid {
 				border-color: var(--color-error);
 			}
 		`
@@ -705,6 +709,7 @@ class WorkflowWebhookOperationElement extends HTMLElement {
 		const headersInput = document.createElement('textarea')
 		headersInput.value = config.headers
 		headersInput.disabled = this.disabledInternal
+		// TRANSLATORS "X-Key: value" is an example HTTP header in "name: value" format.
 		headersInput.placeholder = t('profile_fields', 'Optional headers, one per line. Example: X-Key: value')
 
 		const syncValue = () => {
@@ -767,15 +772,15 @@ class WorkflowEmailOperationElement extends HTMLElement {
 
 		const style = document.createElement('style')
 		style.textContent = `
-			:host {
+			${emailOperationElementId} {
 				display: grid;
 				flex: 1 1 22rem;
 				gap: .5rem;
 				min-width: 0;
 			}
 
-			input,
-			textarea {
+			${emailOperationElementId} input,
+			${emailOperationElementId} textarea {
 				width: 100%;
 				border: 1px solid var(--color-border-maxcontrast);
 				border-radius: var(--border-radius-element, 6px);
@@ -785,12 +790,12 @@ class WorkflowEmailOperationElement extends HTMLElement {
 				padding: .45rem .6rem;
 			}
 
-			textarea {
+			${emailOperationElementId} textarea {
 				min-height: 7rem;
 				resize: vertical;
 			}
 
-			.invalid {
+			${emailOperationElementId} .invalid {
 				border-color: var(--color-error);
 			}
 		`
@@ -805,6 +810,7 @@ class WorkflowEmailOperationElement extends HTMLElement {
 		const bodyInput = document.createElement('textarea')
 		bodyInput.value = config.bodyTemplate
 		bodyInput.disabled = this.disabledInternal
+		// TRANSLATORS Keep "{{fieldLabel}}" unchanged. It is a runtime placeholder replaced with the field label.
 		bodyInput.placeholder = t('profile_fields', 'Optional email body template. You can use placeholders like {{fieldLabel}}')
 		bodyInput.className = isValid || config.bodyTemplate.trim() !== '' ? '' : 'invalid'
 
@@ -935,7 +941,7 @@ class WorkflowTargetsOperationElement extends HTMLElement {
 
 		const style = document.createElement('style')
 		style.textContent = `
-			:host {
+			${targetsOperationElementId} {
 				display: grid;
 				flex: 1 1 22rem;
 				gap: .5rem;
@@ -953,6 +959,7 @@ class WorkflowTargetsOperationElement extends HTMLElement {
 					disabled: this.viewStateInternal.disabled,
 					options: this.viewStateInternal.options,
 					inputLabel: t('profile_fields', 'Search for admins, groups, or users'),
+					// TRANSLATORS "administrators" refers to users in the built-in admin group.
 					helperText: t('profile_fields', 'Select who should be notified. If empty, administrators are notified by default.'),
 					loading: this.viewStateInternal.loading,
 					onSearch: (value: string) => this.handleSearch(value),
