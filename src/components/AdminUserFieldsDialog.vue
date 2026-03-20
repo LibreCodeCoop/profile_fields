@@ -8,7 +8,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 	<NcDialog
 		:open="open"
 		size="large"
-		:name="title"
+		:name="t('profile_fields', 'Edit additional profile fields')"
 		content-classes="profile-fields-user-dialog__content"
 		@update:open="updateOpen">
 		<div class="profile-fields-user-dialog">
@@ -31,13 +31,13 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 			<div v-if="isLoading" class="profile-fields-user-dialog__loading">
 				<NcLoadingIcon :size="32" />
-				<span>Loading profile fields for {{ userUid }}...</span>
+				<span>{{ loadingMessage }}</span>
 			</div>
 
 			<NcEmptyContent
 				v-else-if="editableFields.length === 0"
-				name="No editable fields"
-				description="Create and enable fields in the admin catalog. They will appear here automatically." />
+				:name="t('profile_fields', 'No editable fields')"
+				:description="t('profile_fields', 'Create and enable fields in the admin catalog. They will appear here automatically.')" />
 
 			<div v-else class="profile-fields-user-dialog__list">
 				<article v-for="field in editableFields" :key="field.definition.id" class="profile-fields-user-dialog__row" :class="{ 'profile-fields-user-dialog__row--error': fieldHasError(field) }">
@@ -75,7 +75,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 						/>
 
 						<div class="profile-fields-user-dialog__visibility-control" :class="{ 'profile-fields-user-dialog__visibility-control--error': fieldHasError(field) }">
-							<label class="profile-fields-user-dialog__control-label" :for="`profile-fields-user-dialog-visibility-${field.definition.id}`">{{ visibilityControlLabel }}</label>
+							<label class="profile-fields-user-dialog__control-label" :for="`profile-fields-user-dialog-visibility-${field.definition.id}`">{{ t('profile_fields', 'Who can see this') }}</label>
 							<NcSelect
 								:input-id="`profile-fields-user-dialog-visibility-${field.definition.id}`"
 								:model-value="visibilityOptionFor(field.definition.id)"
@@ -94,10 +94,10 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 		<template #actions>
 			<NcButton @click="closeDialog">
-				Cancel
+				{{ t('profile_fields', 'Cancel') }}
 			</NcButton>
 			<NcButton variant="primary" :disabled="!hasPendingChanges || hasInvalidFields || isSavingAny || isLoading" @click="saveAllFields">
-				{{ isSavingAny ? 'Saving changes...' : 'Save changes' }}
+				{{ isSavingAny ? t('profile_fields', 'Saving changes...') : t('profile_fields', 'Save changes') }}
 			</NcButton>
 		</template>
 	</NcDialog>
@@ -105,7 +105,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 <script lang="ts">
 import { computed, defineComponent, reactive, ref, watch } from 'vue'
-import { t } from '@nextcloud/l10n'
+import { n, t } from '@nextcloud/l10n'
 import NcAvatar from '@nextcloud/vue/components/NcAvatar'
 import { NcButton, NcDialog, NcEmptyContent, NcInputField, NcLoadingIcon, NcNoteCard, NcSelect } from '@nextcloud/vue'
 import { listAdminUserValues, listDefinitions, upsertAdminUserValue } from '../api'
@@ -144,7 +144,6 @@ export default defineComponent({
 		'update:open': (value: boolean) => typeof value === 'boolean',
 	},
 	setup(props: { open: boolean, userUid: string, userDisplayName: string }, { emit }: { emit: (event: 'update:open', value: boolean) => void }) {
-		const visibilityControlLabel = t('profile_fields', 'Who can see this')
 		const definitions = ref<FieldDefinition[]>([])
 		const userValues = ref<FieldValueRecord[]>([])
 		const isLoading = ref(false)
@@ -156,18 +155,20 @@ export default defineComponent({
 		const userDraftValues = reactive<Record<number, string>>({})
 		const userDraftVisibilities = reactive<Record<number, FieldVisibility>>({})
 
-		const title = computed(() => 'Edit additional profile fields')
 		const headerUserName = computed(() => props.userDisplayName.trim() !== '' ? props.userDisplayName : props.userUid)
+		const loadingMessage = computed(() => t('profile_fields', 'Loading profile fields for {userUid}...', { userUid: props.userUid }))
 		const editableFields = computed<AdminEditableField[]>(() => buildAdminEditableFields(definitions.value, userValues.value))
 		const isSavingAny = computed(() => savingIds.value.length > 0)
 		const headerDescription = computed(() => {
 			if (props.userUid === '') {
-				return 'Update additional profile fields for the selected account.'
+				return t('profile_fields', 'Update additional profile fields for the selected account.')
 			}
 
 			const count = editableFields.value.length
-			const label = count === 1 ? '1 editable field' : `${count} editable fields`
-			return `${label} for @${props.userUid}.`
+			return n('profile_fields', '{count} editable field for @{userUid}.', '{count} editable fields for @{userUid}.', count, {
+				count,
+				userUid: props.userUid,
+			})
 		})
 
 		const clearRecord = (record: Record<string | number, unknown>) => {
@@ -177,15 +178,15 @@ export default defineComponent({
 		}
 
 		const descriptionForType = (type: FieldType): string => ({
-			text: 'Free text stored as a scalar value.',
-			number: 'Only numeric values are accepted.',
-			select: 'Choose one of the predefined options.',
+			text: t('profile_fields', 'Free text stored as a scalar value.'),
+			number: t('profile_fields', 'Only numeric values are accepted.'),
+			select: t('profile_fields', 'Choose one of the predefined options.'),
 		} as Record<FieldType, string>)[type]
 
 		const placeholderForField = (type: FieldType): string => ({
-			text: 'Enter a value',
-			number: 'Enter a number',
-			select: 'Select an option',
+			text: t('profile_fields', 'Enter a value'),
+			number: t('profile_fields', 'Enter a number'),
+			select: t('profile_fields', 'Select an option'),
 		} as Record<FieldType, string>)[type]
 
 		const plainNumberPattern = /^-?\d+(\.\d+)?$/
@@ -219,13 +220,13 @@ export default defineComponent({
 			}
 
 			if (field.definition.type === 'number' && !plainNumberPattern.test(rawValue)) {
-				return `${field.definition.label} must be a plain numeric value.`
+				return t('profile_fields', '{fieldLabel} must be a plain numeric value.', { fieldLabel: field.definition.label })
 			}
 
 			if (field.definition.type === 'select') {
 				const options = field.definition.options ?? []
 				if (!options.includes(rawValue)) {
-					return `${field.definition.label} must be one of the allowed options.`
+					return t('profile_fields', '{fieldLabel} must be one of the allowed options.', { fieldLabel: field.definition.label })
 				}
 			}
 
@@ -282,7 +283,7 @@ export default defineComponent({
 				clearRecord(userDraftVisibilities)
 				editableFields.value.forEach(normaliseDraft)
 			} catch (error) {
-				errorMessage.value = error instanceof Error ? error.message : 'Could not load profile fields for this user.'
+				errorMessage.value = error instanceof Error ? error.message : t('profile_fields', 'Could not load profile fields for this user.')
 			} finally {
 				isLoading.value = false
 			}
@@ -305,10 +306,12 @@ export default defineComponent({
 
 		const formatFieldErrorMessage = (field: AdminEditableField, message: string) => {
 			return ({
-				'text fields expect a scalar value': `${field.definition.label} must be plain text.`,
-				'number fields expect a numeric value': `${field.definition.label} must be a numeric value.`,
-				'current_visibility is not supported': 'The selected visibility is not supported.',
-			}[message] ?? (message.includes('is not a valid option') ? `${field.definition.label}: invalid option selected.` : `${field.definition.label}: ${message}`))
+				'text fields expect a scalar value': t('profile_fields', '{fieldLabel} must be plain text.', { fieldLabel: field.definition.label }),
+				'number fields expect a numeric value': t('profile_fields', '{fieldLabel} must be a numeric value.', { fieldLabel: field.definition.label }),
+				'current_visibility is not supported': t('profile_fields', 'The selected visibility is not supported.'),
+			}[message] ?? (message.includes('is not a valid option')
+				? t('profile_fields', '{fieldLabel}: invalid option selected.', { fieldLabel: field.definition.label })
+				: t('profile_fields', '{fieldLabel}: {message}', { fieldLabel: field.definition.label, message })))
 		}
 
 		const extractApiMessage = (error: unknown) => {
@@ -349,7 +352,7 @@ export default defineComponent({
 				}
 
 				if (!plainNumberPattern.test(rawValue)) {
-					throw new Error('Numeric fields only accept plain numbers.')
+					throw new Error(t('profile_fields', 'Numeric fields only accept plain numbers.'))
 				}
 
 				const numericValue = Number(rawValue)
@@ -397,7 +400,7 @@ export default defineComponent({
 				userValues.value = nextValues
 				normaliseDraft({ definition: field.definition, value: saved })
 			} catch (error) {
-				userValueErrors[fieldId] = formatFieldErrorMessage(field, extractApiMessage(error) ?? 'Could not save this field value. Please try again.')
+				userValueErrors[fieldId] = formatFieldErrorMessage(field, extractApiMessage(error) ?? t('profile_fields', 'Could not save this field value. Please try again.'))
 			} finally {
 				savingIds.value = savingIds.value.filter((value: number) => value !== fieldId)
 			}
@@ -429,9 +432,9 @@ export default defineComponent({
 					}
 				})
 
-				errorMessage.value = invalidChangedFields.length === 1
-					? 'Fix the invalid field before saving.'
-					: 'Fix the invalid fields before saving.'
+				errorMessage.value = n('profile_fields', 'Fix the invalid field before saving.', 'Fix the invalid fields before saving.', invalidChangedFields.length, {
+					count: invalidChangedFields.length,
+				})
 				return
 			}
 
@@ -441,11 +444,11 @@ export default defineComponent({
 
 			const hasFieldErrors = changedFields.some((field: AdminEditableField) => Boolean(userValueErrors[field.definition.id]))
 			if (!hasFieldErrors) {
-				successMessage.value = `Saved profile fields for ${props.userUid}.`
+				successMessage.value = t('profile_fields', 'Saved profile fields for {userUid}.', { userUid: props.userUid })
 			} else {
-				errorMessage.value = changedFields.length === 1
-					? 'The field could not be saved.'
-					: 'Some fields could not be saved. Review the messages below.'
+				errorMessage.value = n('profile_fields', 'The field could not be saved.', 'Some fields could not be saved. Review the messages below.', changedFields.length, {
+					count: changedFields.length,
+				})
 			}
 		}
 
@@ -465,12 +468,13 @@ export default defineComponent({
 		)
 
 		return {
+			t,
 			closeDialog,
 			editableFields,
 			errorMessage,
 			headerDescription,
 			headerUserName,
-			visibilityControlLabel,
+			loadingMessage,
 			hasPendingChanges,
 			hasInvalidFields,
 			helperTextForField,
@@ -480,7 +484,6 @@ export default defineComponent({
 			placeholderForField,
 			saveAllFields,
 			successMessage,
-			title,
 			updateOpen,
 			updateVisibility,
 			clearFieldError,

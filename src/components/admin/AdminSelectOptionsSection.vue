@@ -7,11 +7,11 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 	<section class="profile-fields-admin-options">
 		<div class="profile-fields-admin-options__heading">
 			<div>
-				<h4>Options</h4>
+				<h4>{{ t('profile_fields', 'Options') }}</h4>
 			</div>
 			<div class="profile-fields-admin-options__meta">
 				<strong>{{ normalizedOptionCount }}</strong>
-				<span>{{ normalizedOptionCount === 1 ? 'option' : 'options' }}</span>
+				<span>{{ optionsCountLabel }}</span>
 			</div>
 		</div>
 
@@ -35,7 +35,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 							:data-testid="`profile-fields-admin-option-handle-${index}`"
 							variant="tertiary-no-background"
 							size="small"
-							:aria-label="`Reorder option ${element.value}`">
+							:aria-label="reorderOptionLabel(element.value)">
 							<template #icon>
 								<NcIconSvgWrapper :path="mdiDragVertical" :size="18" />
 							</template>
@@ -43,24 +43,24 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 								<template #icon>
 									<NcIconSvgWrapper :path="mdiArrowUp" :size="18" />
 								</template>
-								Move up
-							</NcActionButton>
-							<NcActionButton :disabled="!canMoveOptionDown(index) || isSaving" @click="moveOption(index, 1)">
-								<template #icon>
-									<NcIconSvgWrapper :path="mdiArrowDown" :size="18" />
-								</template>
-								Move down
+							{{ t('profile_fields', 'Move up') }}
+						</NcActionButton>
+						<NcActionButton :disabled="!canMoveOptionDown(index) || isSaving" @click="moveOption(index, 1)">
+							<template #icon>
+								<NcIconSvgWrapper :path="mdiArrowDown" :size="18" />
+							</template>
+							{{ t('profile_fields', 'Move down') }}
 							</NcActionButton>
 						</NcActions>
 						<div v-else class="profile-fields-admin-options__handle-spacer" aria-hidden="true" />
 					</div>
 					<NcInputField
 						:model-value="element.value"
-						label="Option value"
+						:label="t('profile_fields', 'Option value')"
 						label-outside
-						:placeholder="`Option ${index + 1}`"
+						:placeholder="optionPlaceholder(index + 1)"
 						:error="isOptionDuplicate(index)"
-						:helper-text="isOptionDuplicate(index) ? 'This option is duplicated.' : ''"
+						:helper-text="isOptionDuplicate(index) ? t('profile_fields', 'This option is duplicated.') : ''"
 						@update:model-value="updateOption(index, $event)"
 						@keydown.enter.prevent="addOptionFromEnter(index, $event)"
 						@keydown.backspace="removeEmptyOptionFromKeyboard(index, $event)"
@@ -70,7 +70,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 					<div class="profile-fields-admin-options__actions">
 						<NcButton
 							variant="tertiary-no-background"
-							:aria-label="`Remove option ${element.value || String(index + 1)}`"
+							:aria-label="removeOptionLabel(element.value || String(index + 1))"
 							@click.prevent="removeOption(index)">
 							<template #icon>
 								<NcIconSvgWrapper :path="mdiClose" :size="20" />
@@ -83,16 +83,16 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 		<div class="profile-fields-admin-options__toolbar">
 			<NcButton variant="secondary" data-testid="profile-fields-admin-add-option" @click.prevent="addOption">
-				Add single option
-			</NcButton>
-			<NcButton variant="secondary" data-testid="profile-fields-admin-add-multiple-options" @click.prevent="openBulkOptionsDialog">
-				Add multiple options
+			{{ t('profile_fields', 'Add single option') }}
+		</NcButton>
+		<NcButton variant="secondary" data-testid="profile-fields-admin-add-multiple-options" @click.prevent="openBulkOptionsDialog">
+			{{ t('profile_fields', 'Add multiple options') }}
 			</NcButton>
 		</div>
 
 		<NcDialog
 			:open="isBulkOptionsDialogOpen"
-			name="Add multiple options"
+			:name="t('profile_fields', 'Add multiple options')"
 			content-classes="profile-fields-admin-options__bulk-options-dialog"
 			size="normal"
 			@update:open="updateBulkOptionsDialogOpen">
@@ -100,26 +100,26 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 				<NcTextArea
 					data-testid="profile-fields-admin-bulk-options-input"
 					:model-value="bulkOptionInput"
-					label="Options list (one per line)"
-					placeholder="One option per line"
+					:label="t('profile_fields', 'Options list (one per line)')"
+					:placeholder="t('profile_fields', 'One option per line')"
 					resize="vertical"
 					rows="10"
 					@update:model-value="bulkOptionInput = $event" />
 				<p class="profile-fields-admin-options__bulk-options-summary">
-					{{ bulkOptionValues.length === 1 ? '1 option ready.' : `${bulkOptionValues.length} options ready.` }}
+					{{ bulkOptionsSummary }}
 				</p>
 			</div>
 
 			<template #actions>
 				<NcButton @click="closeBulkOptionsDialog">
-					Cancel
+					{{ t('profile_fields', 'Cancel') }}
 				</NcButton>
 				<NcButton
 					variant="primary"
 					data-testid="profile-fields-admin-bulk-options-submit"
 					:disabled="bulkOptionValues.length === 0"
 					@click="applyBulkOptions">
-					Add selected options
+					{{ t('profile_fields', 'Add selected options') }}
 				</NcButton>
 			</template>
 		</NcDialog>
@@ -128,6 +128,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 <script setup lang="ts">
 import { mdiArrowDown, mdiArrowUp, mdiClose, mdiDragVertical } from '@mdi/js'
+import { n, t } from '@nextcloud/l10n'
 import { computed, ref } from 'vue'
 import Draggable from 'vuedraggable'
 import NcDialog from '@nextcloud/vue/components/NcDialog'
@@ -154,6 +155,8 @@ const createOptionId = () => `option-local-${nextOptionId++}`
 const options = computed(() => props.modelValue)
 const bulkOptionValues = computed(() => parseEditableSelectOptionValues(bulkOptionInput.value))
 const normalizedOptionCount = computed(() => extractEditableSelectOptionValues(options.value).filter((optionValue: string) => optionValue.trim() !== '').length)
+const optionsCountLabel = computed(() => n('profile_fields', 'option', 'options', normalizedOptionCount.value, { count: normalizedOptionCount.value }))
+const bulkOptionsSummary = computed(() => n('profile_fields', '1 option ready.', '{count} options ready.', bulkOptionValues.value.length, { count: bulkOptionValues.value.length }))
 
 const duplicateOptionIndices = computed(() => {
 	const seen = new Map<string, number>()
@@ -181,6 +184,9 @@ const hasOptionValue = (index: number) => options.value[index]?.value.trim() !==
 const canMoveOptionUp = (index: number) => index > 0
 const canMoveOptionDown = (index: number) => index < options.value.length - 1
 const isOptionDuplicate = (index: number) => duplicateOptionIndices.value.has(index)
+const reorderOptionLabel = (optionValue: string) => t('profile_fields', 'Reorder option {optionValue}', { optionValue })
+const optionPlaceholder = (position: number) => t('profile_fields', 'Option {position}', { position })
+const removeOptionLabel = (optionValue: string) => t('profile_fields', 'Remove option {optionValue}', { optionValue })
 
 const focusOptionInput = async(index: number) => {
 	requestAnimationFrame(() => {

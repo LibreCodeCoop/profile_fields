@@ -8,14 +8,14 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 	<section class="profile-fields-admin" data-testid="profile-fields-admin">
 		<header class="profile-fields-admin__hero">
 			<div class="profile-fields-admin__hero-copy">
-				<h2>Profile fields catalog</h2>
+				<h2>{{ t('profile_fields', 'Profile fields catalog') }}</h2>
 				<p>
-					Create custom profile fields, choose who can edit each one, and define the default visibility for new values.
+					{{ t('profile_fields', 'Create custom profile fields, choose who can edit each one, and define the default visibility for new values.') }}
 				</p>
 			</div>
 			<div class="profile-fields-admin__hero-meta">
 				<strong>{{ definitions.length }}</strong>
-				<span>fields configured</span>
+				<span>{{ configuredFieldsCountLabel }}</span>
 			</div>
 		</header>
 
@@ -37,15 +37,15 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 			<aside class="profile-fields-admin__list-panel">
 				<div class="profile-fields-admin__panel-header">
 					<div class="profile-fields-admin__panel-header-copy">
-						<h3>Configured fields</h3>
-						<p>Select a field to edit, or create a new one.</p>
+						<h3>{{ t('profile_fields', 'Configured fields') }}</h3>
+						<p>{{ t('profile_fields', 'Select a field to edit, or create a new one.') }}</p>
 					</div>
 					<NcButton variant="secondary" data-testid="profile-fields-admin-new-field" @click="startCreatingField">
-						Create field
+						{{ t('profile_fields', 'Create field') }}
 					</NcButton>
 				</div>
 
-				<NcEmptyContent v-if="sortedDefinitions.length === 0" name="No fields configured" description="Create your first field to make it available in user profiles." />
+				<NcEmptyContent v-if="sortedDefinitions.length === 0" :name="t('profile_fields', 'No fields configured')" :description="t('profile_fields', 'Create your first field to make it available in user profiles.')" />
 
 				<Draggable
 					v-else
@@ -68,7 +68,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 								:name="definition.label"
 								:active="definition.id === selectedId"
 								compact
-								:link-aria-label="`Edit field ${definition.label}`"
+								:link-aria-label="editFieldAriaLabel(definition.label)"
 								@click="handleDefinitionClick(definition)">
 								<template #subname>
 									<span class="profile-fields-admin__list-item-subname">{{ definition.field_key }}</span>
@@ -76,35 +76,35 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 								<template #extra-actions>
 									<NcChip
 										class="profile-fields-admin__definition-status"
-										:text="definition.active ? 'Active' : 'Inactive'"
+										:text="definition.active ? t('profile_fields', 'Active') : t('profile_fields', 'Inactive')"
 										:variant="definition.active ? 'success' : 'secondary'"
 										:no-close="true" />
 									<NcActions
 										class="profile-fields-admin__definition-actions"
-										:aria-label="`Actions for ${definition.label}`">
+										:aria-label="actionsForLabel(definition.label)">
 										<NcActionButton :disabled="isSaving" @click="openDefinition(definition)">
 											<template #icon>
 												<NcIconSvgWrapper :path="mdiPencilOutline" :size="18" />
 											</template>
-											Edit field
+											{{ t('profile_fields', 'Edit field') }}
 										</NcActionButton>
 										<NcActionButton :disabled="isSaving" @click="toggleDefinitionActive(definition)">
 											<template #icon>
 												<NcIconSvgWrapper :path="definition.active ? mdiEyeOffOutline : mdiEyeOutline" :size="18" />
 											</template>
-											{{ definition.active ? 'Disable field' : 'Enable field' }}
+											{{ toggleDefinitionActiveLabel(definition) }}
 										</NcActionButton>
 										<NcActionButton :disabled="isSaving" @click="removeDefinitionByItem(definition)">
 											<template #icon>
 												<NcIconSvgWrapper :path="mdiDeleteOutline" :size="18" />
 											</template>
-											Delete field
+											{{ t('profile_fields', 'Delete field') }}
 										</NcActionButton>
 									</NcActions>
 									<NcButton
 										class="profile-fields-admin__definition-handle"
 										:data-testid="`profile-fields-admin-definition-handle-${definition.field_key}`"
-										aria-label="Drag to reorder"
+										:aria-label="t('profile_fields', 'Drag to reorder')"
 										variant="tertiary-no-background"
 										:disabled="isSaving"
 										tabindex="-1"
@@ -131,12 +131,12 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 				<template v-if="isEditorVisible">
 					<div class="profile-fields-admin__panel-header">
 						<div class="profile-fields-admin__panel-header-copy">
-							<h3>{{ isEditing ? 'Edit field' : 'Create field' }}</h3>
+							<h3>{{ isEditing ? t('profile_fields', 'Edit field') : t('profile_fields', 'Create field') }}</h3>
 							<p>{{ editorDescription }}</p>
 						</div>
 						<div class="profile-fields-admin__editor-actions">
 							<NcCheckboxRadioSwitch v-model="form.active" type="switch" class="profile-fields-admin__header-switch">
-								Active
+								{{ t('profile_fields', 'Active') }}
 							</NcCheckboxRadioSwitch>
 						</div>
 					</div>
@@ -144,30 +144,30 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 					<form id="profile-fields-admin-form" class="profile-fields-admin__form" data-testid="profile-fields-admin-form" @submit.prevent="persistDefinition">
 					<section class="profile-fields-admin__form-section profile-fields-admin__form-section--identity">
 						<div class="profile-fields-admin__section-heading">
-							<h4>Identity</h4>
+							<h4>{{ t('profile_fields', 'Identity') }}</h4>
 						</div>
 
 						<div class="profile-fields-admin__grid profile-fields-admin__grid--identity">
 							<div class="profile-fields-admin__field">
-								<label for="profile-fields-admin-field-key">Field key</label>
+								<label for="profile-fields-admin-field-key">{{ t('profile_fields', 'Field key') }}</label>
 								<NcInputField
 									id="profile-fields-admin-field-key"
 									v-model="form.fieldKey"
-									label="Field key"
+									:label="t('profile_fields', 'Field key')"
 									label-outside
 									:disabled="isEditing"
-									helper-text="Stable identifier used in APIs and integrations."
+									:helper-text="t('profile_fields', 'Stable identifier used in APIs and integrations.')"
 								/>
 							</div>
 
 							<div class="profile-fields-admin__field">
-								<label for="profile-fields-admin-label">Label</label>
+								<label for="profile-fields-admin-label">{{ t('profile_fields', 'Label') }}</label>
 								<NcInputField
 									id="profile-fields-admin-label"
 									v-model="form.label"
-									label="Label"
+									:label="t('profile_fields', 'Label')"
 									label-outside
-									helper-text="Visible name shown in settings and profile forms."
+									:helper-text="t('profile_fields', 'Visible name shown in settings and profile forms.')"
 								/>
 							</div>
 						</div>
@@ -175,55 +175,55 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 					<section class="profile-fields-admin__form-section">
 						<div class="profile-fields-admin__section-heading">
-							<h4>Rules</h4>
+							<h4>{{ t('profile_fields', 'Rules') }}</h4>
 						</div>
 
 						<div class="profile-fields-admin__grid profile-fields-admin__grid--rules">
 							<div class="profile-fields-admin__field">
-								<label for="profile-fields-admin-edit-policy">Edit policy</label>
+								<label for="profile-fields-admin-edit-policy">{{ t('profile_fields', 'Edit policy') }}</label>
 								<NcSelect
 									input-id="profile-fields-admin-edit-policy"
 									v-model="selectedEditPolicyOption"
-									input-label="Edit policy"
+									:input-label="t('profile_fields', 'Edit policy')"
 									label-outside
 									:clearable="false"
 									:searchable="false"
 									:options="editPolicyOptions"
 									label="label"
-									placeholder="Select who can edit"
+									:placeholder="t('profile_fields', 'Select who can edit')"
 								/>
 								<p class="profile-fields-admin__field-helper">{{ editPolicyDescription }}</p>
 							</div>
 
 							<div class="profile-fields-admin__field">
-								<label for="profile-fields-admin-visibility-policy">Visibility</label>
+								<label for="profile-fields-admin-visibility-policy">{{ t('profile_fields', 'Visibility') }}</label>
 								<NcSelect
 									input-id="profile-fields-admin-visibility-policy"
 									v-model="selectedExposurePolicyOption"
-									input-label="Visibility"
+									:input-label="t('profile_fields', 'Visibility')"
 									label-outside
 									:clearable="false"
 									:searchable="false"
 									:options="exposurePolicyOptions"
 									label="label"
-									placeholder="Select default visibility"
+									:placeholder="t('profile_fields', 'Select default visibility')"
 								/>
 								<p class="profile-fields-admin__field-helper">{{ exposurePolicyDescription }}</p>
 							</div>
 
 							<div class="profile-fields-admin__field">
-								<label for="profile-fields-admin-type">Type</label>
+								<label for="profile-fields-admin-type">{{ t('profile_fields', 'Type') }}</label>
 								<NcSelect
 									data-testid="profile-fields-admin-type-select"
 									input-id="profile-fields-admin-type"
 									v-model="selectedTypeOption"
-									input-label="Type"
+									:input-label="t('profile_fields', 'Type')"
 									label-outside
 									:clearable="false"
 									:searchable="false"
 									:options="fieldTypeOptions"
 									label="label"
-									placeholder="Select field type"
+									:placeholder="t('profile_fields', 'Select field type')"
 								/>
 							</div>
 						</div>
@@ -233,10 +233,10 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 					<div v-if="!isCompactLayout" class="profile-fields-admin__submit-row">
 						<NcButton type="submit" variant="primary" data-testid="profile-fields-admin-save" :disabled="isSaveDisabled">
-							{{ isSaving ? 'Saving changes...' : (isEditing ? 'Save changes' : 'Create field') }}
+							{{ saveActionLabel }}
 						</NcButton>
 						<NcButton v-if="isEditing" variant="error" data-testid="profile-fields-admin-delete" :disabled="isSaving" @click.prevent="removeDefinition">
-							Delete field
+							{{ t('profile_fields', 'Delete field') }}
 						</NcButton>
 					</div>
 					</form>
@@ -248,7 +248,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 						<p>{{ editorEmptyState.description }}</p>
 						<div class="profile-fields-admin__empty-editor-actions">
 							<NcButton variant="primary" @click="startCreatingField">
-								New field
+								{{ t('profile_fields', 'New field') }}
 							</NcButton>
 						</div>
 					</div>
@@ -256,13 +256,13 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 			</div>
 				<template v-if="isCompactLayout && isEditorVisible" #actions>
 					<NcButton :disabled="isSaving" @click="closeEditor">
-						Cancel
+						{{ t('profile_fields', 'Cancel') }}
 					</NcButton>
 					<NcButton v-if="isEditing" variant="error" data-testid="profile-fields-admin-delete" :disabled="isSaving" @click.prevent="removeDefinition">
-						Delete field
+						{{ t('profile_fields', 'Delete field') }}
 					</NcButton>
 					<NcButton type="submit" form="profile-fields-admin-form" variant="primary" data-testid="profile-fields-admin-save" :disabled="isSaveDisabled">
-						{{ isSaving ? 'Saving changes...' : (isEditing ? 'Save changes' : 'Create field') }}
+						{{ saveActionLabel }}
 					</NcButton>
 				</template>
 			</component>
@@ -273,6 +273,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 <script setup lang="ts">
 import { mdiDeleteOutline, mdiDragVertical, mdiEyeOffOutline, mdiEyeOutline, mdiPencilOutline } from '@mdi/js'
+import { n, t } from '@nextcloud/l10n'
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import NcDialog from '@nextcloud/vue/components/NcDialog'
 import Draggable from 'vuedraggable'
@@ -284,21 +285,21 @@ import type { FieldDefinition, FieldEditPolicy, FieldExposurePolicy, FieldType }
 import { createEditableSelectOptions, extractEditableSelectOptionValues } from '../utils/selectFieldOptions.js'
 
 const fieldTypeOptions: Array<{ value: FieldType, label: string }> = [
-	{ value: 'text', label: 'Text' },
-	{ value: 'number', label: 'Number' },
-	{ value: 'select', label: 'Select' },
+	{ value: 'text', label: t('profile_fields', 'Text') },
+	{ value: 'number', label: t('profile_fields', 'Number') },
+	{ value: 'select', label: t('profile_fields', 'Select') },
 ]
 
 const editPolicyOptions: Array<{ value: FieldEditPolicy, label: string }> = [
-	{ value: 'users', label: 'Users can edit' },
-	{ value: 'admins', label: 'Admins only' },
+	{ value: 'users', label: t('profile_fields', 'Users can edit') },
+	{ value: 'admins', label: t('profile_fields', 'Admins only') },
 ]
 
 const exposurePolicyOptions: Array<{ value: FieldExposurePolicy, label: string }> = [
-	{ value: 'hidden', label: 'Hidden from users' },
-	{ value: 'private', label: 'Visible to users, private by default' },
-	{ value: 'users', label: 'Visible to users, shared with users by default' },
-	{ value: 'public', label: 'Visible to everyone by default' },
+	{ value: 'hidden', label: t('profile_fields', 'Hidden from users') },
+	{ value: 'private', label: t('profile_fields', 'Visible to users, private by default') },
+	{ value: 'users', label: t('profile_fields', 'Visible to users, shared with users by default') },
+	{ value: 'public', label: t('profile_fields', 'Visible to everyone by default') },
 ]
 
 const definitions = ref<FieldDefinition[]>([])
@@ -351,23 +352,23 @@ const form = reactive({
 })
 
 const editPolicyDescription = computed(() => form.editPolicy === 'admins'
-	? 'Only administrators can create or update values for this field.'
-	: 'Users can update their own value in personal settings.')
+	? t('profile_fields', 'Only administrators can create or update values for this field.')
+	: t('profile_fields', 'Users can update their own value in personal settings.'))
 const exposurePolicyDescription = computed(() => {
 	switch (form.exposurePolicy) {
 	case 'hidden':
-		return 'The field is hidden from personal settings and global search.'
+		return t('profile_fields', 'The field is hidden from personal settings and global search.')
 	case 'users':
-		return 'Shown in personal settings. New values are shared with signed-in users.'
+		return t('profile_fields', 'Shown in personal settings. New values are shared with signed-in users.')
 	case 'public':
-		return 'Shown in personal settings. New values are visible to everyone.'
+		return t('profile_fields', 'Shown in personal settings. New values are visible to everyone.')
 	default:
-		return 'Shown in personal settings. New values start as private.'
+		return t('profile_fields', 'Shown in personal settings. New values start as private.')
 	}
 })
 const editorDescription = computed(() => isEditing.value
-	? 'Update the selected field and its rules.'
-	: 'Set up a new field and its rules.')
+	? t('profile_fields', 'Update the selected field and its rules.')
+	: t('profile_fields', 'Set up a new field and its rules.'))
 const selectedDefinition = computed(() => definitions.value.find((definition: FieldDefinition) => definition.id === selectedId.value) ?? null)
 const sortedDefinitions = computed(() => [...definitions.value].sort((left, right) => left.sort_order - right.sort_order || left.id - right.id))
 const isEditing = computed(() => selectedDefinition.value !== null)
@@ -376,20 +377,27 @@ const editorShellComponent = computed(() => isCompactLayout.value ? NcDialog : '
 const editorShellProps = computed(() => isCompactLayout.value
 	? {
 		open: isEditorVisible.value,
-		name: isEditing.value ? 'Edit field' : 'Create field',
+		name: isEditing.value ? t('profile_fields', 'Edit field') : t('profile_fields', 'Create field'),
 		size: 'large',
 		contentClasses: 'profile-fields-admin__editor-dialog',
 	}
 	: {})
 const editorEmptyState = computed(() => sortedDefinitions.value.length === 0
 	? {
-		title: 'No fields configured',
-		description: 'Create your first field to start building the catalog.',
+		title: t('profile_fields', 'No fields configured'),
+		description: t('profile_fields', 'Create your first field to start building the catalog.'),
 	}
 	: {
-		title: 'No field selected',
-		description: 'Select a field from the list, or create a new one.',
+		title: t('profile_fields', 'No field selected'),
+		description: t('profile_fields', 'Select a field from the list, or create a new one.'),
 	})
+const configuredFieldsCountLabel = computed(() => n('profile_fields', 'field configured', 'fields configured', definitions.value.length, { count: definitions.value.length }))
+const saveActionLabel = computed(() => isSaving.value ? t('profile_fields', 'Saving changes...') : (isEditing.value ? t('profile_fields', 'Save changes') : t('profile_fields', 'Create field')))
+const editFieldAriaLabel = (label: string) => t('profile_fields', 'Edit field {label}', { label })
+const actionsForLabel = (label: string) => t('profile_fields', 'Actions for {label}', { label })
+const toggleDefinitionActiveLabel = (definition: FieldDefinition) => definition.active
+	? t('profile_fields', 'Disable field')
+	: t('profile_fields', 'Enable field')
 
 const buildFormState = () => ({
 	fieldKey: form.fieldKey,
@@ -581,7 +589,7 @@ const loadDefinitions = async() => {
 			resetForm()
 		}
 	} catch (error) {
-		errorMessage.value = error instanceof Error ? error.message : 'Could not load field definitions.'
+		errorMessage.value = error instanceof Error ? error.message : t('profile_fields', 'Could not load field definitions.')
 	} finally {
 		isLoading.value = false
 	}
@@ -615,7 +623,7 @@ const persistDefinition = async() => {
 			selectedId.value = created.id
 			populateForm(created)
 			markJustSaved(created.id)
-			setSuccessMessage('Field created successfully.')
+			setSuccessMessage(t('profile_fields', 'Field created successfully.'))
 		} else {
 			const updated = await updateDefinition(selectedDefinition.value.id, {
 				label: payload.label,
@@ -629,13 +637,13 @@ const persistDefinition = async() => {
 			replaceDefinitionInState(updated)
 			populateForm(updated)
 			markJustSaved(updated.id)
-			setSuccessMessage('Field updated successfully.')
+			setSuccessMessage(t('profile_fields', 'Field updated successfully.'))
 		}
 		if (isCompactLayout.value) {
 			closeEditor()
 		}
 	} catch (error: any) {
-		errorMessage.value = error?.response?.data?.ocs?.data?.message ?? error?.message ?? 'Could not save this field. Please try again.'
+		errorMessage.value = error?.response?.data?.ocs?.data?.message ?? error?.message ?? t('profile_fields', 'Could not save this field. Please try again.')
 	} finally {
 		isSaving.value = false
 	}
@@ -653,9 +661,9 @@ const removeDefinition = async() => {
 		removeDefinitionFromState(selectedDefinition.value.id)
 		isCreatingNew.value = false
 		resetForm()
-		setSuccessMessage('Field deleted successfully.')
+		setSuccessMessage(t('profile_fields', 'Field deleted successfully.'))
 	} catch (error: any) {
-		errorMessage.value = error?.response?.data?.ocs?.data?.message ?? error?.message ?? 'Could not delete this field. Please try again.'
+		errorMessage.value = error?.response?.data?.ocs?.data?.message ?? error?.message ?? t('profile_fields', 'Could not delete this field. Please try again.')
 	} finally {
 		isSaving.value = false
 	}
@@ -704,7 +712,7 @@ const reorderDefinitions = async(event: { moved?: { oldIndex: number, newIndex: 
 		}
 	} catch (error: any) {
 		definitions.value = previousDefinitions
-		errorMessage.value = error?.response?.data?.ocs?.data?.message ?? error?.message ?? 'Could not save the new order. Please try again.'
+		errorMessage.value = error?.response?.data?.ocs?.data?.message ?? error?.message ?? t('profile_fields', 'Could not save the new order. Please try again.')
 	} finally {
 		isSaving.value = false
 	}
@@ -724,7 +732,7 @@ const toggleDefinitionActive = async(definition: FieldDefinition) => {
 			populateForm(updated)
 		}
 	} catch (error: any) {
-		errorMessage.value = error?.response?.data?.ocs?.data?.message ?? error?.message ?? 'Could not update this field. Please try again.'
+		errorMessage.value = error?.response?.data?.ocs?.data?.message ?? error?.message ?? t('profile_fields', 'Could not update this field. Please try again.')
 	} finally {
 		isSaving.value = false
 	}
@@ -741,7 +749,7 @@ const removeDefinitionByItem = async(definition: FieldDefinition) => {
 			resetForm()
 		}
 	} catch (error: any) {
-		errorMessage.value = error?.response?.data?.ocs?.data?.message ?? error?.message ?? 'Could not delete this field. Please try again.'
+		errorMessage.value = error?.response?.data?.ocs?.data?.message ?? error?.message ?? t('profile_fields', 'Could not delete this field. Please try again.')
 	} finally {
 		isSaving.value = false
 	}

@@ -7,25 +7,27 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 	<NcNoteCard v-if="isVisible" type="info" data-testid="profile-fields-admin-support-banner">
 		<div class="profile-fields-admin-support-banner">
 			<div class="profile-fields-admin-support-banner__copy">
-				<p><strong>Help keep Profile Fields sustainable.</strong></p>
-				<p>Profile Fields is open source under the AGPL license and maintained by the LibreCode team, creators of LibreSign.</p>
-				<p>If your organization depends on it, please help us sustain its development and maintenance.</p>
+				<p><strong>{{ t('profile_fields', 'Help keep Profile Fields sustainable.') }}</strong></p>
+				<p>{{ t('profile_fields', 'Profile Fields is open source under the AGPL license and maintained by the LibreCode team, creators of LibreSign.') }}</p>
+				<p>{{ t('profile_fields', 'If your organization depends on it, please help us sustain its development and maintenance.') }}</p>
 
 				<div class="profile-fields-admin-support-banner__actions">
 					<NcButton class="profile-fields-admin-support-banner__action" variant="primary" @click="openSponsorPage">
-						Sponsor LibreSign
+						{{ t('profile_fields', 'Sponsor LibreSign') }}
 					</NcButton>
 
 					<NcButton class="profile-fields-admin-support-banner__dismiss" variant="tertiary-no-background" @click="dismissBanner">
-						Maybe later
+						{{ t('profile_fields', 'Maybe later') }}
 					</NcButton>
 				</div>
 
 				<div class="profile-fields-admin-support-banner__links">
 					<a href="https://github.com/LibreCodeCoop/profile_fields" target="_blank" rel="noopener noreferrer nofollow">
-						Give Profile Fields a ⭐ on GitHub
+						{{ t('profile_fields', 'Give Profile Fields a ⭐ on GitHub') }}
 					</a>
-					<a href="mailto:contact@librecode.coop">Contact us for support or custom development</a>
+					<a href="mailto:contact@librecode.coop">
+						{{ t('profile_fields', 'Contact us for support or custom development') }}
+					</a>
 				</div>
 			</div>
 		</div>
@@ -34,6 +36,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { t } from '@nextcloud/l10n'
 import { NcButton, NcNoteCard } from '@nextcloud/vue'
 
 const props = withDefaults(defineProps<{
