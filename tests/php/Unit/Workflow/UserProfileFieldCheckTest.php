@@ -241,6 +241,44 @@ class UserProfileFieldCheckTest extends TestCase {
 		$this->check->validateCheck('contains', $this->encodeConfig('contract_type', 'CL'));
 	}
 
+	public function testExecuteCheckMatchesMultiselectWhenExpectedOptionIsPresent(): void {
+		$definition = $this->buildDefinition(7, 'support_regions', FieldType::MULTISELECT->value);
+		$definition->setOptions(json_encode(['LATAM', 'EMEA', 'APAC']));
+		$value = $this->buildStoredValue(7, 'alice', '{"value":["LATAM","APAC"]}');
+
+		$this->fieldDefinitionService->expects($this->once())
+			->method('findByFieldKey')
+			->with('support_regions')
+			->willReturn($definition);
+		$this->fieldValueMapper->expects($this->once())
+			->method('findByFieldDefinitionIdAndUserUid')
+			->with(7, 'alice')
+			->willReturn($value);
+
+		$this->userSession->method('getUser')->willReturn($this->buildUser('alice'));
+
+		$this->assertTrue($this->check->executeCheck('is', $this->encodeConfig('support_regions', 'LATAM')));
+	}
+
+	public function testExecuteCheckMatchesMultiselectNegatedWhenExpectedOptionIsMissing(): void {
+		$definition = $this->buildDefinition(7, 'support_regions', FieldType::MULTISELECT->value);
+		$definition->setOptions(json_encode(['LATAM', 'EMEA', 'APAC']));
+		$value = $this->buildStoredValue(7, 'alice', '{"value":["LATAM","APAC"]}');
+
+		$this->fieldDefinitionService->expects($this->once())
+			->method('findByFieldKey')
+			->with('support_regions')
+			->willReturn($definition);
+		$this->fieldValueMapper->expects($this->once())
+			->method('findByFieldDefinitionIdAndUserUid')
+			->with(7, 'alice')
+			->willReturn($value);
+
+		$this->userSession->method('getUser')->willReturn($this->buildUser('alice'));
+
+		$this->assertTrue($this->check->executeCheck('!is', $this->encodeConfig('support_regions', 'EMEA')));
+	}
+
 	private function buildDefinition(int $id, string $fieldKey, string $type): FieldDefinition {
 		$definition = new FieldDefinition();
 		$definition->setId($id);
