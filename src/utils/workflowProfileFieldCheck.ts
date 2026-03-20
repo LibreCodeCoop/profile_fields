@@ -63,6 +63,7 @@ export const getWorkflowOperatorKeys = (rawValue: string | null | undefined, def
 	}
 
 	return definition.type === 'number'
+		|| definition.type === 'date'
 		? [...numberOperatorKeys]
 		: [...textOperatorKeys]
 }

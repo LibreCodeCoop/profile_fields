@@ -273,6 +273,7 @@
                 "enum": [
                     "text",
                     "number",
+                    "date",
                     "select",
                     "multiselect"
                 ]

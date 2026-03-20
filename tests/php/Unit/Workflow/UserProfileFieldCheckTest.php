@@ -133,6 +133,36 @@ class UserProfileFieldCheckTest extends TestCase {
 		$this->assertTrue($this->check->executeCheck('greater', $this->encodeConfig('score', '9')));
 	}
 
+	public function testExecuteCheckMatchesDateComparison(): void {
+		$definition = $this->buildDefinition(7, 'start_date', FieldType::DATE->value);
+		$value = $this->buildStoredValue(7, 'alice', '{"value":"2026-03-20"}');
+
+		$this->fieldDefinitionService->expects($this->once())
+			->method('findByFieldKey')
+			->with('start_date')
+			->willReturn($definition);
+		$this->fieldValueMapper->expects($this->once())
+			->method('findByFieldDefinitionIdAndUserUid')
+			->with(7, 'alice')
+			->willReturn($value);
+
+		$this->userSession->method('getUser')->willReturn($this->buildUser('alice'));
+
+		$this->assertTrue($this->check->executeCheck('greater', $this->encodeConfig('start_date', '2026-03-19')));
+	}
+
+	public function testValidateCheckRejectsContainsForDateField(): void {
+		$this->fieldDefinitionService->expects($this->once())
+			->method('findByFieldKey')
+			->with('start_date')
+			->willReturn($this->buildDefinition(7, 'start_date', FieldType::DATE->value));
+
+		$this->expectException(\UnexpectedValueException::class);
+		$this->expectExceptionMessage('The selected operator is not supported for this profile field');
+
+		$this->check->validateCheck('contains', $this->encodeConfig('start_date', '2026-03-20'));
+	}
+
 	public function testExecuteCheckTreatsMissingValueAsNotSet(): void {
 		$definition = $this->buildDefinition(7, 'region', FieldType::TEXT->value);
 

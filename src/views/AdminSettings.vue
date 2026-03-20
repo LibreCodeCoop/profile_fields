@@ -287,6 +287,7 @@ import { createEditableSelectOptions, extractEditableSelectOptionValues } from '
 const fieldTypeOptions: Array<{ value: FieldType, label: string }> = [
 	{ value: 'text', label: t('profile_fields', 'Text') },
 	{ value: 'number', label: t('profile_fields', 'Number') },
+	{ value: 'date', label: t('profile_fields', 'Date') },
 	{ value: 'select', label: t('profile_fields', 'Select') },
 	{ value: 'multiselect', label: t('profile_fields', 'Multiselect') },
 ]

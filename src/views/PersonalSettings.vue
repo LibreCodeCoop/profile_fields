@@ -234,14 +234,15 @@ const embeddedVisibilityAnchorReady = ref(false)
 const draftValues = reactive<Record<number, string | string[]>>({})
 const draftVisibilities = reactive<Record<number, FieldVisibility>>({})
 
-const inputModesByType: Record<FieldType, 'text' | 'decimal'> = {
+const inputModesByType: Record<FieldType, 'text' | 'decimal' | 'numeric'> = {
 	text: 'text',
 	number: 'decimal',
+	date: 'numeric',
 	select: 'text',
 	multiselect: 'text',
 }
 
-const inputModeForType = (type: FieldType): 'text' | 'decimal' => {
+const inputModeForType = (type: FieldType): 'text' | 'decimal' | 'numeric' => {
 	return inputModesByType[type]
 }
 
@@ -251,14 +252,15 @@ const managedByAdminAriaLabel = (fieldLabel: string) => t('profile_fields', '{fi
 
 const fieldInputId = (fieldId: number) => `profile-fields-personal-value-${fieldId}`
 
-const componentInputTypesByType: Record<FieldType, 'text' | 'number'> = {
+const componentInputTypesByType: Record<FieldType, 'text' | 'number' | 'date'> = {
 	text: 'text',
 	number: 'number',
+	date: 'date',
 	select: 'text',
 	multiselect: 'text',
 }
 
-const componentInputTypeForType = (type: FieldType): 'text' | 'number' => {
+const componentInputTypeForType = (type: FieldType): 'text' | 'number' | 'date' => {
 	return componentInputTypesByType[type]
 }
 
@@ -268,6 +270,10 @@ const placeholderForField = (field: EditableField) => {
 	}
 
 	if (field.definition.type === 'number') {
+		return ''
+	}
+
+	if (field.definition.type === 'date') {
 		return ''
 	}
 
@@ -408,7 +414,7 @@ const canAutosaveField = (field: EditableField) => {
 		return field.definition.type === 'multiselect'
 	}
 
-	if (field.definition.type === 'text' || field.definition.type === 'select') {
+	if (field.definition.type === 'text' || field.definition.type === 'select' || field.definition.type === 'date') {
 		return true
 	}
 
@@ -522,6 +528,13 @@ const buildPayload = (field: EditableField) => {
 	if (field.definition.type === 'number') {
 		return {
 			value: rawValue === '' ? null : Number(rawValue),
+			currentVisibility,
+		}
+	}
+
+	if (field.definition.type === 'date') {
+		return {
+			value: rawValue === '' ? null : rawValue,
 			currentVisibility,
 		}
 	}

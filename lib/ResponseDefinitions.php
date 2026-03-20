@@ -10,7 +10,7 @@ declare(strict_types=1);
 namespace OCA\ProfileFields;
 
 /**
- * @psalm-type ProfileFieldsType = 'text'|'number'|'select'|'multiselect'
+ * @psalm-type ProfileFieldsType = 'text'|'number'|'date'|'select'|'multiselect'
  * @psalm-type ProfileFieldsVisibility = 'private'|'users'|'public'
  * @psalm-type ProfileFieldsEditPolicy = 'admins'|'users'
  * @psalm-type ProfileFieldsExposurePolicy = 'hidden'|'private'|'users'|'public'

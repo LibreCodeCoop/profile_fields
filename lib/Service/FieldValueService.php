@@ -106,6 +106,7 @@ class FieldValueService {
 		return match ($type) {
 			FieldType::TEXT => $this->normalizeTextValue($rawValue),
 			FieldType::NUMBER => $this->normalizeNumberValue($rawValue),
+			FieldType::DATE => $this->normalizeDateValue($rawValue),
 			FieldType::SELECT => $this->normalizeSelectValue($rawValue, $definition),
 			FieldType::MULTISELECT => $this->normalizeMultiSelectValue($rawValue, $definition),
 		};
@@ -296,6 +297,24 @@ class FieldValueService {
 		}
 
 		return ['value' => str_contains((string)$rawValue, '.') ? (float)$rawValue : (int)$rawValue];
+	}
+
+	/**
+	 * @param array<string, mixed>|scalar $rawValue
+	 * @return array{value: string}
+	 */
+	private function normalizeDateValue(array|string|int|float|bool $rawValue): array {
+		if (!is_string($rawValue)) {
+			throw new InvalidArgumentException($this->l10n->t('Date fields require a valid ISO-8601 date in YYYY-MM-DD format.'));
+		}
+
+		$value = trim($rawValue);
+		$date = \DateTimeImmutable::createFromFormat('!Y-m-d', $value);
+		if ($date === false || $date->format('Y-m-d') !== $value) {
+			throw new InvalidArgumentException($this->l10n->t('Date fields require a valid ISO-8601 date in YYYY-MM-DD format.'));
+		}
+
+		return ['value' => $value];
 	}
 
 	/**
