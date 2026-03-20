@@ -106,7 +106,11 @@ class UserProfileFieldCheck implements ICheck {
 
 		if ($this->operatorRequiresValue((string)$operator)) {
 			try {
-				$this->fieldValueService->normalizeValue($definition, $config['value']);
+				if (FieldType::from($definition->getType()) === FieldType::MULTISELECT) {
+					$this->normalizeExpectedMultiSelectOperand($definition, $config['value']);
+				} else {
+					$this->fieldValueService->normalizeValue($definition, $config['value']);
+				}
 			} catch (InvalidArgumentException $exception) {
 				throw new \UnexpectedValueException($this->l10n->t('The configured comparison value is invalid'), 4, $exception);
 			}
@@ -163,6 +167,7 @@ class UserProfileFieldCheck implements ICheck {
 			FieldType::TEXT => self::TEXT_OPERATORS,
 			FieldType::NUMBER => self::NUMBER_OPERATORS,
 			FieldType::SELECT => self::SELECT_OPERATORS,
+			FieldType::MULTISELECT => self::SELECT_OPERATORS,
 		};
 
 		return in_array($operator, $operators, true);
@@ -172,7 +177,10 @@ class UserProfileFieldCheck implements ICheck {
 		return !in_array($operator, [self::OPERATOR_IS_SET, self::OPERATOR_IS_NOT_SET], true);
 	}
 
-	private function extractActualValue(?FieldValue $value): string|int|float|bool|null {
+	/**
+	 * @return string|int|float|bool|list<string>|null
+	 */
+	private function extractActualValue(?FieldValue $value): string|int|float|bool|array|null {
 		if ($value === null) {
 			return null;
 		}
@@ -180,11 +188,27 @@ class UserProfileFieldCheck implements ICheck {
 		$serialized = $this->fieldValueService->serializeForResponse($value);
 		$payload = $serialized['value']['value'] ?? null;
 
-		return is_array($payload) || is_object($payload) ? null : $payload;
+		if (is_array($payload) && array_is_list($payload)) {
+			$normalized = [];
+			foreach ($payload as $candidate) {
+				if (is_string($candidate)) {
+					$normalized[] = $candidate;
+				}
+			}
+
+			return $normalized;
+		}
+
+		return is_object($payload) ? null : $payload;
 	}
 
-	private function evaluate(FieldDefinition $definition, string $operator, string|int|float|bool|null $expectedRawValue, string|int|float|bool|null $actualValue): bool {
-		$isSet = $actualValue !== null && $actualValue !== '';
+	/**
+	 * @param string|int|float|bool|list<string>|null $actualValue
+	 */
+	private function evaluate(FieldDefinition $definition, string $operator, string|int|float|bool|null $expectedRawValue, string|int|float|bool|array|null $actualValue): bool {
+		$isSet = $actualValue !== null
+			&& $actualValue !== ''
+			&& (!is_array($actualValue) || count($actualValue) > 0);
 		if ($operator === self::OPERATOR_IS_SET) {
 			return $isSet;
 		}
@@ -195,10 +219,22 @@ class UserProfileFieldCheck implements ICheck {
 			return false;
 		}
 
+		$fieldType = FieldType::from($definition->getType());
+
+		if ($fieldType === FieldType::MULTISELECT) {
+			if (!is_array($actualValue)) {
+				return false;
+			}
+
+			$expectedValue = $this->normalizeExpectedMultiSelectOperand($definition, $expectedRawValue);
+
+			return $this->evaluateMultiSelectOperator($operator, $expectedValue, $actualValue);
+		}
+
 		$normalizedExpected = $this->fieldValueService->normalizeValue($definition, $expectedRawValue);
 		$expectedValue = $normalizedExpected['value'] ?? null;
 
-		return match (FieldType::from($definition->getType())) {
+		return match ($fieldType) {
 			FieldType::TEXT,
 			FieldType::SELECT => $this->evaluateTextOperator($operator, (string)$expectedValue, (string)$actualValue),
 			FieldType::NUMBER => $this->evaluateNumberOperator(
@@ -206,7 +242,35 @@ class UserProfileFieldCheck implements ICheck {
 				$this->normalizeNumericComparisonOperand($expectedValue),
 				$this->normalizeNumericComparisonOperand($actualValue),
 			),
+			FieldType::MULTISELECT => false,
 		};
+	}
+
+	/**
+	 * @param list<string> $actualValues
+	 */
+	private function evaluateMultiSelectOperator(string $operator, string $expectedValue, array $actualValues): bool {
+		$contains = in_array($expectedValue, $actualValues, true);
+
+		return match ($operator) {
+			'is' => $contains,
+			'!is' => !$contains,
+			default => false,
+		};
+	}
+
+	private function normalizeExpectedMultiSelectOperand(FieldDefinition $definition, string|int|float|bool|null $expectedRawValue): string {
+		if (!is_string($expectedRawValue)) {
+			throw new InvalidArgumentException('multiselect comparison value must be one configured option');
+		}
+
+		$value = trim($expectedRawValue);
+		$options = json_decode($definition->getOptions() ?? '[]', true);
+		if ($value === '' || !is_array($options) || !in_array($value, $options, true)) {
+			throw new InvalidArgumentException('multiselect comparison value must be one configured option');
+		}
+
+		return $value;
 	}
 
 	private function normalizeNumericComparisonOperand(string|int|float|bool|null $value): int|float {
