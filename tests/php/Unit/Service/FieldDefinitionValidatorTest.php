@@ -108,6 +108,17 @@ class FieldDefinitionValidatorTest extends TestCase {
 		$this->assertSame(['LATAM', 'EMEA', 'APAC'], $validated['options']);
 	}
 
+	public function testValidateDateFieldDefinition(): void {
+		$validated = $this->validator->validate([
+			'field_key' => 'start_date',
+			'label' => 'Start Date',
+			'type' => FieldType::DATE->value,
+		]);
+
+		$this->assertSame(FieldType::DATE->value, $validated['type']);
+		$this->assertNull($validated['options']);
+	}
+
 	public function testRejectMultiSelectWithNoOptions(): void {
 		$this->expectException(InvalidArgumentException::class);
 		$this->expectExceptionMessage('multiselect fields require at least one option');
