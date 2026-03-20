@@ -18,22 +18,29 @@ use OCA\ProfileFields\Enum\FieldExposurePolicy;
 use OCA\ProfileFields\Enum\FieldType;
 use OCA\ProfileFields\Service\FieldDefinitionService;
 use OCA\ProfileFields\Service\FieldDefinitionValidator;
+use OCP\IL10N;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class FieldDefinitionServiceTest extends TestCase {
 	private FieldDefinitionMapper&MockObject $fieldDefinitionMapper;
 	private FieldValueMapper&MockObject $fieldValueMapper;
+	private IL10N&MockObject $l10n;
 	private FieldDefinitionService $service;
 
 	protected function setUp(): void {
 		parent::setUp();
 		$this->fieldDefinitionMapper = $this->createMock(FieldDefinitionMapper::class);
 		$this->fieldValueMapper = $this->createMock(FieldValueMapper::class);
+		$this->l10n = $this->createMock(IL10N::class);
+		$this->l10n->method('t')->willReturnCallback(
+			static fn (string $text, array $parameters = []): string => $parameters === [] ? $text : vsprintf($text, $parameters),
+		);
 		$this->service = new FieldDefinitionService(
 			$this->fieldDefinitionMapper,
 			$this->fieldValueMapper,
 			new FieldDefinitionValidator(),
+			$this->l10n,
 		);
 	}
 
