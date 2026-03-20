@@ -32,7 +32,7 @@ class ImportPayloadValidator {
 	 *     definitions: list<array{
 	 *         field_key: non-empty-string,
 	 *         label: non-empty-string,
-	 *         type: 'text'|'number',
+	 *         type: 'text'|'number'|'date'|'select'|'multiselect',
 	 *         edit_policy: 'admins'|'users',
 	 *         exposure_policy: 'hidden'|'private'|'users'|'public',
 	 *         sort_order: int,
@@ -71,7 +71,7 @@ class ImportPayloadValidator {
 	 * @return array<non-empty-string, array{
 	 *     field_key: non-empty-string,
 	 *     label: non-empty-string,
-	 *     type: 'text'|'number',
+	 *     type: 'text'|'number'|'date'|'select'|'multiselect',
 	 *     edit_policy: 'admins'|'users',
 	 *     exposure_policy: 'hidden'|'private'|'users'|'public',
 	 *     sort_order: int,
@@ -119,7 +119,7 @@ class ImportPayloadValidator {
 	 * @param array<non-empty-string, array{
 	 *     field_key: non-empty-string,
 	 *     label: non-empty-string,
-	 *     type: 'text'|'number',
+	 *     type: 'text'|'number'|'date'|'select'|'multiselect',
 	 *     edit_policy: 'admins'|'users',
 	 *     exposure_policy: 'hidden'|'private'|'users'|'public',
 	 *     sort_order: int,
@@ -255,11 +255,12 @@ class ImportPayloadValidator {
 	 * @param array{
 	 *     field_key: non-empty-string,
 	 *     label: non-empty-string,
-	 *     type: 'text'|'number',
+	 *     type: 'text'|'number'|'date'|'select'|'multiselect',
 	 *     edit_policy: 'admins'|'users',
 	 *     exposure_policy: 'hidden'|'private'|'users'|'public',
 	 *     sort_order: int,
 	 *     active: bool,
+	 *     options?: list<string>|null,
 	 * } $definition
 	 */
 	private function isCompatibleDefinition(FieldDefinition $existingDefinition, array $definition): bool {
