@@ -198,7 +198,8 @@
                 "enum": [
                     "text",
                     "number",
-                    "select"
+                    "select",
+                    "multiselect"
                 ]
             },
             "ValuePayload": {
