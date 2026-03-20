@@ -86,6 +86,21 @@ class FieldValueAdminApiControllerTest extends TestCase {
 		$this->assertSame(['message' => 'Field definition not found'], $response->getData());
 	}
 
+	public function testUpsertReturnsNotFoundWhenDefinitionIsInactive(): void {
+		$definition = $this->buildDefinition();
+		$definition->setActive(false);
+
+		$this->fieldDefinitionService->expects($this->once())
+			->method('findById')
+			->with(7)
+			->willReturn($definition);
+
+		$response = $this->controller->upsert('alice', 7, 'A+', FieldVisibility::USERS->value);
+
+		$this->assertSame(Http::STATUS_NOT_FOUND, $response->getStatus());
+		$this->assertSame(['message' => 'Field definition not found'], $response->getData());
+	}
+
 	public function testUpsertReturnsUnauthorizedWithoutAuthenticatedAdminUser(): void {
 		$controller = new FieldValueAdminApiController(
 			$this->request,

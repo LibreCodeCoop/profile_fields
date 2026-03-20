@@ -10,7 +10,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 		:class="{ 'profile-fields-personal--embedded': embedded }">
 		<header v-if="!embedded" class="profile-fields-personal__hero">
 			<div>
-				<h2>Additional profile information</h2>
+				<h2>Additional profile fields</h2>
 			</div>
 		</header>
 
@@ -22,7 +22,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 			<NcLoadingIcon :size="32" />
 		</div>
 
-		<NcEmptyContent v-else-if="sortedFields.length === 0" name="No profile fields" description="There are no user-visible profile fields assigned to your account yet." />
+		<NcEmptyContent v-else-if="sortedFields.length === 0" name="No additional fields yet" description="Your administrator has not assigned additional profile fields to your account yet." />
 
 		<div v-else class="profile-fields-personal__grid" :class="{ 'profile-fields-personal__grid--embedded': embedded }">
 			<article
@@ -41,11 +41,11 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 							<span class="profile-fields-personal__readonly-text">{{ resolvedDisplayValue(field) }}</span>
 							<NcPopover placement="bottom" :triggers="['hover', 'focus']" :popover-triggers="['hover']" no-focus-trap>
 								<template #trigger="{ attrs }">
-									<span v-bind="attrs" class="profile-fields-personal__info-trigger" :aria-label="`${field.definition.label}: managed by administrators`">
+									<span v-bind="attrs" class="profile-fields-personal__info-trigger" :aria-label="`${field.definition.label}: managed by your administrator`">
 										<NcIconSvgWrapper :path="mdiInformationOutline" :size="14" />
 									</span>
 								</template>
-								<p class="profile-fields-personal__popover-copy">Managed by administrators.</p>
+								<p class="profile-fields-personal__popover-copy">Managed by your administrator.</p>
 							</NcPopover>
 						</div>
 					</div>
@@ -57,13 +57,13 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 							<label :for="field.can_edit ? fieldInputId(field.definition.id) : undefined">{{ field.definition.label }}</label>
 							<NcPopover v-if="!embedded && !field.can_edit" placement="end" :triggers="['hover', 'focus']" :popover-triggers="['hover']" no-focus-trap>
 								<template #trigger="{ attrs }">
-									<span v-bind="attrs" class="profile-fields-personal__chip-trigger" aria-label="Read-only field information">
+									<span v-bind="attrs" class="profile-fields-personal__chip-trigger" aria-label="Read-only field">
 										<span class="profile-fields-personal__readonly-indicator" aria-hidden="true">
 											<NcIconSvgWrapper :path="mdiLockOutline" :size="12" />
 										</span>
 									</span>
 								</template>
-								<p class="profile-fields-personal__popover-copy">Managed by administrators.</p>
+								<p class="profile-fields-personal__popover-copy">Managed by your administrator.</p>
 							</NcPopover>
 						</div>
 					</div>
@@ -105,7 +105,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 						</span>
 
 						<div v-if="!embedded" class="profile-fields-personal__embedded-toolbar">
-							<label class="profile-fields-personal__embedded-visibility-label" :for="`profile-fields-personal-visibility-${field.definition.id}`">Visibility</label>
+							<label class="profile-fields-personal__embedded-visibility-label" :for="`profile-fields-personal-visibility-${field.definition.id}`">{{ visibilityControlLabel }}</label>
 							<NcSelect
 								:input-id="`profile-fields-personal-visibility-${field.definition.id}`"
 								class="profile-fields-personal__visibility-select"
@@ -120,7 +120,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 							/>
 
 							<NcButton variant="primary" :disabled="isSaving(field.definition.id) || !hasFieldChanges(field)" @click="saveField(field)">
-								{{ isSaving(field.definition.id) ? 'Saving...' : 'Save' }}
+								{{ isSaving(field.definition.id) ? 'Saving changes...' : 'Save changes' }}
 							</NcButton>
 						</div>
 
@@ -131,8 +131,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 		<Teleport v-if="embedded && embeddedVisibilityAnchorReady && editableVisibilityFields.length > 0" to="#profile-fields-personal-visibility-anchor">
 			<div class="profile-fields-personal__visibility-teleport-root" data-testid="profile-fields-personal-visibility-panel" role="group" :aria-labelledby="visibilitySectionHeadingId" :aria-describedby="visibilitySectionDescriptionId">
-				<h3 :id="visibilitySectionHeadingId" class="profile-fields-personal__sr-only">Additional profile fields visibility</h3>
-				<p :id="visibilitySectionDescriptionId" class="profile-fields-personal__sr-only">Choose who can see each custom profile field on your profile.</p>
+				<h3 :id="visibilitySectionHeadingId" class="profile-fields-personal__sr-only">Additional profile field visibility</h3>
+				<p :id="visibilitySectionDescriptionId" class="profile-fields-personal__sr-only">Choose who can see each additional profile field on your profile.</p>
 				<div
 					v-for="field in editableVisibilityFields"
 					:key="`embedded-visibility-${field.definition.id}`"
@@ -164,8 +164,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 			:aria-labelledby="visibilitySectionHeadingId"
 			:aria-describedby="visibilitySectionDescriptionId"
 			data-testid="profile-fields-personal-visibility-panel">
-			<h3 :id="visibilitySectionHeadingId" class="profile-fields-personal__sr-only">Additional profile fields visibility</h3>
-			<p :id="visibilitySectionDescriptionId" class="profile-fields-personal__sr-only">Choose who can see each custom profile field on your profile.</p>
+			<h3 :id="visibilitySectionHeadingId" class="profile-fields-personal__sr-only">Additional profile field visibility</h3>
+			<p :id="visibilitySectionDescriptionId" class="profile-fields-personal__sr-only">Choose who can see each additional profile field on your profile.</p>
 			<div class="profile-fields-personal__visibility-grid">
 				<div
 					v-for="field in editableVisibilityFields"
@@ -195,6 +195,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 <script setup lang="ts">
 import { mdiLockOutline, mdiInformationOutline } from '@mdi/js'
+import { t } from '@nextcloud/l10n'
 import { computed, inject, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { NcButton, NcEmptyContent, NcIconSvgWrapper, NcInputField, NcLoadingIcon, NcNoteCard, NcPopover, NcSelect } from '@nextcloud/vue'
 import { listEditableFields, upsertOwnValue } from '../api'
@@ -205,6 +206,7 @@ import { visibilityOptions } from '../utils/visibilityOptions.js'
 const embedded = inject<boolean>('profileFieldsEmbedded', false)
 const visibilitySectionHeadingId = 'profile-fields-personal-visibility-heading'
 const visibilitySectionDescriptionId = 'profile-fields-personal-visibility-description'
+const visibilityControlLabel = t('profile_fields', 'Who can see this')
 
 const fields = ref<EditableField[]>([])
 const isLoading = ref(true)
@@ -246,14 +248,14 @@ const placeholderForField = (field: EditableField) => {
 	}
 
 	if (field.definition.type === 'number') {
-		return 'Enter a number'
+		return ''
 	}
 
 	if (field.definition.type === 'select') {
-		return 'Choose a value'
+		return 'Select an option'
 	}
 
-	return 'Enter a value'
+	return ''
 }
 
 const normaliseEditableField = (field: EditableField) => {
@@ -270,7 +272,7 @@ const loadFields = async() => {
 		fields.value = await listEditableFields()
 		fields.value.forEach(normaliseEditableField)
 	} catch (error) {
-		globalError.value = error instanceof Error ? error.message : 'Failed to load profile fields.'
+		globalError.value = error instanceof Error ? error.message : 'Could not load your additional profile fields.'
 	} finally {
 		isLoading.value = false
 	}
@@ -281,7 +283,7 @@ const isSaved = (fieldId: number) => successIds.value.includes(fieldId)
 const fieldHasError = (fieldId: number) => Boolean(fieldErrors[fieldId])
 const fieldHelperText = (fieldId: number) => fieldErrors[fieldId] ?? ''
 const fieldSaveSucceeded = (fieldId: number) => isSaved(fieldId) && !fieldHasError(fieldId)
-const visibilityInputLabel = (fieldLabel: string) => `Visibility for ${fieldLabel}`
+const visibilityInputLabel = (fieldLabel: string) => t('profile_fields', 'Visibility for {fieldLabel}', { fieldLabel })
 const fieldSaveState = (fieldId: number) => {
 	if (fieldHasError(fieldId)) {
 		return 'error'
@@ -337,7 +339,7 @@ const currentStoredValue = (field: EditableField) => {
 
 const resolvedDisplayValue = (field: EditableField) => {
 	const value = currentStoredValue(field) || draftValues[field.definition.id] || ''
-	return value === '' ? 'No value available.' : value
+	return value === '' ? 'Not set' : value
 }
 
 const findField = (fieldId: number) => fields.value.find((field: EditableField) => field.definition.id === fieldId)
@@ -471,7 +473,7 @@ const saveField = async(field: EditableField) => {
 		normaliseEditableField(field)
 		queueSuccessState(fieldId)
 	} catch (error: any) {
-		fieldErrors[fieldId] = error?.response?.data?.ocs?.data?.message ?? error?.message ?? 'Failed to save this field.'
+		fieldErrors[fieldId] = error?.response?.data?.ocs?.data?.message ?? error?.message ?? 'Could not save this field. Please try again.'
 	} finally {
 		savingIds.value = savingIds.value.filter((id: number) => id !== fieldId)
 	}
@@ -848,17 +850,22 @@ onBeforeUnmount(() => {
 	}
 
 	&__embedded-toolbar {
-		display: flex;
-		flex-wrap: wrap;
+		display: grid;
+		grid-template-columns: minmax(0, 220px) auto;
+		grid-template-areas:
+			'label label'
+			'select button';
 		align-items: center;
-		gap: 10px;
+		gap: 8px 10px;
 	}
 
 	&__embedded-visibility-label {
+		grid-area: label;
 		color: var(--color-main-text);
 		font-size: 16px;
 		font-weight: 400;
 		line-height: 1.5;
+		overflow-wrap: anywhere;
 	}
 
 	&__popover-copy {
@@ -881,7 +888,14 @@ onBeforeUnmount(() => {
 	}
 
 	&__visibility-select {
-		width: min(100%, 220px);
+		grid-area: select;
+		width: 100%;
+		max-width: 220px;
+	}
+
+	&__embedded-toolbar :deep(button),
+	&__embedded-toolbar :deep(.button-vue) {
+		grid-area: button;
 	}
 
 	&__visibility-panel {

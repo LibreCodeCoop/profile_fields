@@ -31,13 +31,13 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 			<div v-if="isLoading" class="profile-fields-user-dialog__loading">
 				<NcLoadingIcon :size="32" />
-				<span>Loading fields for {{ userUid }}...</span>
+				<span>Loading profile fields for {{ userUid }}...</span>
 			</div>
 
 			<NcEmptyContent
 				v-else-if="editableFields.length === 0"
-				name="No active fields"
-				description="Create and activate field definitions first. They will appear here automatically." />
+				name="No editable fields"
+				description="Create and enable fields in the admin catalog. They will appear here automatically." />
 
 			<div v-else class="profile-fields-user-dialog__list">
 				<article v-for="field in editableFields" :key="field.definition.id" class="profile-fields-user-dialog__row" :class="{ 'profile-fields-user-dialog__row--error': fieldHasError(field) }">
@@ -75,7 +75,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 						/>
 
 						<div class="profile-fields-user-dialog__visibility-control" :class="{ 'profile-fields-user-dialog__visibility-control--error': fieldHasError(field) }">
-							<label class="profile-fields-user-dialog__control-label" :for="`profile-fields-user-dialog-visibility-${field.definition.id}`">Visibility</label>
+							<label class="profile-fields-user-dialog__control-label" :for="`profile-fields-user-dialog-visibility-${field.definition.id}`">{{ visibilityControlLabel }}</label>
 							<NcSelect
 								:input-id="`profile-fields-user-dialog-visibility-${field.definition.id}`"
 								:model-value="visibilityOptionFor(field.definition.id)"
@@ -94,10 +94,10 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 		<template #actions>
 			<NcButton @click="closeDialog">
-				Close
+				Cancel
 			</NcButton>
 			<NcButton variant="primary" :disabled="!hasPendingChanges || hasInvalidFields || isSavingAny || isLoading" @click="saveAllFields">
-				{{ isSavingAny ? 'Saving...' : 'Save' }}
+				{{ isSavingAny ? 'Saving changes...' : 'Save changes' }}
 			</NcButton>
 		</template>
 	</NcDialog>
@@ -105,6 +105,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 <script lang="ts">
 import { computed, defineComponent, reactive, ref, watch } from 'vue'
+import { t } from '@nextcloud/l10n'
 import NcAvatar from '@nextcloud/vue/components/NcAvatar'
 import { NcButton, NcDialog, NcEmptyContent, NcInputField, NcLoadingIcon, NcNoteCard, NcSelect } from '@nextcloud/vue'
 import { listAdminUserValues, listDefinitions, upsertAdminUserValue } from '../api'
@@ -143,6 +144,7 @@ export default defineComponent({
 		'update:open': (value: boolean) => typeof value === 'boolean',
 	},
 	setup(props: { open: boolean, userUid: string, userDisplayName: string }, { emit }: { emit: (event: 'update:open', value: boolean) => void }) {
+		const visibilityControlLabel = t('profile_fields', 'Who can see this')
 		const definitions = ref<FieldDefinition[]>([])
 		const userValues = ref<FieldValueRecord[]>([])
 		const isLoading = ref(false)
@@ -154,17 +156,17 @@ export default defineComponent({
 		const userDraftValues = reactive<Record<number, string>>({})
 		const userDraftVisibilities = reactive<Record<number, FieldVisibility>>({})
 
-		const title = computed(() => 'Edit profile fields')
+		const title = computed(() => 'Edit additional profile fields')
 		const headerUserName = computed(() => props.userDisplayName.trim() !== '' ? props.userDisplayName : props.userUid)
 		const editableFields = computed<AdminEditableField[]>(() => buildAdminEditableFields(definitions.value, userValues.value))
 		const isSavingAny = computed(() => savingIds.value.length > 0)
 		const headerDescription = computed(() => {
 			if (props.userUid === '') {
-				return 'Change the active custom profile fields for the selected account.'
+				return 'Update additional profile fields for the selected account.'
 			}
 
 			const count = editableFields.value.length
-			const label = count === 1 ? '1 active field' : `${count} active fields`
+			const label = count === 1 ? '1 editable field' : `${count} editable fields`
 			return `${label} for @${props.userUid}.`
 		})
 
@@ -181,9 +183,9 @@ export default defineComponent({
 		} as Record<FieldType, string>)[type]
 
 		const placeholderForField = (type: FieldType): string => ({
-			text: 'Free text stored as a scalar value.',
+			text: 'Enter a value',
 			number: 'Enter a number',
-			select: 'Choose a value',
+			select: 'Select an option',
 		} as Record<FieldType, string>)[type]
 
 		const plainNumberPattern = /^-?\d+(\.\d+)?$/
@@ -280,7 +282,7 @@ export default defineComponent({
 				clearRecord(userDraftVisibilities)
 				editableFields.value.forEach(normaliseDraft)
 			} catch (error) {
-				errorMessage.value = error instanceof Error ? error.message : 'Failed to load profile fields for this user.'
+				errorMessage.value = error instanceof Error ? error.message : 'Could not load profile fields for this user.'
 			} finally {
 				isLoading.value = false
 			}
@@ -395,7 +397,7 @@ export default defineComponent({
 				userValues.value = nextValues
 				normaliseDraft({ definition: field.definition, value: saved })
 			} catch (error) {
-				userValueErrors[fieldId] = formatFieldErrorMessage(field, extractApiMessage(error) ?? 'Failed to save this field value.')
+				userValueErrors[fieldId] = formatFieldErrorMessage(field, extractApiMessage(error) ?? 'Could not save this field value. Please try again.')
 			} finally {
 				savingIds.value = savingIds.value.filter((value: number) => value !== fieldId)
 			}
@@ -468,6 +470,7 @@ export default defineComponent({
 			errorMessage,
 			headerDescription,
 			headerUserName,
+			visibilityControlLabel,
 			hasPendingChanges,
 			hasInvalidFields,
 			helperTextForField,
@@ -602,9 +605,9 @@ export default defineComponent({
 	&__visibility-control {
 		min-width: 0;
 		display: grid;
-		grid-template-columns: 80px minmax(0, 1fr);
-		align-items: center;
-		gap: 10px;
+		grid-template-columns: minmax(0, 1fr);
+		align-items: stretch;
+		gap: 6px;
 		padding-top: 0;
 
 		:deep(.multiselect__tags) {
@@ -637,14 +640,13 @@ export default defineComponent({
 	}
 
 	&__control-label {
-		display: inline-flex;
-		align-items: center;
-		min-height: 34px;
+		display: block;
+		min-height: 0;
 		font-size: 14px;
 		font-weight: 400;
 		line-height: 1.4;
 		color: var(--color-text-maxcontrast);
-		white-space: nowrap;
+		overflow-wrap: anywhere;
 	}
 }
 
@@ -663,8 +665,6 @@ export default defineComponent({
 		}
 
 		&__visibility-control {
-			grid-template-columns: 1fr;
-			align-items: stretch;
 			gap: 4px;
 		}
 	}

@@ -86,7 +86,7 @@ class FieldValueAdminApiController extends OCSController {
 		}
 
 		$definition = $this->fieldDefinitionService->findById($fieldDefinitionId);
-		if ($definition === null) {
+		if ($definition === null || !$definition->getActive()) {
 			return new DataResponse(['message' => 'Field definition not found'], Http::STATUS_NOT_FOUND);
 		}
 
