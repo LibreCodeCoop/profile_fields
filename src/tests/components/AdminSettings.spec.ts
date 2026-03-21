@@ -105,4 +105,19 @@ describe('AdminSettings', () => {
 
 		expect(wrapper.text()).toContain('tr:Boolean')
 	})
+
+	it('offers the URL field type in the editor', async() => {
+		const wrapper = mount(AdminSettings, {
+			global: {
+				stubs: {
+					Draggable: defineComponent({ template: '<div><slot /></div>' }),
+				},
+			},
+		})
+
+		await flushPromises()
+		await wrapper.get('button').trigger('click')
+
+		expect(wrapper.text()).toContain('tr:URL')
+	})
 })

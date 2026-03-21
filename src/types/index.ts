@@ -19,7 +19,7 @@ type ApiOperationRequestBody<TOperation> = TOperation extends {
 
 type ApiRequestJsonBody<TOperation> = ApiJsonBody<ApiOperationRequestBody<TOperation>>
 
-export type FieldType = ApiComponents['schemas']['Type'] | 'multiselect' | 'date' | 'boolean'
+export type FieldType = ApiComponents['schemas']['Type'] | 'multiselect' | 'date' | 'boolean' | 'url'
 export type FieldVisibility = ApiComponents['schemas']['Visibility']
 export type FieldEditPolicy = 'admins' | 'users'
 export type FieldExposurePolicy = 'hidden' | FieldVisibility

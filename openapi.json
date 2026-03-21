@@ -146,6 +146,7 @@
                     "number",
                     "boolean",
                     "date",
+                    "url",
                     "select",
                     "multiselect"
                 ]

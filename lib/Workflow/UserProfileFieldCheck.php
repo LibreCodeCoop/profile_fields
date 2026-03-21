@@ -59,6 +59,14 @@ class UserProfileFieldCheck implements ICheck {
 		'is',
 		'!is',
 	];
+	private const URL_OPERATORS = [
+		self::OPERATOR_IS_SET,
+		self::OPERATOR_IS_NOT_SET,
+		'is',
+		'!is',
+		'contains',
+		'!contains',
+	];
 	private const SELECT_OPERATORS = [
 		self::OPERATOR_IS_SET,
 		self::OPERATOR_IS_NOT_SET,
@@ -122,8 +130,11 @@ class UserProfileFieldCheck implements ICheck {
 
 		if ($this->operatorRequiresValue((string)$operator)) {
 			try {
-				if (FieldType::from($definition->getType()) === FieldType::MULTISELECT) {
+				$fieldType = FieldType::from($definition->getType());
+				if ($fieldType === FieldType::MULTISELECT) {
 					$this->normalizeExpectedMultiSelectOperand($definition, $config['value']);
+				} elseif ($fieldType === FieldType::URL && ((string)$operator === 'contains' || (string)$operator === '!contains')) {
+					// URL contains search terms are plain substrings — no URL validation needed.
 				} else {
 					$this->fieldValueService->normalizeValue($definition, $config['value']);
 				}
@@ -184,6 +195,7 @@ class UserProfileFieldCheck implements ICheck {
 			FieldType::NUMBER => self::NUMBER_OPERATORS,
 			FieldType::BOOLEAN => self::BOOLEAN_OPERATORS,
 			FieldType::DATE => self::DATE_OPERATORS,
+			FieldType::URL => self::URL_OPERATORS,
 			FieldType::SELECT => self::SELECT_OPERATORS,
 			FieldType::MULTISELECT => self::SELECT_OPERATORS,
 		};
@@ -249,11 +261,16 @@ class UserProfileFieldCheck implements ICheck {
 			return $this->evaluateMultiSelectOperator($operator, $expectedValue, $actualValue);
 		}
 
+		if ($fieldType === FieldType::URL && ($operator === 'contains' || $operator === '!contains')) {
+			return $this->evaluateTextOperator($operator, trim((string)$expectedRawValue), (string)$actualValue);
+		}
+
 		$normalizedExpected = $this->fieldValueService->normalizeValue($definition, $expectedRawValue);
 		$expectedValue = $normalizedExpected['value'] ?? null;
 
 		return match ($fieldType) {
 			FieldType::TEXT,
+			FieldType::URL,
 			FieldType::SELECT => $this->evaluateTextOperator($operator, (string)$expectedValue, (string)$actualValue),
 			FieldType::BOOLEAN => $this->evaluateBooleanOperator(
 				$operator,

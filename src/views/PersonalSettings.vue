@@ -268,16 +268,17 @@ const managedByAdminAriaLabel = (fieldLabel: string) => t('profile_fields', '{fi
 
 const fieldInputId = (fieldId: number) => `profile-fields-personal-value-${fieldId}`
 
-const componentInputTypesByType: Record<FieldType, 'text' | 'number' | 'date'> = {
+const componentInputTypesByType: Record<FieldType, 'text' | 'number' | 'date' | 'url'> = {
 	text: 'text',
 	number: 'number',
 	boolean: 'text',
 	date: 'date',
+	url: 'url',
 	select: 'text',
 	multiselect: 'text',
 }
 
-const componentInputTypeForType = (type: FieldType): 'text' | 'number' | 'date' => {
+const componentInputTypeForType = (type: FieldType): 'text' | 'number' | 'date' | 'url' => {
 	return componentInputTypesByType[type]
 }
 
@@ -453,7 +454,7 @@ const canAutosaveField = (field: EditableField) => {
 		return field.definition.type === 'multiselect'
 	}
 
-	if (field.definition.type === 'text' || field.definition.type === 'select' || field.definition.type === 'date' || field.definition.type === 'boolean') {
+	if (field.definition.type === 'text' || field.definition.type === 'select' || field.definition.type === 'date' || field.definition.type === 'boolean' || field.definition.type === 'url') {
 		return true
 	}
 

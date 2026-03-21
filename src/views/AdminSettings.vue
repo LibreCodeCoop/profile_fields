@@ -289,6 +289,7 @@ const fieldTypeOptions: Array<{ value: FieldType, label: string }> = [
 	{ value: 'number', label: t('profile_fields', 'Number') },
 	{ value: 'boolean', label: t('profile_fields', 'Boolean') },
 	{ value: 'date', label: t('profile_fields', 'Date') },
+	{ value: 'url', label: t('profile_fields', 'URL') },
 	{ value: 'select', label: t('profile_fields', 'Select') },
 	{ value: 'multiselect', label: t('profile_fields', 'Multiselect') },
 ]
