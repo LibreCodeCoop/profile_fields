@@ -29,7 +29,7 @@ class FieldDefinitionValidator {
 	 * @return array{
 	 *     field_key: non-empty-string,
 	 *     label: non-empty-string,
-	 *     type: 'text'|'number'|'boolean'|'date'|'url'|'select'|'multiselect',
+	 *     type: 'text'|'number'|'boolean'|'date'|'url'|'email'|'select'|'multiselect',
 	 *     edit_policy: 'admins'|'users',
 	 *     exposure_policy: 'hidden'|'private'|'users'|'public',
 	 *     sort_order: int,

@@ -67,6 +67,14 @@ class UserProfileFieldCheck implements ICheck {
 		'contains',
 		'!contains',
 	];
+	private const EMAIL_OPERATORS = [
+		self::OPERATOR_IS_SET,
+		self::OPERATOR_IS_NOT_SET,
+		'is',
+		'!is',
+		'contains',
+		'!contains',
+	];
 	private const SELECT_OPERATORS = [
 		self::OPERATOR_IS_SET,
 		self::OPERATOR_IS_NOT_SET,
@@ -133,8 +141,11 @@ class UserProfileFieldCheck implements ICheck {
 				$fieldType = FieldType::from($definition->getType());
 				if ($fieldType === FieldType::MULTISELECT) {
 					$this->normalizeExpectedMultiSelectOperand($definition, $config['value']);
-				} elseif ($fieldType === FieldType::URL && ((string)$operator === 'contains' || (string)$operator === '!contains')) {
-					// URL contains search terms are plain substrings — no URL validation needed.
+				} elseif (
+					($fieldType === FieldType::URL || $fieldType === FieldType::EMAIL)
+					&& ((string)$operator === 'contains' || (string)$operator === '!contains')
+				) {
+					// URL/email contains search terms are plain substrings — no strict value validation needed.
 				} else {
 					$this->fieldValueService->normalizeValue($definition, $config['value']);
 				}
@@ -196,6 +207,7 @@ class UserProfileFieldCheck implements ICheck {
 			FieldType::BOOLEAN => self::BOOLEAN_OPERATORS,
 			FieldType::DATE => self::DATE_OPERATORS,
 			FieldType::URL => self::URL_OPERATORS,
+			FieldType::EMAIL => self::EMAIL_OPERATORS,
 			FieldType::SELECT => self::SELECT_OPERATORS,
 			FieldType::MULTISELECT => self::SELECT_OPERATORS,
 		};
@@ -261,7 +273,7 @@ class UserProfileFieldCheck implements ICheck {
 			return $this->evaluateMultiSelectOperator($operator, $expectedValue, $actualValue);
 		}
 
-		if ($fieldType === FieldType::URL && ($operator === 'contains' || $operator === '!contains')) {
+		if (($fieldType === FieldType::URL || $fieldType === FieldType::EMAIL) && ($operator === 'contains' || $operator === '!contains')) {
 			return $this->evaluateTextOperator($operator, trim((string)$expectedRawValue), (string)$actualValue);
 		}
 
@@ -271,6 +283,7 @@ class UserProfileFieldCheck implements ICheck {
 		return match ($fieldType) {
 			FieldType::TEXT,
 			FieldType::URL,
+			FieldType::EMAIL,
 			FieldType::SELECT => $this->evaluateTextOperator($operator, (string)$expectedValue, (string)$actualValue),
 			FieldType::BOOLEAN => $this->evaluateBooleanOperator(
 				$operator,

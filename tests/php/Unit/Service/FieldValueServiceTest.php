@@ -115,6 +115,40 @@ class FieldValueServiceTest extends TestCase {
 		$this->service->normalizeValue($definition, ['https://example.com']);
 	}
 
+	public function testNormalizeEmailValueAcceptsValidEmail(): void {
+		$definition = $this->buildDefinition(FieldType::EMAIL->value);
+
+		$normalized = $this->service->normalizeValue($definition, 'alice@example.com');
+
+		$this->assertSame(['value' => 'alice@example.com'], $normalized);
+	}
+
+	public function testNormalizeEmailValueTrimsWhitespace(): void {
+		$definition = $this->buildDefinition(FieldType::EMAIL->value);
+
+		$normalized = $this->service->normalizeValue($definition, '  alice@example.com  ');
+
+		$this->assertSame(['value' => 'alice@example.com'], $normalized);
+	}
+
+	public function testNormalizeEmailValueRejectsInvalidEmail(): void {
+		$definition = $this->buildDefinition(FieldType::EMAIL->value);
+
+		$this->expectException(InvalidArgumentException::class);
+		$this->expectExceptionMessage('Email fields require a valid email address.');
+
+		$this->service->normalizeValue($definition, 'not-an-email');
+	}
+
+	public function testNormalizeEmailValueRejectsArray(): void {
+		$definition = $this->buildDefinition(FieldType::EMAIL->value);
+
+		$this->expectException(InvalidArgumentException::class);
+		$this->expectExceptionMessage('Email fields require a valid email address.');
+
+		$this->service->normalizeValue($definition, ['alice@example.com']);
+	}
+
 	public function testNormalizeMissingValueAsNull(): void {
 		$definition = $this->buildDefinition(FieldType::TEXT->value);
 

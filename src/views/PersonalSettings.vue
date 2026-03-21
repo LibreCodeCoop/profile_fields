@@ -249,16 +249,17 @@ const embeddedVisibilityAnchorReady = ref(false)
 const draftValues = reactive<Record<number, string | string[] | boolean>>({})
 const draftVisibilities = reactive<Record<number, FieldVisibility>>({})
 
-const inputModesByType: Record<FieldType, 'text' | 'decimal' | 'numeric'> = {
+const inputModesByType: Record<FieldType, 'text' | 'decimal' | 'numeric' | 'email'> = {
 	text: 'text',
 	number: 'decimal',
 	boolean: 'text',
 	date: 'numeric',
+	email: 'email',
 	select: 'text',
 	multiselect: 'text',
 }
 
-const inputModeForType = (type: FieldType): 'text' | 'decimal' | 'numeric' => {
+const inputModeForType = (type: FieldType): 'text' | 'decimal' | 'numeric' | 'email' => {
 	return inputModesByType[type]
 }
 
@@ -268,17 +269,18 @@ const managedByAdminAriaLabel = (fieldLabel: string) => t('profile_fields', '{fi
 
 const fieldInputId = (fieldId: number) => `profile-fields-personal-value-${fieldId}`
 
-const componentInputTypesByType: Record<FieldType, 'text' | 'number' | 'date' | 'url'> = {
+const componentInputTypesByType: Record<FieldType, 'text' | 'number' | 'date' | 'url' | 'email'> = {
 	text: 'text',
 	number: 'number',
 	boolean: 'text',
 	date: 'date',
 	url: 'url',
+	email: 'email',
 	select: 'text',
 	multiselect: 'text',
 }
 
-const componentInputTypeForType = (type: FieldType): 'text' | 'number' | 'date' | 'url' => {
+const componentInputTypeForType = (type: FieldType): 'text' | 'number' | 'date' | 'url' | 'email' => {
 	return componentInputTypesByType[type]
 }
 
@@ -454,7 +456,7 @@ const canAutosaveField = (field: EditableField) => {
 		return field.definition.type === 'multiselect'
 	}
 
-	if (field.definition.type === 'text' || field.definition.type === 'select' || field.definition.type === 'date' || field.definition.type === 'boolean' || field.definition.type === 'url') {
+	if (field.definition.type === 'text' || field.definition.type === 'select' || field.definition.type === 'date' || field.definition.type === 'boolean' || field.definition.type === 'url' || field.definition.type === 'email') {
 		return true
 	}
 

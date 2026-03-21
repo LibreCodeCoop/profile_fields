@@ -222,6 +222,35 @@ class UserProfileFieldCheckTest extends TestCase {
 		$this->addToAssertionCount(1);
 	}
 
+	public function testExecuteCheckMatchesEmailContains(): void {
+		$definition = $this->buildDefinition(9, 'work_email', FieldType::EMAIL->value);
+		$value = $this->buildStoredValue(9, 'alice', '{"value":"alice@example.com"}');
+
+		$this->fieldDefinitionService->expects($this->once())
+			->method('findByFieldKey')
+			->with('work_email')
+			->willReturn($definition);
+		$this->fieldValueMapper->expects($this->once())
+			->method('findByFieldDefinitionIdAndUserUid')
+			->with(9, 'alice')
+			->willReturn($value);
+
+		$this->userSession->method('getUser')->willReturn($this->buildUser('alice'));
+
+		$this->assertTrue($this->check->executeCheck('contains', $this->encodeConfig('work_email', '@example.com')));
+	}
+
+	public function testValidateCheckAcceptsContainsForEmailField(): void {
+		$this->fieldDefinitionService->expects($this->once())
+			->method('findByFieldKey')
+			->with('work_email')
+			->willReturn($this->buildDefinition(9, 'work_email', FieldType::EMAIL->value));
+
+		// Should not throw
+		$this->check->validateCheck('contains', $this->encodeConfig('work_email', '@example.com'));
+		$this->addToAssertionCount(1);
+	}
+
 	public function testExecuteCheckTreatsMissingValueAsNotSet(): void {
 		$definition = $this->buildDefinition(7, 'region', FieldType::TEXT->value);
 

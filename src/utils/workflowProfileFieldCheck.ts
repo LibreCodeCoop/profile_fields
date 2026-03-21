@@ -68,7 +68,7 @@ export const getWorkflowOperatorKeys = (rawValue: string | null | undefined, def
 		? [...numberOperatorKeys]
 		: definition.type === 'boolean'
 			? [...booleanOperatorKeys]
-		: definition.type === 'url'
+		: definition.type === 'url' || definition.type === 'email'
 			? [...textOperatorKeys]
 		: [...textOperatorKeys]
 }

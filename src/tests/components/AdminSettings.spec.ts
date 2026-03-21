@@ -120,4 +120,19 @@ describe('AdminSettings', () => {
 
 		expect(wrapper.text()).toContain('tr:URL')
 	})
+
+	it('offers the Email field type in the editor', async() => {
+		const wrapper = mount(AdminSettings, {
+			global: {
+				stubs: {
+					Draggable: defineComponent({ template: '<div><slot /></div>' }),
+				},
+			},
+		})
+
+		await flushPromises()
+		await wrapper.get('button').trigger('click')
+
+		expect(wrapper.text()).toContain('tr:Email')
+	})
 })

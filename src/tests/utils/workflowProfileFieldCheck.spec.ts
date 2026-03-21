@@ -16,6 +16,7 @@ const definitions = [
 	{ field_key: 'start_date', label: 'Start date', type: 'date', active: true },
 	{ field_key: 'is_manager', label: 'Is manager', type: 'boolean', active: true },
 	{ field_key: 'website', label: 'Website', type: 'url', active: true },
+	{ field_key: 'work_email', label: 'Work email', type: 'email', active: true },
 ] as const
 
 describe('workflowProfileFieldCheck', () => {
@@ -89,5 +90,20 @@ describe('workflowProfileFieldCheck', () => {
 
 	it('accepts contains operator for url field', () => {
 		expect(isWorkflowOperatorSupported('contains', serializeWorkflowCheckValue({ field_key: 'website', value: 'example.com' }), definitions)).toBe(true)
+	})
+
+	it('returns text-style operators for email definitions', () => {
+		expect(getWorkflowOperatorKeys(serializeWorkflowCheckValue({ field_key: 'work_email', value: 'alice@example.com' }), definitions)).toEqual([
+			'is-set',
+			'!is-set',
+			'is',
+			'!is',
+			'contains',
+			'!contains',
+		])
+	})
+
+	it('accepts contains operator for email field', () => {
+		expect(isWorkflowOperatorSupported('contains', serializeWorkflowCheckValue({ field_key: 'work_email', value: '@example.com' }), definitions)).toBe(true)
 	})
 })

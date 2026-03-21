@@ -100,7 +100,7 @@ export type components = {
             itemsperpage?: string;
         };
         /** @enum {string} */
-        Type: "text" | "number" | "boolean" | "date" | "url" | "select" | "multiselect";
+        Type: "text" | "number" | "boolean" | "date" | "url" | "email" | "select" | "multiselect";
         ValuePayload: {
             value: Record<string, never>;
         };

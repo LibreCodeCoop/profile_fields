@@ -87,6 +87,29 @@ vi.mock('../../api', () => ({
 			},
 			can_edit: true,
 		},
+		{
+			definition: {
+				id: 6,
+				field_key: 'work_email',
+				label: 'Work email',
+				type: 'email',
+				edit_policy: 'users',
+				exposure_policy: 'private',
+				sort_order: 3,
+				active: true,
+				options: null,
+			},
+			value: {
+				id: 13,
+				field_definition_id: 6,
+				user_uid: 'alice',
+				value: { value: 'alice@example.com' },
+				current_visibility: 'private',
+				updated_by_uid: 'alice',
+				updated_at: '2026-03-20T12:00:00+00:00',
+			},
+			can_edit: true,
+		},
 	]),
 	upsertOwnValue: vi.fn(),
 }))
@@ -172,5 +195,21 @@ describe('PersonalSettings', () => {
 		const input = wrapper.find('[data-testid="profile-fields-personal-input-website"]')
 		expect(input.exists()).toBe(true)
 		expect(input.attributes('type')).toBe('url')
+	})
+
+	it('renders email fields with type=email input', async() => {
+		const wrapper = mount(PersonalSettings, {
+			global: {
+				stubs: {
+					Teleport: true,
+				},
+			},
+		})
+
+		await flushPromises()
+
+		const input = wrapper.find('[data-testid="profile-fields-personal-input-work_email"]')
+		expect(input.exists()).toBe(true)
+		expect(input.attributes('type')).toBe('email')
 	})
 })

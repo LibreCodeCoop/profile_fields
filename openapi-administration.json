@@ -201,6 +201,7 @@
                     "boolean",
                     "date",
                     "url",
+                    "email",
                     "select",
                     "multiselect"
                 ]
