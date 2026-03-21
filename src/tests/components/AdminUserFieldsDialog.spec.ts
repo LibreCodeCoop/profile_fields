@@ -59,6 +59,17 @@ vi.mock('../../api', () => ({
 			active: true,
 			options: null,
 		},
+		{
+			id: 6,
+			field_key: 'work_email',
+			label: 'Work email',
+			type: 'email',
+			edit_policy: 'users',
+			exposure_policy: 'private',
+			sort_order: 3,
+			active: true,
+			options: null,
+		},
 	]),
 	listAdminUserValues: vi.fn().mockResolvedValue([
 		{
@@ -177,5 +188,37 @@ describe('AdminUserFieldsDialog', () => {
 		expect(urlInput.exists()).toBe(true)
 		// helper-text is bound as an attribute through v-bind="$attrs"
 		expect(urlInput.attributes('helper-text')).toBeTruthy()
+	})
+
+	it('renders email fields with type=email input', async() => {
+		const wrapper = mount(AdminUserFieldsDialog, {
+			props: {
+				open: true,
+				userUid: 'alice',
+				userDisplayName: 'Alice',
+			},
+		})
+
+		await flushPromises()
+
+		const emailInput = wrapper.find('#profile-fields-user-dialog-value-6')
+		expect(emailInput.exists()).toBe(true)
+		expect(emailInput.attributes('type')).toBe('email')
+	})
+
+	it('shows email helper text for email fields', async() => {
+		const wrapper = mount(AdminUserFieldsDialog, {
+			props: {
+				open: true,
+				userUid: 'alice',
+				userDisplayName: 'Alice',
+			},
+		})
+
+		await flushPromises()
+
+		const emailInput = wrapper.find('#profile-fields-user-dialog-value-6')
+		expect(emailInput.exists()).toBe(true)
+		expect(emailInput.attributes('helper-text')).toBeTruthy()
 	})
 })
