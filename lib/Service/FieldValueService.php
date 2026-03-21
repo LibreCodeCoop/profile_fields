@@ -109,6 +109,7 @@ class FieldValueService {
 			FieldType::BOOLEAN => $this->normalizeBooleanValue($rawValue),
 			FieldType::DATE => $this->normalizeDateValue($rawValue),
 			FieldType::URL => $this->normalizeUrlValue($rawValue),
+			FieldType::EMAIL => $this->normalizeEmailValue($rawValue),
 			FieldType::SELECT => $this->normalizeSelectValue($rawValue, $definition),
 			FieldType::MULTISELECT => $this->normalizeMultiSelectValue($rawValue, $definition),
 		};
@@ -368,6 +369,23 @@ class FieldValueService {
 	}
 
 	/**
+	 * @param array<string, mixed>|scalar $rawValue
+	 * @return array{value: string}
+	 */
+	private function normalizeEmailValue(array|string|int|float|bool $rawValue): array {
+		if (!is_string($rawValue)) {
+			throw new InvalidArgumentException($this->l10n->t('Email fields require a valid email address.'));
+		}
+
+		$value = trim($rawValue);
+		if (filter_var($value, FILTER_VALIDATE_EMAIL) === false) {
+			throw new InvalidArgumentException($this->l10n->t('Email fields require a valid email address.'));
+		}
+
+		return ['value' => $value];
+	}
+
+	/**
 	 * @param array<string, mixed> $value
 	 */
 	private function encodeValue(array $value): string {
@@ -429,8 +447,8 @@ class FieldValueService {
 			return $this->normalizeValue($definition, $rawValue);
 		}
 
-		if (FieldType::from($definition->getType()) !== FieldType::TEXT) {
-			throw new InvalidArgumentException($this->l10n->t('The "contains" operator is only available for text fields.'));
+		if (!in_array(FieldType::from($definition->getType()), [FieldType::TEXT, FieldType::EMAIL], true)) {
+			throw new InvalidArgumentException($this->l10n->t('The "contains" operator is only available for text and email fields.'));
 		}
 
 		$normalized = $this->normalizeValue($definition, $rawValue);
@@ -451,7 +469,7 @@ class FieldValueService {
 			return ($candidateValue['value'] ?? null) === ($searchValue['value'] ?? null);
 		}
 
-		if ($fieldType !== FieldType::TEXT) {
+		if (!in_array($fieldType, [FieldType::TEXT, FieldType::EMAIL], true)) {
 			return false;
 		}
 
