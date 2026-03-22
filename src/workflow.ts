@@ -681,7 +681,7 @@ class WorkflowWebhookOperationElement extends HTMLElement {
 		urlInput.type = 'url'
 		urlInput.value = config.url
 		urlInput.disabled = this.disabledInternal
-		urlInput.placeholder = t('profile_fields', 'Webhook URL (https://...)')
+			urlInput.placeholder = t('profile_fields', 'Webhook URL (https://…)')
 		urlInput.className = config.url === '' || isUrlValid ? '' : 'invalid'
 
 		const secretInput = document.createElement('input')
