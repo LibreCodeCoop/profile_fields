@@ -397,7 +397,7 @@ const editorEmptyState = computed(() => sortedDefinitions.value.length === 0
 		description: t('profile_fields', 'Select a field from the list, or create a new one.'),
 	})
 const configuredFieldsCountLabel = computed(() => n('profile_fields', 'field configured', 'fields configured', definitions.value.length, { count: definitions.value.length }))
-const saveActionLabel = computed(() => isSaving.value ? t('profile_fields', 'Saving changes...') : (isEditing.value ? t('profile_fields', 'Save changes') : t('profile_fields', 'Create field')))
+const saveActionLabel = computed(() => isSaving.value ? t('profile_fields', 'Saving changes…') : (isEditing.value ? t('profile_fields', 'Save changes') : t('profile_fields', 'Create field')))
 const editFieldAriaLabel = (label: string) => t('profile_fields', 'Edit field {label}', { label })
 const actionsForLabel = (label: string) => t('profile_fields', 'Actions for {label}', { label })
 const toggleDefinitionActiveLabel = (definition: FieldDefinition) => definition.active
