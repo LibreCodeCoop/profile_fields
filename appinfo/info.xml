@@ -9,13 +9,13 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 	xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
 	<id>profile_fields</id>
 	<name>Profile fields</name>
-	<summary>Structured custom profile data for directories, operations and support teams</summary>
+	<summary>Extend Nextcloud user profiles with customizable fields, access control, and integration-friendly APIs</summary>
 	<description><![CDATA[
-Profile fields helps organizations turn Nextcloud accounts into a structured directory for real operational use.
+Profile fields lets organizations extend Nextcloud user profiles with customizable fields, per-field access control, and integration-friendly APIs.
 
-Create custom fields for support regions, product specialties, escalation aliases, customer segments, internal access levels and any other organization-specific context that does not belong in the default profile.
+Create custom fields for support regions, product specialties, escalation aliases, customer segments, internal access levels, and any other organization-specific context that does not belong in the default profile.
 
-Each field can be governed with edit and visibility rules so teams can combine self-service updates with admin-managed data, keeping sensitive operational context accurate without losing usability for employees, partners and support teams.
+Each field is governed by edit and visibility rules so teams can combine self-service updates with admin-managed data, keeping sensitive operational context accurate without losing usability for employees, partners, and support teams.
 
 ## Donation
 
@@ -31,6 +31,8 @@ Developed with ❤️ by [LibreCode](https://librecode.coop). Ongoing maintenanc
 		<developer>https://github.com/LibreCodeCoop/profile_fields/</developer>
 	</documentation>
 	<category>organization</category>
+	<category>integration</category>
+	<category>workflow</category>
 	<category>tools</category>
 	<website>https://librecode.coop</website>
 	<bugs>https://github.com/LibreCodeCoop/profile_fields/issues</bugs>
