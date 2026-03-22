@@ -3,7 +3,7 @@
     "info": {
         "title": "profile_fields-full",
         "version": "0.0.1",
-        "description": "Structured custom profile data for directories, operations and support teams",
+        "description": "Extend Nextcloud user profiles with customizable fields, access control, and integration-friendly APIs",
         "license": {
             "name": "agpl"
         }
