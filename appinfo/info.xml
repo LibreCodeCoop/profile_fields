@@ -31,6 +31,8 @@ Developed with ❤️ by [LibreCode](https://librecode.coop). Ongoing maintenanc
 		<developer>https://github.com/LibreCodeCoop/profile_fields/</developer>
 	</documentation>
 	<category>organization</category>
+	<category>integration</category>
+	<category>workflow</category>
 	<category>tools</category>
 	<website>https://librecode.coop</website>
 	<bugs>https://github.com/LibreCodeCoop/profile_fields/issues</bugs>
