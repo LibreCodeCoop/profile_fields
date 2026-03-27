@@ -1,0 +1,26 @@
+OC.L10N.register(
+    "profile_fields",
+    {
+    "Cancel" : "Cancel",
+    "Save changes" : "Lưu thay đổi",
+    "Options" : "Tùy chọn",
+    "Move up" : "Di chuyển lên",
+    "Move down" : "Di chuyển xuống",
+    "Text" : "Văn bản",
+    "Number" : "Số",
+    "Date" : "Ngày",
+    "URL" : "URL",
+    "Email" : "Thư điện tử",
+    "Select" : "Chọn",
+    "Active" : "Hoạt động",
+    "Label" : "Nhãn",
+    "Visibility" : "Hiển thị",
+    "Type" : "Loại",
+    "Show to everyone" : "Hiển thị cho mọi người",
+    "Hide" : "Ẩn",
+    "is" : "là",
+    "is not" : "không phải",
+    "contains" : "chứa",
+    "Administrators" : "Các quản trị viên"
+},
+"nplurals=1; plural=0;");

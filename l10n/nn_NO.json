@@ -1,0 +1,10 @@
+{ "translations": {
+    "Cancel" : "Cancel",
+    "Date" : "Dato",
+    "URL" : "URL",
+    "Email" : "Epost",
+    "Type" : "Skriv",
+    "Hide" : "Gøym",
+    "contains" : "inneheld"
+},"pluralForm" :"nplurals=2; plural=(n != 1);"
+}

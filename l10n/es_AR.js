@@ -1,0 +1,22 @@
+OC.L10N.register(
+    "profile_fields",
+    {
+    "Select a date" : "Elija una fecha",
+    "Cancel" : "Cancel",
+    "Options" : "Opciones",
+    "Text" : "Texto",
+    "Date" : "Fecha",
+    "URL" : "URL",
+    "Email" : "Correo electrónico",
+    "Select" : "Seleccionar",
+    "Label" : "Etiqueta",
+    "Visibility" : "Visibilidad",
+    "Type" : "Escribir",
+    "Show to everyone" : "Visible para todos",
+    "Show to logged in accounts only" : "Visible únicamente para usuarios conectados",
+    "Hide" : "Invisible",
+    "is" : "es",
+    "is not" : "no es",
+    "contains" : "contiene"
+},
+"nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

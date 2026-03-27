@@ -1,0 +1,10 @@
+{ "translations": {
+    "Cancel" : "Cancel",
+    "Save changes" : "Ännerunge späicheren",
+    "URL" : "URL",
+    "Email" : "Email",
+    "Select" : "Auswielen",
+    "Type" : "Typ",
+    "Hide" : "Verstoppen"
+},"pluralForm" :"nplurals=2; plural=(n != 1);"
+}

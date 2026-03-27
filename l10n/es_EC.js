@@ -1,0 +1,27 @@
+OC.L10N.register(
+    "profile_fields",
+    {
+    "True" : "Verdadero",
+    "False" : "Falso",
+    "Cancel" : "Cancelar",
+    "Options" : "Opciones",
+    "Move up" : "Mover arriba",
+    "Move down" : "Mover abajo",
+    "Text" : "Texto",
+    "Number" : "Número",
+    "Multiselect" : "Multiselección",
+    "Admins only" : "Solo administradores",
+    "Active" : "Activo",
+    "Inactive" : "Inactivo",
+    "Label" : "Etiqueta",
+    "Rules" : "Reglas",
+    "Visibility" : "Visibilidad",
+    "Type" : "Tipo",
+    "Show to everyone" : "Mostrar a todos",
+    "Hide" : "Ocultar",
+    "is" : "es",
+    "is not" : "no es",
+    "contains" : "contiene",
+    "Administrators" : "Administradores"
+},
+"nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

@@ -1,0 +1,9 @@
+{ "translations": {
+    "Cancel" : "Cancel",
+    "Date" : "Date",
+    "Email" : "மின்னஞ்சல்",
+    "Select" : "Select",
+    "Type" : "வகை",
+    "Hide" : "மறைக்க"
+},"pluralForm" :"nplurals=2; plural=(n != 1);"
+}

@@ -1,0 +1,17 @@
+OC.L10N.register(
+    "profile_fields",
+    {
+    "Cancel" : "Cancel",
+    "Save changes" : "Salvar modificacions",
+    "Options" : "Opcions",
+    "Text" : "Tèxt",
+    "Date" : "Data",
+    "URL" : "URL",
+    "Email" : "Adreiça electronica",
+    "Active" : "Activa",
+    "Visibility" : "Visibilitat",
+    "Type" : "Tipe",
+    "Show to everyone" : "Afichar a tot lo monde",
+    "Hide" : "Amagar"
+},
+"nplurals=2; plural=(n > 1);");

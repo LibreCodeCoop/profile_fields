@@ -1,0 +1,28 @@
+{ "translations": {
+    "Select a date" : "Seleccionar una fecha",
+    "True" : "Verdadero",
+    "False" : "Falso",
+    "Cancel" : "Cancel",
+    "Save changes" : "Guardar cambios",
+    "Options" : "Opciones",
+    "Move up" : "Mover arriba",
+    "Move down" : "Mover abajo",
+    "Text" : "Texto",
+    "Date" : "Fecha",
+    "URL" : "URL",
+    "Email" : "Correo electrónico",
+    "Select" : "Seleccionar",
+    "Active" : "Activo",
+    "Label" : "Etiqueta",
+    "Rules" : "Reglas",
+    "Visibility" : "Visibilidad",
+    "Type" : "Tipo",
+    "Show to everyone" : "Mostrar a todos",
+    "Show to logged in accounts only" : "Mostrar únicamente a usuarios conectados",
+    "Hide" : "Ocultar",
+    "is" : "es",
+    "is not" : "no es",
+    "contains" : "contiene",
+    "Administrators" : "Administradores"
+},"pluralForm" :"nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
+}

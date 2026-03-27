@@ -1,0 +1,21 @@
+{ "translations": {
+    "Enter a number" : "Introduceți un număr",
+    "Enter an email address" : "Introduceți o adresă de email",
+    "Cancel" : "Cancel",
+    "Options" : "Opțiuni",
+    "Move up" : "Mută înainte",
+    "Move down" : "Mută în jos",
+    "Add multiple options" : "Adaugă opțiuni multiple",
+    "Text" : "Text",
+    "Number" : "Număr",
+    "Date" : "Dată",
+    "URL" : "URL",
+    "Email" : "E-mail",
+    "Select" : "Selectează",
+    "Active" : "Activ",
+    "Label" : "Etichetă",
+    "Visibility" : "Vizibil",
+    "Type" : "Tip",
+    "Hide" : "Ascunde"
+},"pluralForm" :"nplurals=3; plural=(n==1?0:(((n%100>19)||((n%100==0)&&(n!=0)))?2:1));"
+}

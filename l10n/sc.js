@@ -1,0 +1,27 @@
+OC.L10N.register(
+    "profile_fields",
+    {
+    "True" : "Beru",
+    "False" : "Frassu",
+    "Cancel" : "Cancel",
+    "Save changes" : "Sarva càmbios",
+    "Options" : "Optziones",
+    "Move up" : "Tràmuda fache a susu",
+    "Move down" : "Tràmuda fache a bàsciu",
+    "Text" : "Testu",
+    "Date" : "Data",
+    "URL" : "URL",
+    "Email" : "Posta eletrònica",
+    "Select" : "Seletziona",
+    "Active" : "Ativu",
+    "Label" : "Eticheta",
+    "Rules" : "Règulas",
+    "Type" : "Genia",
+    "Show to everyone" : "Mustra a totus",
+    "Show to logged in accounts only" : "Mustra isceti a is contos autenticados",
+    "Hide" : "Cua",
+    "is" : "est",
+    "is not" : "no est",
+    "Administrators" : "Amministratzione"
+},
+"nplurals=2; plural=(n != 1);");
