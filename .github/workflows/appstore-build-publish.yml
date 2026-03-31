@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 jobs:
   build_and_publish:
@@ -26,6 +27,7 @@ jobs:
       - name: Set app env
         run: |
           [ "${GITHUB_REPOSITORY##*/}" = "${APP_NAME}" ]
+          echo "APP_VERSION=${GITHUB_REF##*/}" >> "$GITHUB_ENV"
 
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -91,11 +93,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Package ${{ env.APP_NAME }} with makefile
-        run: |
-          make -C "${{ env.APP_NAME }}" appstore
-          make -C "${{ env.APP_NAME }}" verify-appstore-package
-
       - name: Check server download link for ${{ fromJSON(steps.appinfo.outputs.result).nextcloud.min-version }}
         id: server-url
         run: |
@@ -120,22 +117,13 @@ jobs:
           repository: nextcloud/server
           path: nextcloud
 
-      - name: Sign app
+      - name: Package ${{ env.APP_NAME }} ${{ github.ref_name }} with makefile
         run: |
-          KEY_PATH="${GITHUB_WORKSPACE}/${{ env.APP_NAME }}.key"
-          CERT_PATH="${GITHUB_WORKSPACE}/${{ env.APP_NAME }}.crt"
-          APP_PATH="${GITHUB_WORKSPACE}/${{ env.APP_NAME }}/build/artifacts/sign/${{ env.APP_NAME }}"
-
-          printf '%s' '${{ secrets.APP_PRIVATE_KEY }}' > "${KEY_PATH}"
-          chmod 600 "${KEY_PATH}"
-          wget --quiet -O "${CERT_PATH}" "https://github.com/nextcloud/app-certificate-requests/raw/master/${{ env.APP_NAME }}/${{ env.APP_NAME }}.crt"
-
-          php nextcloud/occ integrity:sign-app \
-            --privateKey="${KEY_PATH}" \
-            --certificate="${CERT_PATH}" \
-            --path="${APP_PATH}"
-
-          tar -C "${GITHUB_WORKSPACE}/${{ env.APP_NAME }}/build/artifacts/sign" -zcf "${GITHUB_WORKSPACE}/${{ env.APP_NAME }}/build/artifacts/${{ env.APP_NAME }}.tar.gz" "${{ env.APP_NAME }}"
+          cd "${{ env.APP_NAME }}"
+          mkdir -p build/tools/certificates/
+          printf '%s' '${{ secrets.APP_PRIVATE_KEY }}' > "build/tools/certificates/${{ env.APP_NAME }}.key"
+          chmod 600 "build/tools/certificates/${{ env.APP_NAME }}.key"
+          make appstore verify-appstore-package
 
       - name: Attach tarball to GitHub release
         uses: svenstaro/upload-release-action@29e53e917877a24fad85510ded594ab3c9ca12de # v2.11.5
