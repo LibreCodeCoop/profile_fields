@@ -10,7 +10,6 @@
 		"jsx": "preserve",
 		"resolveJsonModule": true,
 		"esModuleInterop": true,
-		"baseUrl": ".",
 		"paths": {
 			"vue": ["./node_modules/vue/dist/vue.d.ts"],
 			"@nextcloud/*": ["./node_modules/@nextcloud/*"]
