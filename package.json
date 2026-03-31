@@ -10,7 +10,7 @@
     "dev": "NODE_ENV=development vite --mode development build",
     "screenshots:refresh": "node playwright/generate-screenshots.mjs",
     "screenshots:refresh:changed": "node playwright/generate-screenshots.mjs --changed",
-    "typescript:generate": "npx openapi-typescript -t",
+    "typescript:generate": "npx --yes openapi-typescript -t",
     "ts:check": "npx tsc --noEmit",
     "watch": "NODE_ENV=development vite --mode development build --watch",
     "test": "vitest run",
@@ -41,8 +41,7 @@
     "@vitejs/plugin-vue": "^6.0.5",
     "@vue/test-utils": "^2.4.6",
     "jsdom": "^29.0.1",
-    "openapi-typescript": "^7.13.0",
-    "typescript": "^5.9.3",
+    "typescript": "^6.0.2",
     "vitest": "^4.1.2"
   }
 }

@@ -3,6 +3,8 @@
 
 /// <reference types="vite/client" />
 
+declare module 'vite/modulepreload-polyfill'
+
 declare module '@nextcloud/router' {
 	export function generateOcsUrl(path: string, params?: object, options?: object): string
 	export function generateUrl(path: string, params?: object, options?: object): string
