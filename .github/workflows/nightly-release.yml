@@ -154,7 +154,7 @@ jobs:
         run: |
           KEY_PATH="${GITHUB_WORKSPACE}/${{ env.APP_NAME }}.key"
           CERT_PATH="${GITHUB_WORKSPACE}/${{ env.APP_NAME }}.crt"
-          APP_PATH="${GITHUB_WORKSPACE}/${{ env.APP_NAME }}/build/artifacts/${{ env.APP_NAME }}"
+          APP_PATH="${GITHUB_WORKSPACE}/${{ env.APP_NAME }}/build/artifacts/sign/${{ env.APP_NAME }}"
 
           printf '%s' '${{ secrets.APP_PRIVATE_KEY }}' > "${KEY_PATH}"
           chmod 600 "${KEY_PATH}"
@@ -165,7 +165,7 @@ jobs:
             --certificate="${CERT_PATH}" \
             --path="${APP_PATH}"
 
-          tar -C "${{ env.APP_NAME }}/build/artifacts" -zcf "${{ env.APP_NAME }}/build/artifacts/${{ env.APP_NAME }}.tar.gz" "${{ env.APP_NAME }}"
+          tar -C "${GITHUB_WORKSPACE}/${{ env.APP_NAME }}/build/artifacts/sign" -zcf "${GITHUB_WORKSPACE}/${{ env.APP_NAME }}/build/artifacts/${{ env.APP_NAME }}.tar.gz" "${{ env.APP_NAME }}"
 
       - name: Define nightly metadata
         id: version
