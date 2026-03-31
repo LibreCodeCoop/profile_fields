@@ -152,14 +152,18 @@ jobs:
 
       - name: Sign app
         run: |
-          printf '%s' '${{ secrets.APP_PRIVATE_KEY }}' > "${{ env.APP_NAME }}.key"
-          chmod 600 "${{ env.APP_NAME }}.key"
-          wget --quiet "https://github.com/nextcloud/app-certificate-requests/raw/master/${{ env.APP_NAME }}/${{ env.APP_NAME }}.crt"
+          KEY_PATH="${GITHUB_WORKSPACE}/${{ env.APP_NAME }}.key"
+          CERT_PATH="${GITHUB_WORKSPACE}/${{ env.APP_NAME }}.crt"
+          APP_PATH="${GITHUB_WORKSPACE}/${{ env.APP_NAME }}/build/artifacts/${{ env.APP_NAME }}"
+
+          printf '%s' '${{ secrets.APP_PRIVATE_KEY }}' > "${KEY_PATH}"
+          chmod 600 "${KEY_PATH}"
+          wget --quiet -O "${CERT_PATH}" "https://github.com/nextcloud/app-certificate-requests/raw/master/${{ env.APP_NAME }}/${{ env.APP_NAME }}.crt"
 
           php nextcloud/occ integrity:sign-app \
-            --privateKey="${{ env.APP_NAME }}.key" \
-            --certificate="${{ env.APP_NAME }}.crt" \
-            --path="${{ env.APP_NAME }}/build/artifacts/${{ env.APP_NAME }}"
+            --privateKey="${KEY_PATH}" \
+            --certificate="${CERT_PATH}" \
+            --path="${APP_PATH}"
 
           tar -C "${{ env.APP_NAME }}/build/artifacts" -zcf "${{ env.APP_NAME }}/build/artifacts/${{ env.APP_NAME }}.tar.gz" "${{ env.APP_NAME }}"
 
