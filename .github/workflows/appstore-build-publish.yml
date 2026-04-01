@@ -135,36 +135,6 @@ jobs:
           tag: ${{ github.ref }}
           overwrite: true
 
-      - name: Ensure app exists in Nextcloud appstore
-        env:
-          APPSTORE_TOKEN: ${{ secrets.APPSTORE_TOKEN }}
-          APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
-        run: |
-          APPSTORE_TOKEN="$(printf '%s' "$APPSTORE_TOKEN" | tr -d '\r\n')"
-          KEY_FILE="$RUNNER_TEMP/${{ env.APP_NAME }}.key"
-          CERT_FILE="$RUNNER_TEMP/${{ env.APP_NAME }}.crt"
-          RESPONSE_FILE="$RUNNER_TEMP/appstore-register-response.json"
-
-          printf '%s' "$APP_PRIVATE_KEY" > "$KEY_FILE"
-          curl -fsSL "https://raw.githubusercontent.com/nextcloud/app-certificate-requests/master/${{ env.APP_NAME }}/${{ env.APP_NAME }}.crt" -o "$CERT_FILE"
-
-          REGISTER_SIGNATURE="$(printf '%s' '${{ env.APP_NAME }}' | openssl dgst -sha512 -sign "$KEY_FILE" | openssl base64 -A)"
-          CERT_CONTENT="$(cat "$CERT_FILE")"
-          PAYLOAD="$(jq -nc --arg certificate "$CERT_CONTENT" --arg signature "$REGISTER_SIGNATURE" '{certificate:$certificate, signature:$signature}')"
-
-          HTTP_STATUS="$(curl -sS -o "$RESPONSE_FILE" -w '%{http_code}' -X POST https://apps.nextcloud.com/api/v1/apps \
-            -H "Authorization: Token ${APPSTORE_TOKEN}" \
-            -H 'Content-Type: application/json' \
-            --data "$PAYLOAD")"
-
-          echo "App registration status: $HTTP_STATUS"
-          cat "$RESPONSE_FILE"
-
-          if [ "$HTTP_STATUS" != "201" ] && [ "$HTTP_STATUS" != "204" ]; then
-            echo "::error::App registration failed with HTTP $HTTP_STATUS"
-            exit 1
-          fi
-
       - name: Upload app to Nextcloud appstore
         env:
           APPSTORE_TOKEN: ${{ secrets.APPSTORE_TOKEN }}
