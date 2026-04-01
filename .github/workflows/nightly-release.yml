@@ -230,10 +230,31 @@ jobs:
           overwrite: true
 
       - name: Upload app to Nextcloud appstore (nightly)
-        uses: nextcloud-releases/nextcloud-appstore-push-action@a011fe619bcf6e77ddebc96f9908e1af4071b9c1 # v1.0.3
-        with:
-          app_name: ${{ env.APP_NAME }}
-          appstore_token: ${{ secrets.APPSTORE_TOKEN }}
-          download_url: ${{ steps.attach_to_release.outputs.browser_download_url }}
-          app_private_key: ${{ secrets.APP_PRIVATE_KEY }}
-          nightly: true
+        env:
+          APPSTORE_TOKEN: ${{ secrets.APPSTORE_TOKEN }}
+          APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
+          DOWNLOAD_URL: ${{ steps.attach_to_release.outputs.browser_download_url }}
+        run: |
+          APPSTORE_TOKEN="$(printf '%s' "$APPSTORE_TOKEN" | tr -d '\r\n')"
+          KEY_FILE="$RUNNER_TEMP/${{ env.APP_NAME }}.key"
+          APP_TGZ="$RUNNER_TEMP/${{ env.APP_NAME }}.tar.gz"
+          RESPONSE_FILE="$RUNNER_TEMP/appstore-response.json"
+
+          printf '%s' "$APP_PRIVATE_KEY" > "$KEY_FILE"
+          wget "$DOWNLOAD_URL" -O "$APP_TGZ"
+
+          SIGNATURE="$(openssl dgst -sha512 -sign "$KEY_FILE" "$APP_TGZ" | openssl base64 -A)"
+          PAYLOAD="$(jq -nc --arg download "$DOWNLOAD_URL" --arg signature "$SIGNATURE" '{download:$download, signature:$signature, nightly:true}')"
+
+          HTTP_STATUS="$(curl -sS -o "$RESPONSE_FILE" -w '%{http_code}' -X POST https://apps.nextcloud.com/api/v1/apps/releases \
+            -H "Authorization: Token ${APPSTORE_TOKEN}" \
+            -H 'Content-Type: application/json' \
+            --data "$PAYLOAD")"
+
+          echo "App Store response status: $HTTP_STATUS"
+          cat "$RESPONSE_FILE"
+
+          if [ "$HTTP_STATUS" -lt 200 ] || [ "$HTTP_STATUS" -ge 300 ]; then
+            echo "::error::App Store upload failed with HTTP $HTTP_STATUS"
+            exit 1
+          fi
