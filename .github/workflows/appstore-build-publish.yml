@@ -1,6 +1,10 @@
-# SPDX-FileCopyrightText: 2026 LibreCode Coop and LibreCode contributors
+# This workflow is provided via the organization template repository
 #
-# SPDX-License-Identifier: AGPL-3.0-or-later
+# https://github.com/nextcloud/.github
+# https://docs.github.com/en/actions/learn-github-actions/sharing-workflows-with-your-organization
+#
+# SPDX-FileCopyrightText: 2021-2024 Nextcloud GmbH and Nextcloud contributors
+# SPDX-License-Identifier: MIT
 
 name: Build and publish app release
 
@@ -10,13 +14,13 @@ on:
 
 permissions:
   contents: write
-  actions: write
 
 jobs:
   build_and_publish:
     runs-on: ubuntu-latest
-    env:
-      APP_NAME: profile_fields
+
+    # Only allowed to be run on nextcloud-releases repositories
+    # if: ${{ github.repository_owner == 'nextcloud-releases' }}
 
     steps:
       - name: Check actor permission
@@ -26,21 +30,15 @@ jobs:
 
       - name: Set app env
         run: |
-          [ "${GITHUB_REPOSITORY##*/}" = "${APP_NAME}" ]
-          echo "APP_VERSION=${GITHUB_REF##*/}" >> "$GITHUB_ENV"
+          # Split and keep last
+          echo "APP_NAME=${GITHUB_REPOSITORY##*/}" >> $GITHUB_ENV
+          echo "APP_VERSION=${GITHUB_REF##*/}" >> $GITHUB_ENV
 
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-          submodules: true
           path: ${{ env.APP_NAME }}
-
-      - name: Validate signing secret
-        env:
-          APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
-        run: |
-          test -n "${APP_PRIVATE_KEY}"
 
       - name: Get app version number
         id: app-version
@@ -51,7 +49,7 @@ jobs:
 
       - name: Validate app version against tag
         run: |
-          [ "${{ github.ref_name }}" = "v${{ fromJSON(steps.app-version.outputs.result).version }}" ]
+          [ "${{ env.APP_VERSION }}" = "v${{ fromJSON(steps.app-version.outputs.result).version }}" ]
 
       - name: Get appinfo data
         id: appinfo
@@ -63,6 +61,7 @@ jobs:
       - name: Read package.json node and npm engines version
         uses: skjnldsv/read-package-engines-version-actions@06d6baf7d8f41934ab630e97d9e6c0bc9c9ac5e4 # v3
         id: versions
+        # Continue if no package.json
         continue-on-error: true
         with:
           path: ${{ env.APP_NAME }}
@@ -70,12 +69,14 @@ jobs:
           fallbackNpm: '^11.3'
 
       - name: Set up node ${{ steps.versions.outputs.nodeVersion }}
+        # Skip if no package.json
         if: ${{ steps.versions.outputs.nodeVersion }}
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: ${{ steps.versions.outputs.nodeVersion }}
 
       - name: Set up npm ${{ steps.versions.outputs.npmVersion }}
+        # Skip if no package.json
         if: ${{ steps.versions.outputs.npmVersion }}
         run: npm i -g 'npm@${{ steps.versions.outputs.npmVersion }}'
 
@@ -93,19 +94,65 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Check composer.json
+        id: check_composer
+        uses: andstor/file-existence-action@076e0072799f4942c8bc574a82233e1e4d13e9d6 # v3.0.0
+        with:
+          files: "${{ env.APP_NAME }}/composer.json"
+
+      - name: Install composer dependencies
+        if: steps.check_composer.outputs.files_exists == 'true'
+        run: |
+          cd ${{ env.APP_NAME }}
+          composer install --no-dev
+
+      - name: Build ${{ env.APP_NAME }}
+        # Skip if no package.json
+        if: ${{ steps.versions.outputs.nodeVersion }}
+        env:
+          CYPRESS_INSTALL_BINARY: 0
+        run: |
+          cd ${{ env.APP_NAME }}
+          npm ci
+          npm run build --if-present
+
+      - name: Check Krankerl config
+        id: krankerl
+        uses: andstor/file-existence-action@076e0072799f4942c8bc574a82233e1e4d13e9d6 # v3.0.0
+        with:
+          files: ${{ env.APP_NAME }}/krankerl.toml
+
+      - name: Install Krankerl
+        if: steps.krankerl.outputs.files_exists == 'true'
+        run: |
+          wget https://github.com/ChristophWurst/krankerl/releases/download/v0.14.0/krankerl_0.14.0_amd64.deb
+          sudo dpkg -i krankerl_0.14.0_amd64.deb
+
+      - name: Package ${{ env.APP_NAME }} ${{ env.APP_VERSION }} with krankerl
+        if: steps.krankerl.outputs.files_exists == 'true'
+        run: |
+          cd ${{ env.APP_NAME }}
+          krankerl package
+
+      - name: Package ${{ env.APP_NAME }} ${{ env.APP_VERSION }} with makefile
+        if: steps.krankerl.outputs.files_exists != 'true'
+        run: |
+          cd ${{ env.APP_NAME }}
+          make appstore
+
       - name: Check server download link for ${{ fromJSON(steps.appinfo.outputs.result).nextcloud.min-version }}
-        id: server-url
         run: |
           NCVERSION='${{ fromJSON(steps.appinfo.outputs.result).nextcloud.min-version }}'
           DOWNLOAD_URL=$(curl -s "https://updates.nextcloud.com/updater_server/latest?channel=beta&version=$NCVERSION" | jq -r '.downloads.zip[0]')
-          echo "url=$DOWNLOAD_URL" >> "$GITHUB_OUTPUT"
+          echo "DOWNLOAD_URL=$DOWNLOAD_URL" >> $GITHUB_ENV
 
       - name: Download server ${{ fromJSON(steps.appinfo.outputs.result).nextcloud.min-version }}
         continue-on-error: true
         id: server-download
-        if: steps.server-url.outputs.url != 'null'
+        if: ${{ env.DOWNLOAD_URL != 'null' }}
         run: |
-          wget "${{ steps.server-url.outputs.url }}" -O nextcloud.zip
+          echo "Downloading release tarball from $DOWNLOAD_URL"
+          wget $DOWNLOAD_URL -O nextcloud.zip
           unzip nextcloud.zip
 
       - name: Checkout server master fallback
@@ -117,50 +164,36 @@ jobs:
           repository: nextcloud/server
           path: nextcloud
 
-      - name: Package ${{ env.APP_NAME }} ${{ github.ref_name }} with makefile
-        run: |
-          cd "${{ env.APP_NAME }}"
-          mkdir -p build/tools/certificates/
-          printf '%s' '${{ secrets.APP_PRIVATE_KEY }}' > "build/tools/certificates/${{ env.APP_NAME }}.key"
-          chmod 600 "build/tools/certificates/${{ env.APP_NAME }}.key"
-          make appstore verify-appstore-package
 
-      - name: Attach tarball to GitHub release
+      - name: Sign app
+        run: |
+          # Extracting release
+          cd ${{ env.APP_NAME }}/build/artifacts
+          tar -xvf ${{ env.APP_NAME }}.tar.gz
+          cd ../../../
+          # Setting up keys
+          echo '${{ secrets.APP_PRIVATE_KEY }}' > ${{ env.APP_NAME }}.key # zizmor: ignore[secrets-outside-env]
+          wget --quiet "https://github.com/nextcloud/app-certificate-requests/raw/master/${{ env.APP_NAME }}/${{ env.APP_NAME }}.crt"
+          # Signing
+          php nextcloud/occ integrity:sign-app --privateKey=../${{ env.APP_NAME }}.key --certificate=../${{ env.APP_NAME }}.crt --path=../${{ env.APP_NAME }}/build/artifacts/${{ env.APP_NAME }}
+          # Rebuilding archive
+          cd ${{ env.APP_NAME }}/build/artifacts
+          tar -zcvf ${{ env.APP_NAME }}.tar.gz ${{ env.APP_NAME }}
+
+      - name: Attach tarball to github release
         uses: svenstaro/upload-release-action@29e53e917877a24fad85510ded594ab3c9ca12de # v2.11.5
         id: attach_to_release
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ${{ env.APP_NAME }}/build/artifacts/${{ env.APP_NAME }}.tar.gz
-          asset_name: ${{ env.APP_NAME }}-${{ github.ref_name }}.tar.gz
+          asset_name: ${{ env.APP_NAME }}-${{ env.APP_VERSION }}.tar.gz
           tag: ${{ github.ref }}
           overwrite: true
 
       - name: Upload app to Nextcloud appstore
-        env:
-          APPSTORE_TOKEN: ${{ secrets.APPSTORE_TOKEN }}
-          APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
-          DOWNLOAD_URL: ${{ steps.attach_to_release.outputs.browser_download_url }}
-        run: |
-          APPSTORE_TOKEN="$(printf '%s' "$APPSTORE_TOKEN" | tr -d '\r\n')"
-          KEY_FILE="$RUNNER_TEMP/${{ env.APP_NAME }}.key"
-          APP_TGZ="$RUNNER_TEMP/${{ env.APP_NAME }}.tar.gz"
-          RESPONSE_FILE="$RUNNER_TEMP/appstore-response.json"
-
-          printf '%s' "$APP_PRIVATE_KEY" > "$KEY_FILE"
-          wget "$DOWNLOAD_URL" -O "$APP_TGZ"
-
-          SIGNATURE="$(openssl dgst -sha512 -sign "$KEY_FILE" "$APP_TGZ" | openssl base64 -A)"
-          PAYLOAD="$(jq -nc --arg download "$DOWNLOAD_URL" --arg signature "$SIGNATURE" '{download:$download, signature:$signature, nightly:false}')"
-
-          HTTP_STATUS="$(curl -sS -o "$RESPONSE_FILE" -w '%{http_code}' -X POST https://apps.nextcloud.com/api/v1/apps/releases \
-            -H "Authorization: Token ${APPSTORE_TOKEN}" \
-            -H 'Content-Type: application/json' \
-            --data "$PAYLOAD")"
-
-          echo "App Store response status: $HTTP_STATUS"
-          cat "$RESPONSE_FILE"
-
-          if [ "$HTTP_STATUS" -lt 200 ] || [ "$HTTP_STATUS" -ge 300 ]; then
-            echo "::error::App Store upload failed with HTTP $HTTP_STATUS"
-            exit 1
-          fi
+        uses: nextcloud-releases/nextcloud-appstore-push-action@a011fe619bcf6e77ddebc96f9908e1af4071b9c1 # v1.0.3
+        with:
+          app_name: ${{ env.APP_NAME }}
+          appstore_token: ${{ secrets.APPSTORE_TOKEN }} # zizmor: ignore[secrets-outside-env]
+          download_url: ${{ steps.attach_to_release.outputs.browser_download_url }}
+          app_private_key: ${{ secrets.APP_PRIVATE_KEY }} # zizmor: ignore[secrets-outside-env]
