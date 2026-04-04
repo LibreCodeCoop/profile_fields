@@ -24,15 +24,7 @@ class Version1001Date20260404010000 extends SimpleMigrationStep {
 	public function changeSchema(IOutput $output, Closure $schemaClosure, array $options): ?ISchemaWrapper {
 		/** @var ISchemaWrapper $schema */
 		$schema = $schemaClosure();
-
-		if (!$schema->hasTable('profile_fields_definitions')) {
-			return null;
-		}
-
 		$table = $schema->getTable('profile_fields_definitions');
-		if (!$table->hasColumn('active')) {
-			return null;
-		}
 
 		$activeColumn = $table->getColumn('active');
 		if (!$activeColumn->getNotnull()) {
