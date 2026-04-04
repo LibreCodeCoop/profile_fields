@@ -14,7 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## 1.0.1 - 2026-04-03
 
-💝 **SUPPORT PROFILE FIELDS** — This project is maintained as free software by LibreCode. If it helps your team, please fund maintenance and future improvements via GitHub Sponsors: https://github.com/sponsors/LibreSign
+💝 **SUPPORT PROFILE FIELDS** — If this project helps your team, please support ongoing maintenance via GitHub Sponsors: https://github.com/sponsors/LibreSign
 
 ⭐ **STAR THE REPOSITORY** — Stars help the project gain visibility and justify continued investment: https://github.com/LibreCodeCoop/profile_fields
 
