@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 <!-- changelog-linker -->
 <!-- changelog-linker -->
-## [Unreleased]
-
 ## 1.0.2 - 2026-04-13
 
 💝 **SUPPORT PROFILE FIELDS** — If this project helps your team, please support ongoing maintenance via GitHub Sponsors: https://github.com/sponsors/LibreSign
@@ -54,6 +52,3 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - OpenAPI-documented REST API with auto-generated TypeScript client
 - `occ` commands for data export, import, clear, and developer reset [#5](https://github.com/LibreCodeCoop/profile_fields/pull/5)
 - Transifex integration for community translations [#34](https://github.com/LibreCodeCoop/profile_fields/pull/34)
-
-[Unreleased]: https://github.com/LibreCodeCoop/profile_fields/compare/v1.0.1...HEAD
-[1.0.1]: https://github.com/LibreCodeCoop/profile_fields/compare/v1.0.0...v1.0.1
