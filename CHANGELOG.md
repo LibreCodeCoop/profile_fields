@@ -12,6 +12,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 <!-- changelog-linker -->
 ## [Unreleased]
 
+## 1.0.1 - 2026-04-03
+
+💝 **SUPPORT PROFILE FIELDS** — If this project helps your team, please support ongoing maintenance via GitHub Sponsors: https://github.com/sponsors/LibreSign
+
+⭐ **STAR THE REPOSITORY** — Stars help the project gain visibility and justify continued investment: https://github.com/LibreCodeCoop/profile_fields
+
+🏢 **ENTERPRISE SUPPORT** — Need custom development, support, or sponsored features? Contact us: contact@librecode.coop
+
+### Fixed
+- Fixed installation and reinstallation failures caused by the `profile_fields_definitions.active` boolean column being created as `NOT NULL`, and added an upgrade migration for existing instances [#61](https://github.com/LibreCodeCoop/profile_fields/pull/61)
+
 ## 1.0.0 - 2026-03-30
 
 💝 **SUPPORT PROFILE FIELDS** — Built from scratch and released for free. If it saves your team time, please consider sponsoring: https://github.com/sponsors/LibreSign
@@ -29,4 +40,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `occ` commands for data export, import, clear, and developer reset [#5](https://github.com/LibreCodeCoop/profile_fields/pull/5)
 - Transifex integration for community translations [#34](https://github.com/LibreCodeCoop/profile_fields/pull/34)
 
-[Unreleased]: https://github.com/LibreCodeCoop/profile_fields/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/LibreCodeCoop/profile_fields/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/LibreCodeCoop/profile_fields/compare/v1.0.0...v1.0.1
