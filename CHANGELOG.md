@@ -55,6 +55,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `occ` commands for data export, import, clear, and developer reset [#5](https://github.com/LibreCodeCoop/profile_fields/pull/5)
 - Transifex integration for community translations [#34](https://github.com/LibreCodeCoop/profile_fields/pull/34)
 
-[Unreleased]: https://github.com/LibreCodeCoop/profile_fields/compare/v1.0.2...HEAD
-[1.0.2]: https://github.com/LibreCodeCoop/profile_fields/compare/v1.0.1...v1.0.2
+[Unreleased]: https://github.com/LibreCodeCoop/profile_fields/compare/v1.0.1...HEAD
 [1.0.1]: https://github.com/LibreCodeCoop/profile_fields/compare/v1.0.0...v1.0.1
