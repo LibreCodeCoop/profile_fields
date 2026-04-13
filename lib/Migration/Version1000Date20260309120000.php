@@ -54,6 +54,7 @@ class Version1000Date20260309120000 extends SimpleMigrationStep {
 				'unsigned' => true,
 			]);
 			$table->addColumn('active', Types::BOOLEAN, [
+				'notnull' => false,
 				'default' => true,
 			]);
 			$table->addColumn('options', Types::TEXT, [
