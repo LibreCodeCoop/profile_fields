@@ -65,7 +65,7 @@ class Version1000Date20260309120000 extends SimpleMigrationStep {
 
 			$table->setPrimaryKey(['id']);
 			$table->addUniqueIndex(['field_key'], 'profile_fields_def_key_uk');
-			$table->addIndex(['active', 'sort_order'], 'profile_fields_def_active_order_idx');
+			$table->addIndex(['active', 'sort_order'], 'pf_def_active_sort_idx');
 		}
 
 		if (!$schema->hasTable('profile_fields_values')) {
