@@ -115,7 +115,7 @@ class FieldDefinitionApiControllerTest extends TestCase {
 	public function testCreateReturnsBadRequestOnValidationFailure(): void {
 		$this->service->expects($this->once())
 			->method('create')
-			->willThrowException(new InvalidArgumentException('field_key already exists'));
+			->willThrowException(new InvalidArgumentException('"field_key" already exists'));
 
 		$response = $this->controller->create(
 			'cpf',
@@ -128,7 +128,7 @@ class FieldDefinitionApiControllerTest extends TestCase {
 		);
 
 		$this->assertSame(Http::STATUS_BAD_REQUEST, $response->getStatus());
-		$this->assertSame(['message' => 'field_key already exists'], $response->getData());
+		$this->assertSame(['message' => '"field_key" already exists'], $response->getData());
 	}
 
 	public function testUpdateSelectFieldForwardsOptions(): void {
