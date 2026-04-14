@@ -51,7 +51,7 @@ class FieldDefinitionServiceTest extends TestCase {
 			->willReturn(new FieldDefinition());
 
 		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage('field_key already exists');
+		$this->expectExceptionMessage('"field_key" already exists');
 
 		$this->service->create([
 			'field_key' => 'cpf',
@@ -127,7 +127,7 @@ class FieldDefinitionServiceTest extends TestCase {
 		$existing->setExposurePolicy(FieldExposurePolicy::PRIVATE->value);
 
 		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage('field_key cannot be changed');
+		$this->expectExceptionMessage('"field_key" cannot be changed');
 
 		$this->service->update($existing, [
 			'field_key' => 'cpf_new',
@@ -150,7 +150,7 @@ class FieldDefinitionServiceTest extends TestCase {
 			->willReturn(true);
 
 		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage('type cannot be changed after values exist');
+		$this->expectExceptionMessage('Type cannot be changed after values exist');
 
 		$this->service->update($existing, [
 			'label' => 'CPF',

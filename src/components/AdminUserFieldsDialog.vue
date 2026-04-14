@@ -123,8 +123,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 			<NcButton @click="closeDialog">
 				{{ t('profile_fields', 'Cancel') }}
 			</NcButton>
+			<!-- TRANSLATORS "\u00A0" keeps the ellipsis attached to the previous word for correct typography and avoids awkward line breaks. -->
 			<NcButton variant="primary" :disabled="!hasPendingChanges || hasInvalidFields || isSavingAny || isLoading" @click="saveAllFields">
-				{{ isSavingAny ? t('profile_fields', 'Saving changes…') : t('profile_fields', 'Save changes') }}
+				{{ isSavingAny ? t('profile_fields', 'Saving changes\u00A0…') : t('profile_fields', 'Save changes') }}
 			</NcButton>
 		</template>
 	</NcDialog>
@@ -184,7 +185,8 @@ export default defineComponent({
 
 		const headerUserName = computed(() => props.userDisplayName.trim() !== '' ? props.userDisplayName : props.userUid)
 		const visibilityFieldLabel = t('profile_fields', 'Who can view this field value')
-		const loadingMessage = computed(() => t('profile_fields', 'Loading profile fields for {userUid}…', { userUid: props.userUid }))
+		// TRANSLATORS "{userUid}" is a technical account identifier (not the display name). "\u00A0" keeps the ellipsis attached to the previous word and avoids awkward line breaks.
+		const loadingMessage = computed(() => t('profile_fields', 'Loading profile fields for {userUid}\u00A0…', { userUid: props.userUid }))
 		const editableFields = computed<AdminEditableField[]>(() => buildAdminEditableFields(definitions.value, userValues.value))
 		const isSavingAny = computed(() => savingIds.value.length > 0)
 		const headerDescription = computed(() => {

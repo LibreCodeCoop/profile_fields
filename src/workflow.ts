@@ -535,8 +535,9 @@ class WorkflowProfileFieldElement extends HTMLElement {
 
 		const placeholder = document.createElement('option')
 		placeholder.value = ''
+		// TRANSLATORS "\u00A0" keeps the ellipsis attached to the previous word for correct typography and avoids awkward line breaks.
 		placeholder.textContent = definitions.length === 0
-			? t('profile_fields', 'Loading profile fields…')
+			? t('profile_fields', 'Loading profile fields\u00A0…')
 			: t('profile_fields', 'Choose a profile field')
 		fieldSelect.append(placeholder)
 
