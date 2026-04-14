@@ -95,18 +95,18 @@ test('admin can create, update, and delete a field definition', async ({ page })
 	await page.locator('#profile-fields-admin-label').fill(createdLabel)
 	await page.getByTestId('profile-fields-admin-save').click()
 
-	await expect(page.getByTestId('profile-fields-admin-success')).toContainText('Field created successfully.')
+	await expect(page.getByTestId('profile-fields-admin-success')).toContainText('Field created.')
 	await expect(page.getByTestId(`profile-fields-admin-definition-${fieldKey}`)).toBeVisible()
 
 	await page.locator('#profile-fields-admin-label').fill(updatedLabel)
 	await page.getByTestId('profile-fields-admin-save').click()
 
-	await expect(page.getByTestId('profile-fields-admin-success')).toContainText('Field updated successfully.')
+	await expect(page.getByTestId('profile-fields-admin-success')).toContainText('Field updated.')
 	await expect(page.getByTestId(`profile-fields-admin-definition-${fieldKey}`)).toContainText(updatedLabel)
 
 	await page.getByTestId('profile-fields-admin-delete').click()
 
-	await expect(page.getByTestId('profile-fields-admin-success')).toContainText('Field deleted successfully.')
+	await expect(page.getByTestId('profile-fields-admin-success')).toContainText('Field deleted.')
 	await expect(page.getByTestId(`profile-fields-admin-definition-${fieldKey}`)).toHaveCount(0)
 	await deleteDefinitionByFieldKey(page.request, fieldKey)
 })
@@ -152,7 +152,7 @@ test('admin uses a modal editor on compact layout', async ({ page }) => {
 		await createDialog.locator('#profile-fields-admin-label').fill(createdLabel)
 		await createDialog.getByTestId('profile-fields-admin-save').click()
 
-		await expect(page.getByTestId('profile-fields-admin-success')).toContainText('Field created successfully.')
+		await expect(page.getByTestId('profile-fields-admin-success')).toContainText('Field created.')
 		await expect(page.getByTestId(`profile-fields-admin-definition-${createdFieldKey}`)).toBeVisible()
 		await expect(createDialog).toBeHidden()
 	} finally {
@@ -301,7 +301,7 @@ test('admin gets an initial select option row and can remove empty rows by keybo
 	await expect(page.getByTestId('profile-fields-admin-option-handle-0')).toBeVisible()
 
 	await page.getByTestId('profile-fields-admin-save').click()
-	await expect(page.getByTestId('profile-fields-admin-success')).toContainText('Field created successfully.')
+	await expect(page.getByTestId('profile-fields-admin-success')).toContainText('Field created.')
 
 	await deleteDefinitionByFieldKey(page.request, fieldKey)
 })
@@ -336,7 +336,7 @@ test('admin can bulk add select options from multiple lines', async ({ page }) =
 	}
 
 	await page.getByTestId('profile-fields-admin-save').click()
-	await expect(page.getByTestId('profile-fields-admin-success')).toContainText('Field created successfully.')
+	await expect(page.getByTestId('profile-fields-admin-success')).toContainText('Field created.')
 
 	await deleteDefinitionByFieldKey(page.request, fieldKey)
 })
@@ -400,7 +400,7 @@ test('admin reuses the empty select option row on repeated Enter', async ({ page
 		await expect(page.getByTestId('profile-fields-admin-option-row-4')).toHaveCount(0)
 
 		await page.getByTestId('profile-fields-admin-save').click()
-		await expect(page.getByTestId('profile-fields-admin-success')).toContainText('Field updated successfully.')
+		await expect(page.getByTestId('profile-fields-admin-success')).toContainText('Field updated.')
 
 		await page.reload()
 		await openSelectDefinitionEditor(page, fieldKey, label)
@@ -451,7 +451,7 @@ test('admin can reorder select options from the handle menu and drag handle', as
 		await expect(optionInput(page, 3)).toHaveValue('Gamma')
 
 		await page.getByTestId('profile-fields-admin-save').click()
-		await expect(page.getByTestId('profile-fields-admin-success')).toContainText('Field updated successfully.')
+		await expect(page.getByTestId('profile-fields-admin-success')).toContainText('Field updated.')
 
 		await page.reload()
 		await openSelectDefinitionEditor(page, fieldKey, label)
