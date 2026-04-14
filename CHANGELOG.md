@@ -10,6 +10,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 <!-- changelog-linker -->
 <!-- changelog-linker -->
+## 1.0.3 - 2026-04-14
+
+💝 **SUPPORT PROFILE FIELDS** — If this project helps your team, please support ongoing maintenance via GitHub Sponsors: https://github.com/sponsors/LibreSign
+
+⭐ **STAR THE REPOSITORY** — Stars help the project gain visibility and justify continued investment: https://github.com/LibreCodeCoop/profile_fields
+
+🏢 **ENTERPRISE SUPPORT** — Need custom development, support, or sponsored features? Contact us: contact@librecode.coop
+
+### Fixed
+- Fixed Oracle database compatibility for field definition queries [#79](https://github.com/LibreCodeCoop/profile_fields/pull/79)
+
+### Changed
+- Improved translation readiness by adding translator guidance for technical terms and non-breaking spaces in UI strings [#80](https://github.com/LibreCodeCoop/profile_fields/pull/80)
+
 ## 1.0.2 - 2026-04-13
 
 💝 **SUPPORT PROFILE FIELDS** — If this project helps your team, please support ongoing maintenance via GitHub Sponsors: https://github.com/sponsors/LibreSign
