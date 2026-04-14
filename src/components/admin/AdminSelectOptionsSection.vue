@@ -155,8 +155,8 @@ const createOptionId = () => `option-local-${nextOptionId++}`
 const options = computed(() => props.modelValue)
 const bulkOptionValues = computed(() => parseEditableSelectOptionValues(bulkOptionInput.value))
 const normalizedOptionCount = computed(() => extractEditableSelectOptionValues(options.value).filter((optionValue: string) => optionValue.trim() !== '').length)
-const optionsCountLabel = computed(() => n('profile_fields', 'option', 'options', normalizedOptionCount.value, { count: normalizedOptionCount.value }))
-const bulkOptionsSummary = computed(() => n('profile_fields', '1 option ready.', '{count} options ready.', bulkOptionValues.value.length, { count: bulkOptionValues.value.length }))
+const optionsCountLabel = computed(() => n('profile_fields', 'Option', 'Options', normalizedOptionCount.value, { count: normalizedOptionCount.value }))
+const bulkOptionsSummary = computed(() => n('profile_fields', '{count} option ready.', '{count} options ready.', bulkOptionValues.value.length, { count: bulkOptionValues.value.length }))
 
 const duplicateOptionIndices = computed(() => {
 	const seen = new Map<string, number>()
