@@ -32,6 +32,7 @@ class FieldDefinitionService {
 	public function create(array $definition): FieldDefinition {
 		$validated = $this->validator->validate($definition);
 		if ($this->fieldDefinitionMapper->findByFieldKey($validated['field_key']) !== null) {
+			// TRANSLATORS "field_key" is a technical API field identifier and should remain unchanged.
 			throw new InvalidArgumentException($this->l10n->t('"field_key" already exists'));
 		}
 
@@ -48,6 +49,7 @@ class FieldDefinitionService {
 		try {
 			$entity->setOptions(isset($validated['options']) ? json_encode($validated['options'], JSON_THROW_ON_ERROR) : null);
 		} catch (JsonException $e) {
+			// TRANSLATORS %s is a low-level JSON encoder error detail.
 			throw new InvalidArgumentException($this->l10n->t('Options could not be encoded: %s', [$e->getMessage()]), 0, $e);
 		}
 		$entity->setCreatedAt($createdAt);
@@ -62,6 +64,7 @@ class FieldDefinitionService {
 	public function update(FieldDefinition $existing, array $definition): FieldDefinition {
 		$validated = $this->validator->validate($definition + ['field_key' => $existing->getFieldKey()]);
 		if (($definition['field_key'] ?? $existing->getFieldKey()) !== $existing->getFieldKey()) {
+			// TRANSLATORS "field_key" is a technical API field identifier and should remain unchanged.
 			throw new InvalidArgumentException($this->l10n->t('"field_key" cannot be changed'));
 		}
 
@@ -78,6 +81,7 @@ class FieldDefinitionService {
 		try {
 			$existing->setOptions(isset($validated['options']) ? json_encode($validated['options'], JSON_THROW_ON_ERROR) : null);
 		} catch (JsonException $e) {
+			// TRANSLATORS %s is a low-level JSON encoder error detail.
 			throw new InvalidArgumentException($this->l10n->t('Options could not be encoded: %s', [$e->getMessage()]), 0, $e);
 		}
 		$existing->setUpdatedAt($this->parseImportedDate($definition['updated_at'] ?? null) ?? new DateTime());
