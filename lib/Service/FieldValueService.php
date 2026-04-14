@@ -151,7 +151,7 @@ class FieldValueService {
 	): array {
 		if ($limit < 1 || $limit > self::SEARCH_MAX_LIMIT) {
 			// TRANSLATORS %d is the maximum supported search limit.
-			throw new InvalidArgumentException($this->l10n->t('limit must be between 1 and %d', [self::SEARCH_MAX_LIMIT]));
+			throw new InvalidArgumentException($this->l10n->t('Limit must be between 1 and %d', [self::SEARCH_MAX_LIMIT]));
 		}
 
 		if ($offset < 0) {
