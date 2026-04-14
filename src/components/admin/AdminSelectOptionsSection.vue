@@ -155,7 +155,9 @@ const createOptionId = () => `option-local-${nextOptionId++}`
 const options = computed(() => props.modelValue)
 const bulkOptionValues = computed(() => parseEditableSelectOptionValues(bulkOptionInput.value))
 const normalizedOptionCount = computed(() => extractEditableSelectOptionValues(options.value).filter((optionValue: string) => optionValue.trim() !== '').length)
+// TRANSLATORS "Option/Options" here means selectable field values, not application settings.
 const optionsCountLabel = computed(() => n('profile_fields', 'Option', 'Options', normalizedOptionCount.value, { count: normalizedOptionCount.value }))
+// TRANSLATORS "{count}" is the number of parsed selectable values ready to be added.
 const bulkOptionsSummary = computed(() => n('profile_fields', '{count} option ready.', '{count} options ready.', bulkOptionValues.value.length, { count: bulkOptionValues.value.length }))
 
 const duplicateOptionIndices = computed(() => {
@@ -184,8 +186,11 @@ const hasOptionValue = (index: number) => options.value[index]?.value.trim() !==
 const canMoveOptionUp = (index: number) => index > 0
 const canMoveOptionDown = (index: number) => index < options.value.length - 1
 const isOptionDuplicate = (index: number) => duplicateOptionIndices.value.has(index)
+// TRANSLATORS "{optionValue}" is the visible text of one selectable option.
 const reorderOptionLabel = (optionValue: string) => t('profile_fields', 'Reorder option {optionValue}', { optionValue })
+// TRANSLATORS "{position}" is a 1-based option index shown as placeholder text.
 const optionPlaceholder = (position: number) => t('profile_fields', 'Option {position}', { position })
+// TRANSLATORS "{optionValue}" is the visible text of one selectable option.
 const removeOptionLabel = (optionValue: string) => t('profile_fields', 'Remove option {optionValue}', { optionValue })
 
 const focusOptionInput = async(index: number) => {
