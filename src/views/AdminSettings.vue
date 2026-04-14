@@ -149,7 +149,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 						<div class="profile-fields-admin__grid profile-fields-admin__grid--identity">
 							<div class="profile-fields-admin__field">
-								<!-- TRANSLATORS "Field key" means a stable technical identifier (API key), not a keyboard key. -->
+								<!-- TRANSLATORS "Field key" means a stable technical identifier (API key), not a keyboard key. This context applies to both label occurrences below. -->
 								<!-- TRANSLATORS "APIs" and "integrations" refer to technical systems and external tools. -->
 								<label for="profile-fields-admin-field-key">{{ t('profile_fields', 'Field key') }}</label>
 								<NcInputField
