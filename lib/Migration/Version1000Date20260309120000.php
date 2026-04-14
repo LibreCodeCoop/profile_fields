@@ -64,7 +64,7 @@ class Version1000Date20260309120000 extends SimpleMigrationStep {
 			$table->addColumn('created_at', Types::DATETIME, []);
 			$table->addColumn('updated_at', Types::DATETIME, []);
 
-			$table->setPrimaryKey(['id']);
+			$table->setPrimaryKey(['id'], 'pf_definitions_pk');
 			$table->addUniqueIndex(['field_key'], 'profile_fields_def_key_uk');
 			$table->addIndex(['active', 'sort_order'], 'pf_def_active_sort_idx');
 		}
@@ -91,8 +91,8 @@ class Version1000Date20260309120000 extends SimpleMigrationStep {
 			]);
 			$table->addColumn('updated_at', Types::DATETIME, []);
 
-			$table->setPrimaryKey(['id']);
-			$table->addUniqueIndex(['field_definition_id', 'user_uid'], 'profile_fields_val_field_user_uk');
+			$table->setPrimaryKey(['id'], 'pf_values_pk');
+			$table->addUniqueIndex(['field_definition_id', 'user_uid'], 'pf_val_def_user_uk');
 			$table->addIndex(['user_uid'], 'profile_fields_val_user_idx');
 			$table->addIndex(['field_definition_id'], 'profile_fields_val_field_idx');
 			$table->addForeignKeyConstraint(
