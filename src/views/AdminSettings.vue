@@ -397,7 +397,7 @@ const editorEmptyState = computed(() => sortedDefinitions.value.length === 0
 		description: t('profile_fields', 'Select a field from the list, or create a new one.'),
 	})
 const configuredFieldsCountLabel = computed(() => n('profile_fields', 'field configured', 'fields configured', definitions.value.length, { count: definitions.value.length }))
-const saveActionLabel = computed(() => isSaving.value ? t('profile_fields', 'Saving changes…') : (isEditing.value ? t('profile_fields', 'Save changes') : t('profile_fields', 'Create field')))
+const saveActionLabel = computed(() => isSaving.value ? t('profile_fields', 'Saving changes\u00A0…') : (isEditing.value ? t('profile_fields', 'Save changes') : t('profile_fields', 'Create field')))
 const editFieldAriaLabel = (label: string) => t('profile_fields', 'Edit field {label}', { label })
 const actionsForLabel = (label: string) => t('profile_fields', 'Actions for {label}', { label })
 const toggleDefinitionActiveLabel = (definition: FieldDefinition) => definition.active
@@ -628,7 +628,7 @@ const persistDefinition = async() => {
 			selectedId.value = created.id
 			populateForm(created)
 			markJustSaved(created.id)
-			setSuccessMessage(t('profile_fields', 'Field created successfully.'))
+			setSuccessMessage(t('profile_fields', 'Field created.'))
 		} else {
 			const updated = await updateDefinition(selectedDefinition.value.id, {
 				label: payload.label,
@@ -642,7 +642,7 @@ const persistDefinition = async() => {
 			replaceDefinitionInState(updated)
 			populateForm(updated)
 			markJustSaved(updated.id)
-			setSuccessMessage(t('profile_fields', 'Field updated successfully.'))
+			setSuccessMessage(t('profile_fields', 'Field updated.'))
 		}
 		if (isCompactLayout.value) {
 			closeEditor()
@@ -666,7 +666,7 @@ const removeDefinition = async() => {
 		removeDefinitionFromState(selectedDefinition.value.id)
 		isCreatingNew.value = false
 		resetForm()
-		setSuccessMessage(t('profile_fields', 'Field deleted successfully.'))
+		setSuccessMessage(t('profile_fields', 'Field deleted.'))
 	} catch (error: any) {
 		errorMessage.value = error?.response?.data?.ocs?.data?.message ?? error?.message ?? t('profile_fields', 'Could not delete this field. Please try again.')
 	} finally {
