@@ -13,6 +13,7 @@ use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Db\MultipleObjectsReturnedException;
 use OCP\AppFramework\Db\QBMapper;
 use OCP\IDBConnection;
+use PDO;
 
 /** @template-extends QBMapper<FieldValue> */
 class FieldValueMapper extends QBMapper {
@@ -98,7 +99,7 @@ class FieldValueMapper extends QBMapper {
 			->orderBy('user_uid', 'ASC');
 
 		$cursor = $qb->executeQuery();
-		$userUids = $cursor->fetchFirstColumn();
+		$userUids = $cursor->fetchAll(PDO::FETCH_COLUMN);
 		$cursor->closeCursor();
 
 		return array_values(array_map(static fn (mixed $uid): string => (string)$uid, $userUids));
