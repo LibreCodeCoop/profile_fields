@@ -151,7 +151,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 							/>
 
 							<NcButton variant="primary" :disabled="isSaving(field.definition.id) || !hasFieldChanges(field)" @click="saveField(field)">
-								{{ isSaving(field.definition.id) ? t('profile_fields', 'Saving changes…') : t('profile_fields', 'Save changes') }}
+								{{ isSaving(field.definition.id) ? t('profile_fields', 'Saving changes\u00A0…') : t('profile_fields', 'Save changes') }}
 							</NcButton>
 						</div>
 
