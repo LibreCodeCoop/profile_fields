@@ -76,7 +76,7 @@ describe('AdminSelectOptionsSection', () => {
 		})
 
 		expect(wrapper.text()).toContain('tr:Options')
-		expect(wrapper.text()).toContain('tr:option')
+		expect(wrapper.text()).toContain('tr:Option')
 		expect(wrapper.text()).toContain('tr:Add single option')
 	})
 
