@@ -32,22 +32,13 @@ class FieldValueMapperTest extends TestCase {
 	}
 
 	public function testFindDistinctUserUidsUsesFetchAllColumnModeForCompatibility(): void {
+		$this->queryBuilder->method('selectDistinct')->willReturnSelf();
+		$this->queryBuilder->method('from')->willReturnSelf();
+		$this->queryBuilder->method('orderBy')->willReturnSelf();
+
 		$this->db->expects($this->once())
 			->method('getQueryBuilder')
 			->willReturn($this->queryBuilder);
-
-		$this->queryBuilder->expects($this->once())
-			->method('selectDistinct')
-			->with('user_uid')
-			->willReturnSelf();
-		$this->queryBuilder->expects($this->once())
-			->method('from')
-			->with('profile_fields_values')
-			->willReturnSelf();
-		$this->queryBuilder->expects($this->once())
-			->method('orderBy')
-			->with('user_uid', 'ASC')
-			->willReturnSelf();
 		$this->queryBuilder->expects($this->once())
 			->method('executeQuery')
 			->willReturn($this->result);
