@@ -1,0 +1,10 @@
+{ "translations": {
+    "Cancel" : "Cancel",
+    "URL" : "URL",
+    "Email" : "Էլ․փոստ",
+    "Select" : "Նշել",
+    "Type" : "Տիպ",
+    "is" : "հավասար է",
+    "is not" : "հավասար չե"
+},"pluralForm" :"nplurals=2; plural=(n != 1);"
+}

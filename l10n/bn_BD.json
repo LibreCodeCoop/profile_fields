@@ -1,0 +1,9 @@
+{ "translations": {
+    "Cancel" : "Cancel",
+    "URL" : "URL",
+    "Email" : "ইমেইল",
+    "Select" : "সিলেক্ট",
+    "Type" : "ধরণ",
+    "Hide" : "লুকিয়ে রাখ"
+},"pluralForm" :"nplurals=2; plural=(n != 1);"
+}
