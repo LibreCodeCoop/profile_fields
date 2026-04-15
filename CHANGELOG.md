@@ -10,6 +10,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 <!-- changelog-linker -->
 <!-- changelog-linker -->
+## 1.0.4 - 2026-04-14
+
+💝 **SUPPORT PROFILE FIELDS** — If this project helps your team, please support ongoing maintenance via GitHub Sponsors: https://github.com/sponsors/LibreSign
+
+⭐ **STAR THE REPOSITORY** — Stars help the project gain visibility and justify continued investment: https://github.com/LibreCodeCoop/profile_fields
+
+🏢 **ENTERPRISE SUPPORT** — Need custom development, support, or sponsored features? Contact us: contact@librecode.coop
+
+### Fixed
+- #84 make orphaned value repair query cursor compatible across Nextcloud versions
+
+### Changed
+- Bump dependencies
+
 ## 1.0.3 - 2026-04-14
 
 💝 **SUPPORT PROFILE FIELDS** — If this project helps your team, please support ongoing maintenance via GitHub Sponsors: https://github.com/sponsors/LibreSign
