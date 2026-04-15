@@ -7,6 +7,7 @@ OC.L10N.register(
     "True" : "Ano",
     "False" : "Ne",
     "Cancel" : "Zrušit",
+    "Saving changes …" : "Ukládání změn …",
     "Save changes" : "Uložit změny",
     "Options" : "Možnosti",
     "Move up" : "Přesunout výše",

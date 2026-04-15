@@ -1,0 +1,28 @@
+{ "translations": {
+    "Select a date" : "Pilih tanggal",
+    "Cancel" : "Batal",
+    "Save changes" : "Simpan perubahan",
+    "Options" : "Pilihan",
+    "Move up" : "Pindah ke atas",
+    "Move down" : "Pindah ke bawah",
+    "Option value" : "Nilai opsi",
+    "Text" : "Teks",
+    "Date" : "Tanggal",
+    "URL" : "URL",
+    "Email" : "Email",
+    "Select" : "Pilih",
+    "Active" : "Aktif",
+    "Drag to reorder" : "Seret untuk mengubah urutan",
+    "Label" : "Label",
+    "Rules" : "Aturan",
+    "Visibility" : "Visibilitas",
+    "Type" : "Jenis",
+    "Show to everyone" : "Tampilkan kepada semua orang",
+    "Show to logged in accounts only" : "Tampilkan hanya kepada akun yang login",
+    "Hide" : "Sembunyikan",
+    "is" : "adalah",
+    "is not" : "bukan",
+    "contains" : "berisi",
+    "Administrators" : "Administrator"
+},"pluralForm" :"nplurals=1; plural=0;"
+}

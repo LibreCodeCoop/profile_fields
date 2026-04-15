@@ -1,0 +1,24 @@
+{ "translations": {
+    "Select a date" : "Избери датум",
+    "Cancel" : "Откажи",
+    "Save changes" : "Зачувај ги промените",
+    "Options" : "Опции",
+    "Move up" : "Помести горе",
+    "Move down" : "Помести доле",
+    "Text" : "Текст",
+    "Date" : "Датум",
+    "URL" : "Адреса",
+    "Email" : "Е-пошта",
+    "Select" : "Избери",
+    "Active" : "Активно",
+    "Label" : "Ознака",
+    "Visibility" : "Видливост",
+    "Type" : "Вид",
+    "Show to everyone" : "Прикажи на сите",
+    "Show to logged in accounts only" : "Прикажи само на најавени корисници",
+    "Hide" : "Сокриј",
+    "is" : "е",
+    "is not" : "не е",
+    "Administrators" : "Администратори"
+},"pluralForm" :"nplurals=2; plural=(n % 10 == 1 && n % 100 != 11) ? 0 : 1;"
+}

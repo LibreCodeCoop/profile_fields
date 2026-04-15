@@ -2,15 +2,25 @@ OC.L10N.register(
     "profile_fields",
     {
     "Cancel" : "Cancel",
+    "Save changes" : "Guardar los cambeos",
+    "Options" : "Opciones",
     "Move up" : "Xubir",
     "Move down" : "Baxar",
     "Text" : "Testu",
+    "Number" : "Númberu",
+    "Date" : "Data",
+    "URL" : "URL",
     "Email" : "Direición de corréu electrónicu",
     "Select" : "Seleicionar",
     "Active" : "Activa",
     "Visibility" : "Visibilidá",
     "Type" : "Tipu",
     "Show to everyone" : "Amosar a tol mundu",
-    "Show to logged in accounts only" : "Amosar namás a les cuentes cola sesión aniciada"
+    "Show to logged in accounts only" : "Amosar namás a les cuentes cola sesión aniciada",
+    "Hide" : "Esconder",
+    "is" : "ye",
+    "is not" : "nun ye",
+    "contains" : "contién",
+    "Administrators" : "Alministradores"
 },
 "nplurals=2; plural=(n != 1);");

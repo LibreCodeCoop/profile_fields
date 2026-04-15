@@ -1,0 +1,22 @@
+{ "translations": {
+    "True" : "אמת",
+    "False" : "שקר",
+    "Cancel" : "ביטול",
+    "Save changes" : "שמירת השינויים",
+    "Options" : "אפשרויות",
+    "Move down" : "להוריד למטה",
+    "Text" : "טקסט",
+    "Date" : "תאריך",
+    "URL" : "כתובת",
+    "Email" : "דוא״ל",
+    "Select" : "בחר",
+    "Active" : "פעיל",
+    "Label" : "תווית",
+    "Rules" : "כללים",
+    "Type" : "סוג",
+    "Hide" : "הסתרה",
+    "is" : "הוא",
+    "is not" : "אינו",
+    "Administrators" : "מנהלים"
+},"pluralForm" :"nplurals=3; plural=(n == 1 && n % 1 == 0) ? 0 : (n == 2 && n % 1 == 0) ? 1: 2;"
+}

@@ -7,6 +7,7 @@ OC.L10N.register(
     "True" : "Wahr",
     "False" : "Falsch",
     "Cancel" : "Abbrechen",
+    "Saving changes …" : "Speichere Änderungen …",
     "Save changes" : "Änderungen speichern",
     "Options" : "Optionen",
     "Move up" : "Nach oben verschieben",

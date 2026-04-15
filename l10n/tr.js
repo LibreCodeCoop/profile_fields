@@ -7,6 +7,7 @@ OC.L10N.register(
     "True" : "Doğru",
     "False" : "Yanlış",
     "Cancel" : "İptal",
+    "Saving changes …" : "Değişiklikler kaydediliyor...",
     "Save changes" : "Değişiklikleri kaydet",
     "Options" : "Seçenekler",
     "Move up" : "Yukarı taşı",

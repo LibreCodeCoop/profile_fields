@@ -7,6 +7,7 @@ OC.L10N.register(
     "True" : "對",
     "False" : "錯",
     "Cancel" : "取消",
+    "Saving changes …" : "更新儲存中 ...",
     "Save changes" : "保存更改",
     "Options" : "選項",
     "Move up" : "向上移動",

@@ -1,0 +1,27 @@
+OC.L10N.register(
+    "profile_fields",
+    {
+    "Select a date" : "Veldu dagsetningu",
+    "Cancel" : "Cancel",
+    "Save changes" : "Vista breytingar",
+    "Options" : "Valkostir",
+    "Move up" : "Færa upp",
+    "Move down" : "Færa niður",
+    "Text" : "Texti",
+    "Date" : "Dagsetning",
+    "URL" : "Slóð",
+    "Email" : "Tölvupóstur",
+    "Select" : "Velja",
+    "Active" : "Virkur",
+    "Label" : "Skýring",
+    "Rules" : "Reglur",
+    "Visibility" : "Sýnileiki",
+    "Type" : "Tegund",
+    "Show to everyone" : "Birta öllum",
+    "Show to logged in accounts only" : "Birta einungis hjá innskráðum notendaaðgöngum",
+    "Hide" : "Fela",
+    "is" : "er",
+    "is not" : "er ekki",
+    "Administrators" : "Stjórnendur"
+},
+"nplurals=2; plural=(n % 10 != 1 || n % 100 == 11);");

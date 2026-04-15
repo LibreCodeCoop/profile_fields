@@ -1,5 +1,7 @@
-{ "translations": {
-    "Enter a number" : "Nummer eingeben",
+OC.L10N.register(
+    "profile_fields",
+    {
+    "Enter a number" : "Zahl eingeben",
     "Select a date" : "Datum auswählen",
     "Enter an email address" : "E-Mail-Adresse eingeben",
     "True" : "Wahr",
@@ -13,17 +15,16 @@
     "Option value" : "Optionswert",
     "Add multiple options" : "Mehrere Optionen hinzufügen",
     "Text" : "Text",
-    "Number" : "Zahl",
+    "Number" : "Zahl-Feld",
     "Date" : "Datum",
     "URL" : "URL",
-    "Email" : "E-Mail-Adresse",
+    "Email" : "E-Mail",
     "Select" : "Auswählen",
     "Multiselect" : "Mehrfachauswahl",
-    "Admins only" : "Nur Administration",
+    "Admins only" : "Nur Admins",
     "Active" : "Aktiv",
-    "Inactive" : "Inaktiv",
-    "Drag to reorder" : "Ziehen zum Neuordnen",
-    "Label" : "Beschriftung",
+    "Drag to reorder" : "Ziehen zum Umordnen",
+    "Label" : "Kennzeichnung",
     "Rules" : "Regeln",
     "Visibility" : "Sichtbarkeit",
     "Type" : "Typ",
@@ -33,6 +34,6 @@
     "is" : "ist",
     "is not" : "ist nicht",
     "contains" : "enthält",
-    "Administrators" : "Administratoren"
-},"pluralForm" :"nplurals=2; plural=(n != 1);"
-}
+    "Administrators" : "Administrationsmitglieder"
+},
+"nplurals=2; plural=(n != 1);");
