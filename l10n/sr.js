@@ -8,6 +8,7 @@ OC.L10N.register(
     "False" : "Неистинито",
     "Cancel" : "Откажи",
     "Save changes" : "Сачувај измене",
+    "Option {position}" : "Опција {position}",
     "Options" : "Избори",
     "Move up" : "Помери нагоре",
     "Move down" : "Помери надоле",

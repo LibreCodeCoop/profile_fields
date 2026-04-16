@@ -8,6 +8,7 @@ OC.L10N.register(
     "False" : "Falso",
     "Cancel" : "Cancelar",
     "Save changes" : "Guardar cambios",
+    "Option {position}" : "Opción {position}",
     "Options" : "Opciones",
     "Move up" : "Mover hacia arriba",
     "Move down" : "Mover hacia abajo",

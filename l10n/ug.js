@@ -8,6 +8,7 @@ OC.L10N.register(
     "False" : "يالغان",
     "Cancel" : "ۋاز كەچ",
     "Save changes" : "ئۆزگەرتىشلەرنى ساقلاڭ",
+    "Option {position}" : "{position} تاللانمىسى",
     "Options" : "تاللانما",
     "Move up" : "يۆتكەڭ",
     "Move down" : "تۆۋەنگە يۆتكەڭ",

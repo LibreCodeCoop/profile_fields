@@ -9,6 +9,7 @@ OC.L10N.register(
     "Cancel" : "Cealaigh",
     "Saving changes …" : "Ag sábháil athruithe …",
     "Save changes" : "Sabháil na hathruithe",
+    "Option {position}" : "Rogha {position}",
     "Options" : "Roghanna",
     "Move up" : "Éirí suas",
     "Move down" : "Bog síos",

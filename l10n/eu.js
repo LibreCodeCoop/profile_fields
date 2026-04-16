@@ -8,6 +8,7 @@ OC.L10N.register(
     "False" : "Gezurra",
     "Cancel" : "Cancel",
     "Save changes" : "Gorde aldaketak",
+    "Option {position}" : "{position} aukera",
     "Options" : "Aukerak",
     "Move up" : "Eraman gora",
     "Move down" : "Eraman behera",

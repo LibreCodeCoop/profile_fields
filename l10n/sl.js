@@ -6,6 +6,7 @@ OC.L10N.register(
     "False" : "Napak",
     "Cancel" : "Prekliči",
     "Save changes" : "Shrani spremembe",
+    "Option {position}" : "Možnost {position}",
     "Options" : "Možnosti",
     "Move up" : "Premakni navzgor",
     "Move down" : "Premakni navzdol",

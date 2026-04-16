@@ -6,6 +6,7 @@ OC.L10N.register(
     "Enter an email address" : "Εισάγετε μια διεύθυνση ηλεκτρονικού ταχυδρομείου",
     "True" : "Αληθές",
     "False" : "Ψευδές",
+    "{fieldLabel}: {message}" : "{fieldLabel}: {message}",
     "Cancel" : "Ακύρωση",
     "Save changes" : "Αποθήκευση αλλαγών",
     "Options" : "Επιλογές",

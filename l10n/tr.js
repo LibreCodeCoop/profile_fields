@@ -9,6 +9,7 @@ OC.L10N.register(
     "Cancel" : "İptal",
     "Saving changes …" : "Değişiklikler kaydediliyor...",
     "Save changes" : "Değişiklikleri kaydet",
+    "Option {position}" : "{position} seçeneği",
     "Options" : "Seçenekler",
     "Move up" : "Yukarı taşı",
     "Move down" : "Aşağı taşı",

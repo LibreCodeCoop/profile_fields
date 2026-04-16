@@ -1,5 +1,5 @@
 { "translations": {
-    "Cancel" : "Cancel",
+    "Cancel" : "გაუქმება",
     "Save changes" : "Save changes",
     "Move up" : "Move up",
     "Move down" : "Move down",
@@ -7,7 +7,7 @@
     "Date" : "თარიღი",
     "URL" : "URL",
     "Email" : "Email",
-    "Select" : "Select",
+    "Select" : "მონიშვნა",
     "Active" : "Active",
     "Label" : "Label",
     "Visibility" : "Visibility",

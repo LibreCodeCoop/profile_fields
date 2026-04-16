@@ -9,6 +9,7 @@ OC.L10N.register(
     "Cancel" : "Cancel",
     "Saving changes …" : "Saving changes …",
     "Save changes" : "Save changes",
+    "Option {position}" : "Option {position}",
     "Options" : "Options",
     "Move up" : "Move up",
     "Move down" : "Move down",

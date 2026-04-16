@@ -4,6 +4,7 @@ OC.L10N.register(
     "Select a date" : "날짜 선택",
     "Cancel" : "취소",
     "Save changes" : "설정 저장",
+    "Option {position}" : "옵션 {position}",
     "Options" : "옵션들",
     "Move up" : "위로 이동",
     "Move down" : "아래로 이동",

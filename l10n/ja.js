@@ -6,6 +6,7 @@ OC.L10N.register(
     "Enter an email address" : "メールアドレスを入力",
     "Cancel" : "キャンセル",
     "Save changes" : "変更を保存",
+    "Option {position}" : "オプション {position}",
     "Options" : "オプション",
     "Move up" : "上に移動",
     "Move down" : "下に移動",

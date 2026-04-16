@@ -8,6 +8,7 @@ OC.L10N.register(
     "False" : "假",
     "Cancel" : "取消",
     "Save changes" : "保存更改",
+    "Option {position}" : "选项 {position}",
     "Options" : "选项",
     "Move up" : "上移",
     "Move down" : "下移",

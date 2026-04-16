@@ -6,6 +6,7 @@ OC.L10N.register(
     "False" : "Fals",
     "Cancel" : "Cancel",
     "Save changes" : "Desa els canvis",
+    "Option {position}" : "Opció {position}",
     "Options" : "Opcions",
     "Move up" : "Mou amunt",
     "Move down" : "Mou avall",

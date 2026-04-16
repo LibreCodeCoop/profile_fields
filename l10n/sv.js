@@ -6,6 +6,7 @@ OC.L10N.register(
     "Enter an email address" : "Fyll i en e-postadress",
     "Cancel" : "Avbryt",
     "Save changes" : "Spara ändringar",
+    "Option {position}" : "Alternativ {position}",
     "Options" : "Alternativ",
     "Move up" : "Flytta upp",
     "Move down" : "Flytta ner",

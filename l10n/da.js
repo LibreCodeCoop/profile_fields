@@ -6,6 +6,7 @@ OC.L10N.register(
     "Enter an email address" : "Angiv en e-mailadresse",
     "Cancel" : "Annullér",
     "Save changes" : "Gem ændringer",
+    "Option {position}" : "Mulighed {position}",
     "Options" : "Muligheder",
     "Move up" : "Flyt op",
     "Move down" : "Flyt ned",

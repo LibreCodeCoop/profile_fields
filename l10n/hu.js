@@ -8,6 +8,7 @@ OC.L10N.register(
     "False" : "Hamis",
     "Cancel" : "Mégse",
     "Save changes" : "Változások mentése",
+    "Option {position}" : "{position}. lehetőség",
     "Options" : "Beállítások",
     "Move up" : "Mozgatás fel",
     "Move down" : "Mozgatás le",

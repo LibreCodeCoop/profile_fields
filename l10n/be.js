@@ -4,6 +4,7 @@ OC.L10N.register(
     "Select a date" : "Выберыце дату",
     "Cancel" : "Скасаваць",
     "Save changes" : "Захаваць змены",
+    "Option {position}" : "Варыянт {position}",
     "Options" : "Параметры",
     "Move up" : "Перамясціць уверх",
     "Move down" : "Перамясціць уніз",

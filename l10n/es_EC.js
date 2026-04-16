@@ -4,6 +4,7 @@ OC.L10N.register(
     "True" : "Verdadero",
     "False" : "Falso",
     "Cancel" : "Cancelar",
+    "Option {position}" : "Opción {position}",
     "Options" : "Opciones",
     "Move up" : "Mover arriba",
     "Move down" : "Mover abajo",

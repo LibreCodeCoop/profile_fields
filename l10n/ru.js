@@ -8,6 +8,7 @@ OC.L10N.register(
     "False" : "Ложь",
     "Cancel" : "Cancel",
     "Save changes" : "Сохранить изменения",
+    "Option {position}" : "Опция {position}",
     "Options" : "Варианты",
     "Move up" : "Переместить выше",
     "Move down" : "Переместить ниже",

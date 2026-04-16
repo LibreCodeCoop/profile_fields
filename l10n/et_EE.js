@@ -6,6 +6,7 @@ OC.L10N.register(
     "Enter an email address" : "Sisesta e-posti aadress",
     "Cancel" : "Katkesta",
     "Save changes" : "Salvesta muudatused",
+    "Option {position}" : "{position} valik",
     "Options" : "Eelistused",
     "Move up" : "Liiguta ülespoole",
     "Move down" : "Liiguta allapoole",

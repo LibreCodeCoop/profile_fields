@@ -1,7 +1,7 @@
 OC.L10N.register(
     "profile_fields",
     {
-    "Cancel" : "Cancel",
+    "Cancel" : "გაუქმება",
     "Save changes" : "Save changes",
     "Move up" : "Move up",
     "Move down" : "Move down",
@@ -9,7 +9,7 @@ OC.L10N.register(
     "Date" : "თარიღი",
     "URL" : "URL",
     "Email" : "Email",
-    "Select" : "Select",
+    "Select" : "მონიშვნა",
     "Active" : "Active",
     "Label" : "Label",
     "Visibility" : "Visibility",

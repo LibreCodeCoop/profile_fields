@@ -6,6 +6,7 @@ OC.L10N.register(
     "False" : "Невярно",
     "Cancel" : "Cancel",
     "Save changes" : "Запиши промените",
+    "Option {position}" : "Опция {position}",
     "Options" : "Опции",
     "Move up" : "Преместване нагоре",
     "Move down" : "Преместване  надолу",
