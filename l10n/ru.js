@@ -22,6 +22,7 @@ OC.L10N.register(
     "Select" : "Выбрать",
     "Admins only" : "Только администраторам",
     "Active" : "Активно",
+    "Drag to reorder" : "Перетащите для изменения порядка",
     "Label" : "Метка",
     "Rules" : "Правила",
     "Visibility" : "Видимость",

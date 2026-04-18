@@ -4,6 +4,7 @@ OC.L10N.register(
     "Select a date" : "Pasirinkti datą",
     "Cancel" : "Atsisakyti",
     "Save changes" : "Įrašyti pakeitimus",
+    "Option {position}" : "Parinktis {position}",
     "Options" : "Parinktys",
     "Move up" : "Pakelti",
     "Move down" : "Nuleisti",
