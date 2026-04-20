@@ -5,6 +5,7 @@ OC.L10N.register(
     "Select a date" : "ເລືອກວັນທີ",
     "Enter an email address" : "ປ້ອນທີ່ຢູ່ອີເມວ",
     "Cancel" : "ຍົກເລີກ",
+    "Saving changes …" : "ກຳລັງບັນທຶກການປ່ຽນແປງ …",
     "Save changes" : "ບັນທຶກການປ່ຽນແປງ",
     "Option {position}" : "Option {position}",
     "Options" : "ຕົວເລືອກ",
