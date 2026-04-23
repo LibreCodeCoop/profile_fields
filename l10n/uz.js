@@ -13,6 +13,7 @@ OC.L10N.register(
     "Label" : "Yorliq",
     "Visibility" : "Ko'rinish",
     "Type" : "Turi",
-    "contains" : "o'z ichiga oladi"
+    "contains" : "o'z ichiga oladi",
+    "Administrators" : "Administratorlar"
 },
 "nplurals=1; plural=0;");

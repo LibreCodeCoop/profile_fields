@@ -11,6 +11,7 @@
     "Label" : "Yorliq",
     "Visibility" : "Ko'rinish",
     "Type" : "Turi",
-    "contains" : "o'z ichiga oladi"
+    "contains" : "o'z ichiga oladi",
+    "Administrators" : "Administratorlar"
 },"pluralForm" :"nplurals=1; plural=0;"
 }
