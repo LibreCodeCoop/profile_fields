@@ -9,6 +9,7 @@ OC.L10N.register(
     "Move up" : "Pakelti",
     "Move down" : "Nuleisti",
     "Text" : "Tekstas",
+    "Number" : "Skaičius",
     "Date" : "Data",
     "URL" : "URL",
     "Email" : "El. paštas",
