@@ -137,7 +137,7 @@ class LogProfileFieldChangeOperationTest extends TestCase {
 		$urlGenerator = $this->createMock(IURLGenerator::class);
 		$urlGenerator->method('imagePath')->willReturn('/core/img/actions/profile.svg');
 
-	$appManager = $this->createMock(IAppManager::class);
+		$appManager = $this->createMock(IAppManager::class);
 
 		$subjectContext = new ProfileFieldValueSubjectContext();
 		$fieldValueService = new FieldValueService($this->fieldValueMapper, $this->dispatcher, $l10n);
@@ -164,7 +164,7 @@ class LogProfileFieldChangeOperationTest extends TestCase {
 			$this->dispatcher,
 			$appConfig,
 			$cacheFactory,
-					$appManager,
+			$appManager,
 			$this->userManager,
 		);
 		$container->method('get')
@@ -205,6 +205,7 @@ class LogProfileFieldChangeOperationTest extends TestCase {
 		$workflowApp = new $workflowAppClass();
 		$bootContext = $this->createMock(IBootContext::class);
 		$bootContext->expects($this->once())
+				$bootContext->expects($this->any())
 			->method('injectFn')
 			->willReturnCallback(function (callable $fn) use ($container, $generalLogger): mixed {
 				return $fn($this->workflowManager, $container, $generalLogger);
