@@ -204,8 +204,7 @@ class LogProfileFieldChangeOperationTest extends TestCase {
 		$workflowAppClass = 'OCA\\WorkflowEngine\\AppInfo\\Application';
 		$workflowApp = new $workflowAppClass();
 		$bootContext = $this->createMock(IBootContext::class);
-		$bootContext->expects($this->once())
-				$bootContext->expects($this->any())
+		$bootContext->expects($this->any())
 			->method('injectFn')
 			->willReturnCallback(function (callable $fn) use ($container, $generalLogger): mixed {
 				return $fn($this->workflowManager, $container, $generalLogger);

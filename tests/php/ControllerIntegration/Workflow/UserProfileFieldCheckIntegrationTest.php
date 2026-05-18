@@ -161,7 +161,7 @@ class UserProfileFieldCheckIntegrationTest extends TestCase {
 		$cacheFactory = $this->createMock(ICacheFactory::class);
 		$cacheFactory->method('createDistributed')->willReturn($cache);
 
-	$appManager = $this->createMock(IAppManager::class);
+		$appManager = $this->createMock(IAppManager::class);
 
 		$check = new UserProfileFieldCheck(
 			$this->userSession,
@@ -194,7 +194,7 @@ class UserProfileFieldCheckIntegrationTest extends TestCase {
 			$eventDispatcher,
 			$appConfig,
 			$cacheFactory,
-					$appManager,
+			$appManager,
 			$this->userManager,
 		);
 	}
