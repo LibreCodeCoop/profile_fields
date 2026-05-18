@@ -8,6 +8,7 @@ OC.L10N.register(
     "Options" : "Parinktys",
     "Move up" : "Pakelti",
     "Move down" : "Nuleisti",
+    "Add multiple options" : "Pridėkite kelias parinktis",
     "Text" : "Tekstas",
     "Number" : "Skaičius",
     "Date" : "Data",
