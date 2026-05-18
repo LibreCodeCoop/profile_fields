@@ -240,16 +240,6 @@ class LogProfileFieldChangeOperationTest extends TestCase {
 						&& ($context['user_uid'] ?? null) === $userId
 						&& ($context['previous_value'] ?? null) === 'finance'
 						&& ($context['current_value'] ?? null) === 'engineering';
-				}),
-			);
-
-		$fieldValueService = new FieldValueService($this->fieldValueMapper, $this->dispatcher, $this->createStub(IL10N::class));
-		$fieldValueService->upsert($this->definition, $userId, 'engineering', 'admin');
-	}
-
-	private function createDefinition(string $fieldKey): FieldDefinition {
-		$definition = new FieldDefinition();
-		$definition->setFieldKey($fieldKey);
 		$definition->setLabel('Department');
 		$definition->setType(FieldType::TEXT->value);
 		$definition->setEditPolicy(\OCA\ProfileFields\Enum\FieldEditPolicy::USERS->value);
