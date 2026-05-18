@@ -25,6 +25,7 @@ use OCA\ProfileFields\Workflow\ProfileFieldValueSubjectContext;
 use OCA\ProfileFields\Workflow\UserProfileFieldCheck;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Services\IAppConfig;
+use OCP\App\IAppManager;
 use OCP\DB\ISchemaWrapper;
 use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IEventDispatcher;
@@ -136,6 +137,8 @@ class LogProfileFieldChangeOperationTest extends TestCase {
 		$urlGenerator = $this->createMock(IURLGenerator::class);
 		$urlGenerator->method('imagePath')->willReturn('/core/img/actions/profile.svg');
 
+	$appManager = $this->createMock(IAppManager::class);
+
 		$subjectContext = new ProfileFieldValueSubjectContext();
 		$fieldValueService = new FieldValueService($this->fieldValueMapper, $this->dispatcher, $l10n);
 		$check = new UserProfileFieldCheck(
@@ -161,6 +164,7 @@ class LogProfileFieldChangeOperationTest extends TestCase {
 			$this->dispatcher,
 			$appConfig,
 			$cacheFactory,
+					$appManager,
 			$this->userManager,
 		);
 		$container->method('get')
