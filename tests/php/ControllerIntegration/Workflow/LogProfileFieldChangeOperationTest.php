@@ -207,7 +207,7 @@ class LogProfileFieldChangeOperationTest extends TestCase {
 		$bootContext->expects($this->any())
 			->method('injectFn')
 			->willReturnCallback(function (callable $fn) use ($container, $generalLogger): mixed {
-				return $fn($this->workflowManager, $container, $generalLogger);
+				return $fn($this->dispatcher, $container, $generalLogger);
 			});
 		$workflowApp->boot($bootContext);
 	}
