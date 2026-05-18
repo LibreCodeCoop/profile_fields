@@ -200,16 +200,6 @@ class LogProfileFieldChangeOperationTest extends TestCase {
 			ProfileFieldValueEntity::class,
 			[\OCA\ProfileFields\Workflow\Event\ProfileFieldValueUpdatedEvent::class],
 		);
-
-		$workflowAppClass = 'OCA\\WorkflowEngine\\AppInfo\\Application';
-		$workflowApp = new $workflowAppClass();
-		$bootContext = $this->createMock(IBootContext::class);
-		$bootContext->expects($this->any())
-			->method('injectFn')
-			->willReturnCallback(function (callable $fn) use ($container, $generalLogger): mixed {
-				return $fn($this->dispatcher, $container, $generalLogger);
-			});
-		$workflowApp->boot($bootContext);
 	}
 
 	protected function tearDown(): void {
