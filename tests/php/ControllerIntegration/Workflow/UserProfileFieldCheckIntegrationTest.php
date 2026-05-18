@@ -191,6 +191,7 @@ class UserProfileFieldCheckIntegrationTest extends TestCase {
 			$eventDispatcher,
 			$appConfig,
 			$cacheFactory,
+			$this->userManager,
 		);
 	}
 

@@ -161,6 +161,7 @@ class LogProfileFieldChangeOperationTest extends TestCase {
 			$this->dispatcher,
 			$appConfig,
 			$cacheFactory,
+			$this->userManager,
 		);
 		$container->method('get')
 			->willReturnCallback(function (string $id) use ($check, $entity, $operation, $flowLogger, $workflowLoggerClass, $workflowManagerClass): mixed {
