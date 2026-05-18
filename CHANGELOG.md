@@ -10,6 +10,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 <!-- changelog-linker -->
 <!-- changelog-linker -->
+## 4.0.0 - 2026-05-18
+
+### Changed
+- update translations
+
+## 3.0.0 - 2026-05-18
+
+### Changed
+- update translations
+
+## 2.0.0 - 2026-05-18
+
+### Changed
+- update translations
+
 ## 1.0.4 - 2026-04-14
 
 💝 **SUPPORT PROFILE FIELDS** — If this project helps your team, please support ongoing maintenance via GitHub Sponsors: https://github.com/sponsors/LibreSign
