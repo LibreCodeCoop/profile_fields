@@ -1,7 +1,9 @@
 OC.L10N.register(
     "profile_fields",
     {
+    "Enter a number" : "Įvesti skaičių",
     "Select a date" : "Pasirinkti datą",
+    "Enter an email address" : "Įvesti el. pašto adresą",
     "Cancel" : "Atsisakyti",
     "Save changes" : "Įrašyti pakeitimus",
     "Option {position}" : "Parinktis {position}",
