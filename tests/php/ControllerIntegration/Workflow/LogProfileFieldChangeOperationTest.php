@@ -23,6 +23,7 @@ use OCA\ProfileFields\Workflow\LogProfileFieldChangeOperation;
 use OCA\ProfileFields\Workflow\ProfileFieldValueEntity;
 use OCA\ProfileFields\Workflow\ProfileFieldValueSubjectContext;
 use OCA\ProfileFields\Workflow\UserProfileFieldCheck;
+use OCP\App\IAppManager;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Services\IAppConfig;
 use OCP\DB\ISchemaWrapper;
@@ -136,6 +137,8 @@ class LogProfileFieldChangeOperationTest extends TestCase {
 		$urlGenerator = $this->createMock(IURLGenerator::class);
 		$urlGenerator->method('imagePath')->willReturn('/core/img/actions/profile.svg');
 
+		$appManager = $this->createMock(IAppManager::class);
+
 		$subjectContext = new ProfileFieldValueSubjectContext();
 		$fieldValueService = new FieldValueService($this->fieldValueMapper, $this->dispatcher, $l10n);
 		$check = new UserProfileFieldCheck(
@@ -161,6 +164,8 @@ class LogProfileFieldChangeOperationTest extends TestCase {
 			$this->dispatcher,
 			$appConfig,
 			$cacheFactory,
+			$appManager,
+			$this->userManager,
 		);
 		$container->method('get')
 			->willReturnCallback(function (string $id) use ($check, $entity, $operation, $flowLogger, $workflowLoggerClass, $workflowManagerClass): mixed {
@@ -199,10 +204,32 @@ class LogProfileFieldChangeOperationTest extends TestCase {
 		$workflowAppClass = 'OCA\\WorkflowEngine\\AppInfo\\Application';
 		$workflowApp = new $workflowAppClass();
 		$bootContext = $this->createMock(IBootContext::class);
-		$bootContext->expects($this->once())
+		$bootContext->expects($this->any())
 			->method('injectFn')
 			->willReturnCallback(function (callable $fn) use ($container, $generalLogger): mixed {
-				return $fn($this->dispatcher, $container, $generalLogger);
+				$firstArgument = $this->workflowManager;
+				$reflection = null;
+				if (is_array($fn) && isset($fn[0], $fn[1])) {
+					$reflection = new \ReflectionMethod($fn[0], (string)$fn[1]);
+				} elseif ($fn instanceof \Closure) {
+					$reflection = new \ReflectionFunction($fn);
+				} elseif (is_string($fn)) {
+					$reflection = new \ReflectionFunction($fn);
+				}
+
+				if ($reflection !== null) {
+					$parameters = $reflection->getParameters();
+					if ($parameters !== []) {
+						$type = $parameters[0]->getType();
+						if ($type instanceof \ReflectionNamedType && !$type->isBuiltin()) {
+							if (ltrim($type->getName(), '\\') === ltrim(IEventDispatcher::class, '\\')) {
+								$firstArgument = $this->dispatcher;
+							}
+						}
+					}
+				}
+
+				return $fn($firstArgument, $container, $generalLogger);
 			});
 		$workflowApp->boot($bootContext);
 	}

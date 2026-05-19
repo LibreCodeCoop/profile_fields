@@ -21,6 +21,7 @@ use OCA\ProfileFields\Service\FieldDefinitionService;
 use OCA\ProfileFields\Service\FieldValueService;
 use OCA\ProfileFields\Workflow\ProfileFieldValueSubjectContext;
 use OCA\ProfileFields\Workflow\UserProfileFieldCheck;
+use OCP\App\IAppManager;
 use OCP\AppFramework\Services\IAppConfig;
 use OCP\DB\ISchemaWrapper;
 use OCP\EventDispatcher\Event;
@@ -160,6 +161,8 @@ class UserProfileFieldCheckIntegrationTest extends TestCase {
 		$cacheFactory = $this->createMock(ICacheFactory::class);
 		$cacheFactory->method('createDistributed')->willReturn($cache);
 
+		$appManager = $this->createMock(IAppManager::class);
+
 		$check = new UserProfileFieldCheck(
 			$this->userSession,
 			$l10n,
@@ -191,6 +194,8 @@ class UserProfileFieldCheckIntegrationTest extends TestCase {
 			$eventDispatcher,
 			$appConfig,
 			$cacheFactory,
+			$appManager,
+			$this->userManager,
 		);
 	}
 
