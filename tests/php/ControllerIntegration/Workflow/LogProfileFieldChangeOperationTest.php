@@ -207,7 +207,29 @@ class LogProfileFieldChangeOperationTest extends TestCase {
 		$bootContext->expects($this->any())
 			->method('injectFn')
 			->willReturnCallback(function (callable $fn) use ($container, $generalLogger): mixed {
-				return $fn($this->workflowManager, $container, $generalLogger);
+				$firstArgument = $this->workflowManager;
+				$reflection = null;
+				if (is_array($fn) && isset($fn[0], $fn[1])) {
+					$reflection = new \ReflectionMethod($fn[0], (string)$fn[1]);
+				} elseif ($fn instanceof \Closure) {
+					$reflection = new \ReflectionFunction($fn);
+				} elseif (is_string($fn)) {
+					$reflection = new \ReflectionFunction($fn);
+				}
+
+				if ($reflection !== null) {
+					$parameters = $reflection->getParameters();
+					if ($parameters !== []) {
+						$type = $parameters[0]->getType();
+						if ($type instanceof \ReflectionNamedType && !$type->isBuiltin()) {
+							if (ltrim($type->getName(), '\\') === ltrim(IEventDispatcher::class, '\\')) {
+								$firstArgument = $this->dispatcher;
+							}
+						}
+					}
+				}
+
+				return $fn($firstArgument, $container, $generalLogger);
 			});
 		$workflowApp->boot($bootContext);
 	}
