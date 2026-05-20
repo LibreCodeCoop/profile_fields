@@ -18,6 +18,7 @@ OC.L10N.register(
     "Email" : "El. paštas",
     "Select" : "Žymėti",
     "Active" : "Aktyvi",
+    "Drag to reorder" : "Norėdami pertvarkyti, vilkite",
     "Label" : "Etiketė",
     "Rules" : "Taisyklės",
     "Visibility" : "Matomumas",
