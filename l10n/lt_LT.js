@@ -17,6 +17,7 @@ OC.L10N.register(
     "URL" : "URL",
     "Email" : "El. paštas",
     "Select" : "Žymėti",
+    "Admins only" : "Tik administratoriai",
     "Active" : "Aktyvi",
     "Drag to reorder" : "Norėdami pertvarkyti, vilkite",
     "Label" : "Etiketė",
