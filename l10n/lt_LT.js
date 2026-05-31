@@ -4,6 +4,7 @@ OC.L10N.register(
     "Enter a number" : "Įvesti skaičių",
     "Select a date" : "Pasirinkti datą",
     "Enter an email address" : "Įvesti el. pašto adresą",
+    "Select an option" : "Pasirinkite parinktį",
     "Cancel" : "Atsisakyti",
     "Save changes" : "Įrašyti pakeitimus",
     "Option {position}" : "Parinktis {position}",
