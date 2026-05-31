@@ -4,6 +4,7 @@ OC.L10N.register(
     "Enter a number" : "Adjon meg egy számot",
     "Select a date" : "Válasszon dátumot",
     "Enter an email address" : "Adjon meg egy e-mail címet",
+    "Select an option" : "Válasszon egy lehetőséget",
     "True" : "Igaz",
     "False" : "Hamis",
     "Cancel" : "Mégse",
