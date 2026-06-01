@@ -6,6 +6,7 @@ OC.L10N.register(
     "Enter an email address" : "Įvesti el. pašto adresą",
     "Select an option" : "Pasirinkite parinktį",
     "Cancel" : "Atsisakyti",
+    "Saving changes …" : "Išsaugomi pakeitimai …",
     "Save changes" : "Įrašyti pakeitimus",
     "Option {position}" : "Parinktis {position}",
     "Options" : "Parinktys",
