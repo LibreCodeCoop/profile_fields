@@ -12,6 +12,7 @@ OC.L10N.register(
     "Options" : "Parinktys",
     "Move up" : "Pakelti",
     "Move down" : "Nuleisti",
+    "Option value" : "Parinkties vertė",
     "Add multiple options" : "Pridėkite kelias parinktis",
     "Text" : "Tekstas",
     "Number" : "Skaičius",
