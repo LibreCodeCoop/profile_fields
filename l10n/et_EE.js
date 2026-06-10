@@ -36,6 +36,7 @@ OC.L10N.register(
     "Email" : "E-post",
     "Select" : "Vali",
     "Admins only" : "Peakasutajatele",
+    "_field configured_::_fields configured_" : ["väli on seadistatud","välja on seadistatud"],
     "Profile fields catalog" : "Profiiliväljade kataloog",
     "Active" : "Aktiivne",
     "Drag to reorder" : "Järjestuse muutmiseks lohista",
