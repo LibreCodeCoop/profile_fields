@@ -29,6 +29,7 @@ OC.L10N.register(
     "Visibility" : "Láthatóság",
     "Type" : "Típus",
     "Show to everyone" : "Mindenki számára látható",
+    "Show to logged in accounts only" : "Csak a bejelentkezett fiókok számára látható",
     "Hide" : "Elrejtés",
     "is" : "ez",
     "is not" : "nem ez",
