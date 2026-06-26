@@ -16,6 +16,7 @@ OC.L10N.register(
     "Label" : "Legenda",
     "Visibility" : "Visibilidade",
     "Type" : "Tipo",
+    "Show to everyone" : "Mostrar para todos",
     "Hide" : "Ocultar",
     "is" : "é",
     "is not" : "não é",
