@@ -17,6 +17,7 @@ OC.L10N.register(
     "Visibility" : "Visibilidade",
     "Type" : "Tipo",
     "Show to everyone" : "Mostrar para todos",
+    "Show to logged in accounts only" : "Mostrar apenas para contas logadas",
     "Hide" : "Ocultar",
     "is" : "é",
     "is not" : "não é",
