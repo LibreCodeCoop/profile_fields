@@ -28,6 +28,7 @@ OC.L10N.register(
     "Email affected user" : "Saada asjakohase kasutaja e-posti aadressile kiri",
     "(empty)" : "(tühi)",
     "Log profile field change" : "Logi profiiliväljade muutmine",
+    "Notify admins or groups" : "Teavita peakasutajaid või gruppe",
     "Profile field value" : "Profiilivälja väärtus",
     "Profile field value created" : "Profiilivälja väärtus on lisatud",
     "Profile field value updated" : "Profiilivälja väärtus on uuendatud",
