@@ -20,6 +20,7 @@ OC.L10N.register(
     "Multiselect" : "Flera val",
     "Admins only" : "Endast administratörer",
     "Active" : "Aktiv",
+    "Inactive" : "Inaktiv",
     "Label" : "Etikett",
     "Rules" : "Regler",
     "Visibility" : "Synlighet",
