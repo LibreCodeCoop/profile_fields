@@ -23,6 +23,7 @@ OC.L10N.register(
     "Multiselect" : "Sélection multiple",
     "Admins only" : "Administrateurs uniquement",
     "Active" : "Actif",
+    "Inactive" : "Inactive",
     "Drag to reorder" : "Glisser pour réorganiser",
     "Label" : "Libellé",
     "Rules" : "Règles",
