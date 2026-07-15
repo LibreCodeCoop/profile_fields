@@ -83,6 +83,7 @@ OC.L10N.register(
     "_field configured_::_fields configured_" : ["väli on seadistatud","välja on seadistatud"],
     "Profile fields catalog" : "Profiiliväljade kataloog",
     "Active" : "Aktiivne",
+    "Inactive" : "Pole aktiivne",
     "Drag to reorder" : "Järjestuse muutmiseks lohista",
     "Label" : "Nimi",
     "Rules" : "Reeglid",
