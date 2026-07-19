@@ -22,6 +22,7 @@ OC.L10N.register(
     "Select" : "Žymėti",
     "Admins only" : "Tik administratoriai",
     "Active" : "Aktyvi",
+    "Inactive" : "Neaktyvus",
     "Drag to reorder" : "Norėdami pertvarkyti, vilkite",
     "Label" : "Etiketė",
     "Rules" : "Taisyklės",
