@@ -26,6 +26,7 @@ OC.L10N.register(
     "Add multiple options" : "Přidat vícenásobné možnosti",
     "Text" : "Text",
     "Number" : "Číslo",
+    "Boolean" : "Boolean",
     "Date" : "Datum",
     "URL" : "URL",
     "Email" : "E-mail",
