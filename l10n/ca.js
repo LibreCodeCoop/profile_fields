@@ -11,6 +11,7 @@ OC.L10N.register(
     "Move up" : "Mou amunt",
     "Move down" : "Mou avall",
     "Option value" : "Valor de l'opció",
+    "Add multiple options" : "Afegeix múltiples opcions",
     "Text" : "Text",
     "Number" : "Número",
     "Date" : "Data",
