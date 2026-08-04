@@ -1,7 +1,9 @@
 OC.L10N.register(
     "profile_fields",
     {
+    "Enter a number" : "Introduïu un número",
     "Select a date" : "Seleccioneu una data",
+    "Enter an email address" : "Introduïu una adreça de correu electrònic",
     "True" : "Cert",
     "False" : "Fals",
     "Cancel" : "Cancel",
