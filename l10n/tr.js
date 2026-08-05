@@ -237,7 +237,7 @@ OC.L10N.register(
     "Optional headers, one per line. Example: X-Key: value" : "İsteğe bağlı üst bilgiler, her satıra bir tane. Örnek: X-Tuşu: Değer",
     "Optional email subject template" : "İsteğe bağlı e-posta konusu kalıbı",
     "Optional email body template. You can use placeholders like {{fieldLabel}}" : "İsteğe bağlı e-posta içeriği kalıbı. {{fieldLabel}} gibi kodları kullanabilirsiniz",
-    "Search for admins, groups, or users" : "Yönetici, grup veya kullanıcı arama",
+    "Search for admins, groups, or users" : "Yönetici, grup veya kullanıcı ara",
     "Select who should be notified. If empty, administrators are notified by default." : "Kimin bilgilendirileceğini seçin. Boş bırakılırsa, varsayılan olarak yöneticiler bilgilendirilir."
 },
 "nplurals=2; plural=(n > 1);");
