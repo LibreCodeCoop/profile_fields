@@ -35,6 +35,9 @@ OC.L10N.register(
     "is" : "es/esta",
     "is not" : "no es/esta",
     "contains" : "contiene",
+    "does not contain" : "no contiene",
+    "is less than" : "es menor que",
+    "is greater than" : "es mayor que",
     "Administrators" : "Administradores"
 },
 "nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");
