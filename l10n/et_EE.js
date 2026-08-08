@@ -4,7 +4,7 @@ OC.L10N.register(
     "Field definition not found" : "Välja definitsiooni ei leidu",
     "Authenticated admin user is required" : "Vajalik on autenditud peakasutaja",
     "Lookup field definition not found" : "Otsinguvälja definitsiooni ei leidu",
-    "User not found for lookup field value" : "Otsinguvälja väärtusele ei vastab ühtegi kasutajat",
+    "User not found for lookup field value" : "Otsinguvälja väärtusele ei vasta ühtegi kasutajat",
     "Multiple users match the lookup field value" : "Otsinguvälja väärtusele vastab mitu kasutajat",
     "Search field definition not found" : "Otsinguvälja definitsiooni ei leidu",
     "Authenticated user is required" : "Kasutaja peab olema autenditud",
