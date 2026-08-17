@@ -105,6 +105,7 @@ OC.L10N.register(
     "Select" : "選取",
     "Multiselect" : "多重選擇",
     "Admins only" : "僅管理員",
+    "Actions for {label}" : "{label} 的動作",
     "Active" : "作用中",
     "Drag to reorder" : "拖曳以重新排序",
     "Label" : "標籤",
