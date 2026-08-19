@@ -22,6 +22,7 @@ OC.L10N.register(
     "Select" : "Seleccionar",
     "Multiselect" : "Selección múltiple",
     "Admins only" : "Solo administradores",
+    "Actions for {label}" : "Acciones para {label}",
     "Active" : "Activo",
     "Inactive" : "Inactivo",
     "Drag to reorder" : "Arrastre para reordenar",
