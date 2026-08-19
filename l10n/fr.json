@@ -126,10 +126,13 @@
     "Could not save this field. Please try again." : "Impossible d'enregistrer ce champ. Veuillez réessayer.",
     "Field deleted." : "Champ supprimé.",
     "Could not delete this field. Please try again." : "Impossible de supprimer ce champ. Veuillez réessayer.",
+    "Could not save the new order. Please try again." : "Impossible d'enregistrer la nouvelle organisation. Veuillez réessayer.",
     "Could not update this field. Please try again." : "Impossible de mettre à jour ce champ. Veuillez réessayer.",
     "Profile fields catalog" : "Catalogue des champs de profil",
+    "Create custom profile fields, choose who can edit each one, and define the default visibility for new values." : "Créez des champs de profil personnalisés, choisissez qui peut modifier chacun d'eux et définissez la visibilité par défaut des nouvelles valeurs.",
     "Configured fields" : "Champs configurés",
     "Select a field to edit, or create a new one." : "Sélectionnez un champ à modifier, ou créez-en un nouveau.",
+    "Create your first field to make it available in user profiles." : "Créez votre premier champ pour le rendre disponible dans les profils utilisateur.",
     "Active" : "Actif",
     "Inactive" : "Inactive",
     "Delete field" : "Supprimer le champ",
@@ -174,7 +177,9 @@
     "Loading profile fields …" : "Chargement des champs de profil …",
     "Enter the numeric value to compare" : "Entrez la valeur numérique à comparer",
     "Enter the comparison value" : "Entrez la valeur de comparaison",
+    "Webhook URL (https://…)" : "URL du webhook (https://…)",
     "Timeout (seconds)" : "Délai d'expiration (secondes)",
-    "Optional headers, one per line. Example: X-Key: value" : "Entêtes facultatifs, un par ligne. Exemple : X-Clé: valeur"
+    "Optional headers, one per line. Example: X-Key: value" : "Entêtes facultatifs, un par ligne. Exemple : X-Clé: valeur",
+    "Optional email subject template" : "Modèle d'objet d'e-mail facultatif"
 },"pluralForm" :"nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }
