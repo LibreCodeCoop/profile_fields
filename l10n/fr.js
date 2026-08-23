@@ -72,6 +72,7 @@ OC.L10N.register(
     "Select a date" : "Sélectionner une date",
     "Enter a URL" : "Entrez une URL",
     "Enter an email address" : "Saisir une adresse e-mail",
+    "Select an option" : "Sélectionnez une option",
     "True" : "Vrai",
     "False" : "Faux",
     "{fieldLabel} must be a plain numeric value." : "{fieldLabel} doit être une valeur numérique brute.",
