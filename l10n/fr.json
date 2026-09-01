@@ -105,6 +105,7 @@
     "_Fix the invalid field before saving._::_Fix the invalid fields before saving._" : ["Corrigez le champ non valide avant d'enregistrer.","Corrigez les champs non valides avant d'enregistrer.","Corrigez les champs non valides avant d'enregistrer."],
     "_The field could not be saved._::_Some fields could not be saved. Review the messages below._" : ["Le champ n'a pas pu être enregistré.","Certains champs n'ont pas pu être enregistrés. Consultez les messages ci-dessous.","Certains champs n'ont pas pu être enregistrés. Consultez les messages ci-dessous."],
     "No editable fields" : "Aucun champ éditable",
+    "Create and enable fields in the admin catalog. They will appear here automatically." : "Créez et activez des champs dans le catalogue administrateur. Ils apparaîtront ici automatiquement.",
     "Cancel" : "Annuler",
     "Saving changes …" : "Enregistrement des modifications …",
     "Save changes" : "Enregistrer les modifications",
@@ -193,6 +194,7 @@
     "Additional profile fields" : "Champs de profil supplémentaires",
     "No additional fields yet" : "Aucun champ supplémentaire pour le moment",
     "Your administrator has not assigned additional profile fields to your account yet." : "Votre administrateur n'a pas encore attribué de champs de profil supplémentaires à votre compte.",
+    "Choose who can see each additional profile field on your profile." : "Choisissez qui peut voir chaque champ de profil supplémentaire sur votre profil.",
     "Show to everyone" : "Montrer à tout le monde",
     "Show to logged in accounts only" : "Montrer seulement aux comptes connectés",
     "Hide" : "Cacher",
@@ -211,6 +213,7 @@
     "Group: {groupId}" : "Groupe : {groupId}",
     "User: {userId}" : "Utilisateur : {userId}",
     "Loading profile fields …" : "Chargement des champs de profil …",
+    "Choose a profile field" : "Choisissez un champ de profil",
     "Enter the numeric value to compare" : "Entrez la valeur numérique à comparer",
     "Enter the comparison value" : "Entrez la valeur de comparaison",
     "Webhook URL (https://…)" : "URL du webhook (https://…)",
@@ -218,6 +221,7 @@
     "Timeout (seconds)" : "Délai d'expiration (secondes)",
     "Optional headers, one per line. Example: X-Key: value" : "Entêtes facultatifs, un par ligne. Exemple : X-Clé: valeur",
     "Optional email subject template" : "Modèle d'objet d'e-mail facultatif",
-    "Search for admins, groups, or users" : "Rechercher des administrateurs, des groupes ou des utilisateurs"
+    "Search for admins, groups, or users" : "Rechercher des administrateurs, des groupes ou des utilisateurs",
+    "Select who should be notified. If empty, administrators are notified by default." : "Sélectionnez qui doit recevoir les notifications. Si vide, les administrateurs sont avertis par défaut."
 },"pluralForm" :"nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }
