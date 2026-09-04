@@ -23,6 +23,7 @@ OC.L10N.register(
     "Select" : "Vybrať",
     "Multiselect" : "Viacnásobný výber",
     "Admins only" : "Iba správcom",
+    "Actions for {label}" : "Akcie pre {label}",
     "Active" : "Aktívne",
     "Label" : "Názov",
     "Rules" : "Pravidlá",
