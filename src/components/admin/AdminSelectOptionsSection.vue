@@ -10,8 +10,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 				<h4>{{ t('profile_fields', 'Options') }}</h4>
 			</div>
 			<div class="profile-fields-admin-options__meta">
-				<strong>{{ normalizedOptionCount }}</strong>
-				<span>{{ optionsCountLabel }}</span>
+				<span>{{ optionsCountLabel.before }}<strong v-if="optionsCountLabel.hasPlaceholder">{{ normalizedOptionCount }}</strong>{{ optionsCountLabel.after }}</span>
 			</div>
 		</div>
 
@@ -136,6 +135,7 @@ import NcTextArea from '@nextcloud/vue/components/NcTextArea'
 import { NcActionButton, NcActions, NcButton, NcIconSvgWrapper, NcInputField } from '@nextcloud/vue'
 import { createEditableSelectOptions, extractEditableSelectOptionValues, moveEditableSelectOption, normalizeEditableSelectOptionValue, parseEditableSelectOptionValues } from '../../utils/selectFieldOptions.js'
 import type { EditableSelectOption } from '../../utils/selectFieldOptions.js'
+import { COUNT_PLACEHOLDER, splitCountLabel } from '../../utils/countLabel.js'
 
 const props = defineProps<{
 	modelValue: EditableSelectOption[],
@@ -156,7 +156,7 @@ const options = computed(() => props.modelValue)
 const bulkOptionValues = computed(() => parseEditableSelectOptionValues(bulkOptionInput.value))
 const normalizedOptionCount = computed(() => extractEditableSelectOptionValues(options.value).filter((optionValue: string) => optionValue.trim() !== '').length)
 // TRANSLATORS "Option/Options" here means selectable field values, not application settings.
-const optionsCountLabel = computed(() => n('profile_fields', 'Option', 'Options', normalizedOptionCount.value, { count: normalizedOptionCount.value }))
+const optionsCountLabel = computed(() => splitCountLabel(n('profile_fields', '{count} option', '{count} options', normalizedOptionCount.value, { count: COUNT_PLACEHOLDER })))
 // TRANSLATORS "{count}" is the number of parsed selectable values ready to be added.
 const bulkOptionsSummary = computed(() => n('profile_fields', '{count} option ready.', '{count} options ready.', bulkOptionValues.value.length, { count: bulkOptionValues.value.length }))
 
@@ -325,7 +325,6 @@ const applyBulkOptions = async() => {
 	&__meta {
 		display: inline-flex;
 		align-items: center;
-		gap: 8px;
 		min-width: auto;
 		padding: 6px 10px;
 		border-radius: 999px;
@@ -335,6 +334,7 @@ const applyBulkOptions = async() => {
 		strong {
 			font-size: 14px;
 			line-height: 1;
+			color: var(--color-main-text);
 		}
 
 		span {
