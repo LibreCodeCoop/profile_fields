@@ -135,4 +135,21 @@ describe('AdminSettings', () => {
 
 		expect(wrapper.text()).toContain('tr:Email')
 	})
+
+	it('renders the configured fields count inside the translated sentence', async() => {
+		const wrapper = mount(AdminSettings, {
+			global: {
+				stubs: {
+					Draggable: defineComponent({ template: '<div><slot /></div>' }),
+				},
+			},
+		})
+
+		await flushPromises()
+
+		const heroMeta = wrapper.get('.profile-fields-admin__hero-meta')
+
+		expect(heroMeta.get('strong').text()).toBe('0')
+		expect(heroMeta.text()).toBe('tr:0 fields configured')
+	})
 })

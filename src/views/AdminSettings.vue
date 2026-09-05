@@ -14,8 +14,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 				</p>
 			</div>
 			<div class="profile-fields-admin__hero-meta">
-				<strong>{{ definitions.length }}</strong>
-				<span>{{ configuredFieldsCountLabel }}</span>
+				<span>{{ configuredFieldsCountLabel.before }}<strong v-if="configuredFieldsCountLabel.hasPlaceholder">{{ definitions.length }}</strong>{{ configuredFieldsCountLabel.after }}</span>
 			</div>
 		</header>
 
@@ -285,6 +284,7 @@ import { NcActionButton, NcActions, NcButton, NcCheckboxRadioSwitch, NcChip, NcE
 import { createDefinition, deleteDefinition, listDefinitions, updateDefinition } from '../api'
 import type { FieldDefinition, FieldEditPolicy, FieldExposurePolicy, FieldType } from '../types'
 import { createEditableSelectOptions, extractEditableSelectOptionValues } from '../utils/selectFieldOptions.js'
+import { COUNT_PLACEHOLDER, splitCountLabel } from '../utils/countLabel.js'
 
 const fieldTypeOptions: Array<{ value: FieldType, label: string }> = [
 	{ value: 'text', label: t('profile_fields', 'Text') },
@@ -398,7 +398,8 @@ const editorEmptyState = computed(() => sortedDefinitions.value.length === 0
 		title: t('profile_fields', 'No field selected'),
 		description: t('profile_fields', 'Select a field from the list, or create a new one.'),
 	})
-const configuredFieldsCountLabel = computed(() => n('profile_fields', 'field configured', 'fields configured', definitions.value.length, { count: definitions.value.length }))
+// TRANSLATORS "{count}" is the number of configured fields.
+const configuredFieldsCountLabel = computed(() => splitCountLabel(n('profile_fields', '{count} field configured', '{count} fields configured', definitions.value.length, { count: COUNT_PLACEHOLDER })))
 // TRANSLATORS "\u00A0" keeps the ellipsis attached to the previous word for correct typography and avoids awkward line breaks.
 const saveActionLabel = computed(() => isSaving.value ? t('profile_fields', 'Saving changes\u00A0…') : (isEditing.value ? t('profile_fields', 'Save changes') : t('profile_fields', 'Create field')))
 const editFieldAriaLabel = (label: string) => t('profile_fields', 'Edit field {label}', { label })
@@ -830,9 +831,7 @@ onBeforeUnmount(() => {
 
 	&__hero-meta {
 		display: flex;
-		flex-direction: column;
-		align-items: flex-end;
-		justify-content: center;
+		justify-content: flex-end;
 		min-width: 120px;
 		padding: 12px 14px;
 		border-radius: 14px;
@@ -841,11 +840,17 @@ onBeforeUnmount(() => {
 		strong {
 			font-size: 32px;
 			line-height: 1;
+			color: var(--color-main-text);
 		}
 
 		span {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
 			font-size: 12px;
 			color: var(--color-text-maxcontrast);
+			text-align: center;
 		}
 	}
 
