@@ -199,6 +199,7 @@ OC.L10N.register(
     "Additional profile fields" : "Champs de profil supplémentaires",
     "No additional fields yet" : "Aucun champ supplémentaire pour le moment",
     "Your administrator has not assigned additional profile fields to your account yet." : "Votre administrateur n'a pas encore attribué de champs de profil supplémentaires à votre compte.",
+    "Managed by your administrator." : "Géré par votre administrateur.",
     "Read-only field value" : "Valeur de champ en lecture seule",
     "Choose who can see each additional profile field on your profile." : "Choisissez qui peut voir chaque champ de profil supplémentaire sur votre profil.",
     "Show to everyone" : "Montrer à tout le monde",
