@@ -12,6 +12,7 @@ OC.L10N.register(
     "URL" : "Slóð",
     "Email" : "Tölvupóstur",
     "Select" : "Velja",
+    "Actions for {label}" : "Aðgerðir fyrir {label}",
     "Active" : "Virkur",
     "Label" : "Skýring",
     "Rules" : "Reglur",
