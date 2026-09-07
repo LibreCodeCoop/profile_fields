@@ -14,6 +14,8 @@ use OCP\AppFramework\Http\TemplateResponse;
 use OCP\Settings\ISettings;
 
 class PersonalInfo implements ISettings {
+	private const RENAMED_CORE_SECTION = 'OCA\\Settings\\Sections\\Personal\\ProfileContact';
+
 	#[\Override]
 	public function getForm(): TemplateResponse {
 		return new TemplateResponse(Application::APP_ID, 'settings-personal-info');
@@ -21,11 +23,15 @@ class PersonalInfo implements ISettings {
 
 	#[\Override]
 	public function getSection(): string {
-		return 'personal-info';
+		return $this->coreSectionExists(self::RENAMED_CORE_SECTION) ? 'profile-contact' : 'personal-info';
 	}
 
 	#[\Override]
 	public function getPriority(): int {
 		return 80;
+	}
+
+	protected function coreSectionExists(string $className): bool {
+		return class_exists($className);
 	}
 }
