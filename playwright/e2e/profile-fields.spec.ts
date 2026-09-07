@@ -10,6 +10,21 @@ const adminPassword = process.env.NEXTCLOUD_ADMIN_PASSWORD ?? 'admin'
 
 const optionInput = (page, index: number) => page.getByTestId(`profile-fields-admin-option-row-${index}`).locator('input')
 
+const openPersonalSettings = async(page) => {
+	for (const section of ['profile-contact', 'personal-info']) {
+		await page.goto(`./settings/user/${section}`)
+		try {
+			await page.getByTestId('profile-fields-personal').waitFor({ state: 'visible', timeout: 10_000 })
+
+			return
+		} catch {
+			continue
+		}
+	}
+
+	throw new Error('Could not find the personal profile fields section')
+}
+
 const chooseFieldType = async(page, label: 'Text' | 'Number' | 'Select') => {
 	await page.getByTestId('profile-fields-admin-type-select').click()
 	await page.getByRole('option', { name: label, exact: true }).click()
@@ -30,8 +45,8 @@ const collectEmbeddedLayoutMetrics = async(page, fieldKey: string) => {
 	const customInput = page.getByTestId(`profile-fields-personal-input-${fieldKey}`)
 	const embeddedShell = page.locator('#profile-fields-personal-info-shell')
 
-	await aboutInput.scrollIntoViewIfNeeded()
-	await customInput.scrollIntoViewIfNeeded()
+	await aboutInput.scrollIntoViewIfNeeded({ timeout: 10_000 })
+	await customInput.scrollIntoViewIfNeeded({ timeout: 10_000 })
 
 	const aboutBox = await aboutInput.boundingBox()
 	const customFieldBox = await customField.boundingBox()
@@ -470,7 +485,7 @@ test('embedded personal settings autosave a user-visible field', async ({ page }
 	})
 
 	try {
-		await page.goto('./settings/user/personal-info')
+		await openPersonalSettings(page)
 		const fieldCard = page.getByTestId(`profile-fields-personal-field-${fieldKey}`)
 		const fieldInput = page.getByTestId(`profile-fields-personal-input-${fieldKey}`)
 		const visibilityPanel = page.getByTestId('profile-fields-personal-visibility-panel')
