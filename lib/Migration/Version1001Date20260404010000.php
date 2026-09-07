@@ -39,10 +39,8 @@ class Version1001Date20260404010000 extends SimpleMigrationStep {
 			return null;
 		}
 
-		$table->changeColumn('active', [
-			'notnull' => false,
-			'default' => true,
-		]);
+		$activeColumn->setNotnull(false);
+		$activeColumn->setDefault(true);
 
 		return $schema;
 	}
