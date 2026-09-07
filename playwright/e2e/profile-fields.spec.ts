@@ -187,33 +187,24 @@ test('admin can reorder field definitions by dragging the list handles', async (
 
 		const firstHandle = page.getByTestId(`profile-fields-admin-definition-handle-${firstFieldKey}`)
 		const secondHandle = page.getByTestId(`profile-fields-admin-definition-handle-${secondFieldKey}`)
-		const verticalOrder = async() => {
-			const firstBox = await firstHandle.boundingBox()
-			const secondBox = await secondHandle.boundingBox()
-			expect(firstBox).not.toBeNull()
-			expect(secondBox).not.toBeNull()
-			return {
-				firstY: firstBox!.y,
-				secondY: secondBox!.y,
-			}
-		}
+		const draggedOrder = async() => (await page
+			.locator('.profile-fields-admin__list .profile-fields-admin__list-item-subname')
+			.allTextContents())
+			.filter((listedKey) => listedKey === firstFieldKey || listedKey === secondFieldKey)
 
-		let order = await verticalOrder()
-		expect(order.firstY).toBeLessThan(order.secondY)
+		await expect.poll(draggedOrder).toEqual([firstFieldKey, secondFieldKey])
 
-		await secondHandle.dragTo(firstHandle)
+		await secondHandle.hover()
+		await page.mouse.down()
+		await firstHandle.hover()
+		await firstHandle.hover()
+		await page.mouse.up()
 
-		await expect.poll(verticalOrder).toEqual(expect.objectContaining({
-			firstY: expect.any(Number),
-			secondY: expect.any(Number),
-		}))
-		order = await verticalOrder()
-		expect(order.secondY).toBeLessThan(order.firstY)
+		await expect.poll(draggedOrder).toEqual([secondFieldKey, firstFieldKey])
 
 		await page.reload()
 		await expect(page.getByTestId('profile-fields-admin')).toBeVisible()
-		order = await verticalOrder()
-		expect(order.secondY).toBeLessThan(order.firstY)
+		await expect.poll(draggedOrder).toEqual([secondFieldKey, firstFieldKey])
 	} finally {
 		await deleteDefinitionByFieldKey(page.request, firstFieldKey)
 		await deleteDefinitionByFieldKey(page.request, secondFieldKey)
