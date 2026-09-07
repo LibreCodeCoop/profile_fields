@@ -10,6 +10,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 	errorLevel="5"
 	findUnusedBaselineEntry="true"
 	findUnusedCode="false"
+	findUnusedIssueHandlerSuppression="false"
 	resolveFromConfigFile="true"
 	phpVersion="8.1"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
