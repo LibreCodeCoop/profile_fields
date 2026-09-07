@@ -9,74 +9,24 @@ declare(strict_types=1);
 
 namespace OCA\ProfileFields\Tests\Unit\Migration;
 
-use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Schema\Schema;
-use Doctrine\DBAL\Schema\Table;
 use OCA\ProfileFields\Migration\Version1001Date20260404010000;
 use OCP\DB\ISchemaWrapper;
 use OCP\Migration\IOutput;
 use PHPUnit\Framework\TestCase;
 
 class Version1001Date20260404010000Test extends TestCase {
+	use BuildsSchemaWrapper;
+
 	private const PREFIX = 'oc_';
 	private const TABLE = 'profile_fields_definitions';
 
-	private function buildSchemaWrapper(Schema $schema): ISchemaWrapper {
-		return new class($schema, self::PREFIX) implements ISchemaWrapper {
-			public function __construct(
-				private Schema $schema,
-				private string $prefix,
-			) {
-			}
-
-			public function hasTable($tableName): bool {
-				return $this->schema->hasTable($this->prefix . $tableName);
-			}
-
-			public function createTable($tableName): Table {
-				return $this->schema->createTable($this->prefix . $tableName);
-			}
-
-			public function getTable($tableName): Table {
-				return $this->schema->getTable($this->prefix . $tableName);
-			}
-
-			public function dropTable($tableName): Schema {
-				return $this->schema->dropTable($this->prefix . $tableName);
-			}
-
-			public function getTables(): array {
-				return $this->schema->getTables();
-			}
-
-			public function getTableNames(): array {
-				return $this->schema->getTableNames();
-			}
-
-			public function getTableNamesWithoutPrefix(): array {
-				return array_map(
-					fn (string $name) => substr($name, strlen($this->prefix)),
-					$this->schema->getTableNames(),
-				);
-			}
-
-			public function getDatabasePlatform(): AbstractPlatform {
-				throw new \RuntimeException('not implemented in test');
-			}
-
-			public function dropAutoincrementColumn(string $table, string $column): void {
-				throw new \RuntimeException('not implemented in test');
-			}
-		};
-	}
-
 	private function runMigration(Schema $schema): ?ISchemaWrapper {
-		$wrapper = $this->buildSchemaWrapper($schema);
 		$migration = new Version1001Date20260404010000();
 
 		return $migration->changeSchema(
 			$this->createMock(IOutput::class),
-			fn () => $wrapper,
+			fn () => $this->buildSchemaWrapper($schema, self::PREFIX),
 			['tablePrefix' => self::PREFIX],
 		);
 	}
