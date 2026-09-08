@@ -14,7 +14,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 				</p>
 			</div>
 			<div class="profile-fields-admin__hero-meta">
-				<span>{{ configuredFieldsCountLabel.before }}<strong v-if="configuredFieldsCountLabel.hasPlaceholder">{{ definitions.length }}</strong>{{ configuredFieldsCountLabel.after }}</span>
+				<span>{{ configuredFieldsCountLabel.before }}<strong>{{ definitions.length }}</strong>{{ configuredFieldsCountLabel.after }}</span>
 			</div>
 		</header>
 
@@ -831,6 +831,7 @@ onBeforeUnmount(() => {
 
 	&__hero-meta {
 		display: flex;
+		align-items: center;
 		justify-content: flex-end;
 		min-width: 120px;
 		padding: 12px 14px;
@@ -844,10 +845,6 @@ onBeforeUnmount(() => {
 		}
 
 		span {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			justify-content: center;
 			font-size: 12px;
 			color: var(--color-text-maxcontrast);
 			text-align: center;

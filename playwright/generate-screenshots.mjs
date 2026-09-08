@@ -310,13 +310,11 @@ const hideNonShowcaseAdminDefinitions = async(page) => {
 				row.style.display = 'none'
 			}
 		})
-		const heroCount = document.querySelector('.profile-fields-admin__hero-meta strong')
 		const heroLabel = document.querySelector('.profile-fields-admin__hero-meta span')
-		if (heroCount instanceof HTMLElement) {
-			heroCount.textContent = String(keys.length)
-		}
 		if (heroLabel instanceof HTMLElement) {
-			heroLabel.textContent = 'showcase fields'
+			const heroCount = heroLabel.querySelector('strong') ?? document.createElement('strong')
+			heroCount.textContent = String(keys.length)
+			heroLabel.replaceChildren(heroCount, ' showcase fields')
 		}
 	}, [...showcaseKeys])
 }

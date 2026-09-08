@@ -10,7 +10,6 @@ describe('splitCountLabel', () => {
 		expect(splitCountLabel(`${COUNT_PLACEHOLDER} fields configured`)).toEqual({
 			before: '',
 			after: ' fields configured',
-			hasPlaceholder: true,
 		})
 	})
 
@@ -18,7 +17,6 @@ describe('splitCountLabel', () => {
 		expect(splitCountLabel(`حقول مكونة ${COUNT_PLACEHOLDER}`)).toEqual({
 			before: 'حقول مكونة ',
 			after: '',
-			hasPlaceholder: true,
 		})
 	})
 
@@ -26,15 +24,20 @@ describe('splitCountLabel', () => {
 		expect(splitCountLabel(`son ${COUNT_PLACEHOLDER} campos configurados`)).toEqual({
 			before: 'son ',
 			after: ' campos configurados',
-			hasPlaceholder: true,
 		})
 	})
 
-	it('keeps the whole label when the translation dropped the placeholder', () => {
-		expect(splitCountLabel('3 fields configured')).toEqual({
+	it('renders the count in front of the label when the translation dropped the placeholder', () => {
+		expect(splitCountLabel('kolonky nastaveny')).toEqual({
 			before: '',
-			after: '3 fields configured',
-			hasPlaceholder: false,
+			after: ' kolonky nastaveny',
+		})
+	})
+
+	it('keeps the label empty when the translation is empty', () => {
+		expect(splitCountLabel('')).toEqual({
+			before: '',
+			after: '',
 		})
 	})
 
@@ -42,7 +45,6 @@ describe('splitCountLabel', () => {
 		expect(splitCountLabel(`${COUNT_PLACEHOLDER} of ${COUNT_PLACEHOLDER}`)).toEqual({
 			before: '',
 			after: ` of ${COUNT_PLACEHOLDER}`,
-			hasPlaceholder: true,
 		})
 	})
 })
