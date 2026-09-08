@@ -1,14 +1,21 @@
 // SPDX-FileCopyrightText: 2026 LibreCode coop and LibreCode contributors
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent } from 'vue'
 import AdminSelectOptionsSection from '../../../components/admin/AdminSelectOptionsSection.vue'
 
+const { pluralOverrides } = vi.hoisted(() => ({ pluralOverrides: new Map<string, string>() }))
+
 vi.mock('@nextcloud/l10n', () => ({
 	n: (_app: string, singular: string, plural: string, count: number, parameters?: Record<string, string | number>) => {
 		const template = count === 1 ? singular : plural
+		const override = pluralOverrides.get(template)
+		if (override !== undefined) {
+			return override
+		}
+
 		if (parameters === undefined) {
 			return `tr:${template}`
 		}
@@ -56,6 +63,10 @@ const DraggableStub = defineComponent({
 })
 
 describe('AdminSelectOptionsSection', () => {
+	afterEach(() => {
+		pluralOverrides.clear()
+	})
+
 	it('renders translated headings and pluralized meta', () => {
 		const wrapper = mount(AdminSelectOptionsSection, {
 			props: {
@@ -78,6 +89,33 @@ describe('AdminSelectOptionsSection', () => {
 		expect(wrapper.text()).toContain('tr:Options')
 		expect(wrapper.text()).toContain('tr:1 option')
 		expect(wrapper.text()).toContain('tr:Add single option')
+	})
+
+	it('keeps the count visible when the translation dropped the placeholder', () => {
+		pluralOverrides.set('{count} option', 'volba nastavena')
+
+		const wrapper = mount(AdminSelectOptionsSection, {
+			props: {
+				modelValue: [{ id: 'option-0', value: 'Alpha' }],
+				isSaving: false,
+			},
+			global: {
+				stubs: {
+					Draggable: DraggableStub,
+					NcDialog: false,
+					NcTextArea: false,
+					NcActionButton: false,
+					NcActions: false,
+					NcIconSvgWrapper: false,
+					NcInputField: false,
+				},
+			},
+		})
+
+		const meta = wrapper.get('.profile-fields-admin-options__meta')
+
+		expect(meta.get('strong').text()).toBe('1')
+		expect(meta.text()).toBe('1 volba nastavena')
 	})
 
 	it('emits updated model when adding a new option', async() => {

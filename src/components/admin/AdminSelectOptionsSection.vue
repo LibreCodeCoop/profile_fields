@@ -10,7 +10,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 				<h4>{{ t('profile_fields', 'Options') }}</h4>
 			</div>
 			<div class="profile-fields-admin-options__meta">
-				<span>{{ optionsCountLabel.before }}<strong v-if="optionsCountLabel.hasPlaceholder">{{ normalizedOptionCount }}</strong>{{ optionsCountLabel.after }}</span>
+				<span>{{ optionsCountLabel.before }}<strong>{{ normalizedOptionCount }}</strong>{{ optionsCountLabel.after }}</span>
 			</div>
 		</div>
 
@@ -155,7 +155,7 @@ const createOptionId = () => `option-local-${nextOptionId++}`
 const options = computed(() => props.modelValue)
 const bulkOptionValues = computed(() => parseEditableSelectOptionValues(bulkOptionInput.value))
 const normalizedOptionCount = computed(() => extractEditableSelectOptionValues(options.value).filter((optionValue: string) => optionValue.trim() !== '').length)
-// TRANSLATORS "Option/Options" here means selectable field values, not application settings.
+// TRANSLATORS "option/options" here means selectable field values, not application settings.
 const optionsCountLabel = computed(() => splitCountLabel(n('profile_fields', '{count} option', '{count} options', normalizedOptionCount.value, { count: COUNT_PLACEHOLDER })))
 // TRANSLATORS "{count}" is the number of parsed selectable values ready to be added.
 const bulkOptionsSummary = computed(() => n('profile_fields', '{count} option ready.', '{count} options ready.', bulkOptionValues.value.length, { count: bulkOptionValues.value.length }))

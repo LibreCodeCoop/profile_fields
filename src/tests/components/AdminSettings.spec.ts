@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 LibreCode coop and LibreCode contributors
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import { defineComponent } from 'vue'
 import AdminSettings from '../../views/AdminSettings.vue'
@@ -15,9 +15,16 @@ Object.defineProperty(window, 'matchMedia', {
 	})),
 })
 
+const { pluralOverrides } = vi.hoisted(() => ({ pluralOverrides: new Map<string, string>() }))
+
 vi.mock('@nextcloud/l10n', () => ({
 	n: (_app: string, singular: string, plural: string, count: number, parameters?: Record<string, string | number>) => {
 		const template = count === 1 ? singular : plural
+		const override = pluralOverrides.get(template)
+		if (override !== undefined) {
+			return override
+		}
+
 		if (parameters === undefined) {
 			return `tr:${template}`
 		}
@@ -76,6 +83,10 @@ vi.mock('../../components/admin/AdminSelectOptionsSection.vue', () => ({
 }))
 
 describe('AdminSettings', () => {
+	afterEach(() => {
+		pluralOverrides.clear()
+	})
+
 	it('offers the Date field type in the editor', async() => {
 		const wrapper = mount(AdminSettings, {
 			global: {
@@ -151,5 +162,24 @@ describe('AdminSettings', () => {
 
 		expect(heroMeta.get('strong').text()).toBe('0')
 		expect(heroMeta.text()).toBe('tr:0 fields configured')
+	})
+
+	it('keeps the count visible when the translation dropped the placeholder', async() => {
+		pluralOverrides.set('{count} fields configured', 'kolonky nastaveny')
+
+		const wrapper = mount(AdminSettings, {
+			global: {
+				stubs: {
+					Draggable: defineComponent({ template: '<div><slot /></div>' }),
+				},
+			},
+		})
+
+		await flushPromises()
+
+		const heroMeta = wrapper.get('.profile-fields-admin__hero-meta')
+
+		expect(heroMeta.get('strong').text()).toBe('0')
+		expect(heroMeta.text()).toBe('0 kolonky nastaveny')
 	})
 })
