@@ -64,6 +64,20 @@ describe('embeddedShellPlacement', () => {
 		expect(shell()?.parentElement).toBe(document.querySelector('.settings-section'))
 	})
 
+	it('stays last in the settings column when the core renders a late property section', async() => {
+		renderShell('<div class="settings-column"><div class="settings-section"></div></div>')
+
+		await prepare()
+
+		const section = document.querySelector('.settings-section') as HTMLElement
+		expect(shell()).toBe(section.lastElementChild)
+
+		section.appendChild(document.createElement('div'))
+		await flushPlacement()
+
+		expect(shell()).toBe(section.lastElementChild)
+	})
+
 	it('joins the grid of the legacy personal info section', async() => {
 		vi.stubGlobal('getComputedStyle', () => ({ gridTemplateColumns: '1fr 1fr' }))
 		renderShell('<div id="personal-settings"><div id="personal-settings-group-container"></div></div>')

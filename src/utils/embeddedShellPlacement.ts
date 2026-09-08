@@ -101,8 +101,6 @@ const syncEmbeddedPersonalInfoShellPlacementInColumn = (shell: HTMLElement, sett
 		insertionTarget.appendChild(shell)
 	}
 
-	stopObservingCoreLayout()
-
 	shell.style.marginTop = ''
 
 	shell.dataset.profileFieldsEmbeddedReady = 'true'
