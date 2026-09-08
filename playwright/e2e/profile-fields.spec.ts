@@ -212,8 +212,14 @@ test('admin can reorder field definitions by dragging the list handles', async (
 
 		await secondHandle.hover()
 		await page.mouse.down()
-		await firstHandle.hover()
-		await firstHandle.hover()
+
+		const firstHandleBox = await firstHandle.boundingBox()
+		expect(firstHandleBox).not.toBeNull()
+		const dropX = firstHandleBox!.x + firstHandleBox!.width / 2
+		const dropY = firstHandleBox!.y + firstHandleBox!.height / 2
+
+		await page.mouse.move(dropX, dropY, { steps: 10 })
+		await page.mouse.move(dropX, dropY)
 		await page.mouse.up()
 
 		await expect.poll(draggedOrder).toEqual([secondFieldKey, firstFieldKey])
