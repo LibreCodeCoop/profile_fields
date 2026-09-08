@@ -16,7 +16,7 @@ const openPersonalSettings = async(page) => {
 		try {
 			await page.getByTestId('profile-fields-personal').waitFor({ state: 'visible', timeout: 10_000 })
 
-			return
+			return section
 		} catch {
 			continue
 		}
@@ -85,6 +85,7 @@ const expectEmbeddedLayoutAtWidth = async(
 
 	expect(Math.abs(aboutBox.width - customInputBox.width)).toBeLessThanOrEqual(6)
 	expect(customFieldBox.y).toBeGreaterThanOrEqual(aboutBottom - 1)
+	expect(embeddedShellBox.width).toBeGreaterThanOrEqual(aboutBox.width - 1)
 	if (expectExpandedShell) {
 		expect(embeddedShellBox.width).toBeGreaterThan(aboutBox.width + 100)
 	}
@@ -485,7 +486,7 @@ test('embedded personal settings autosave a user-visible field', async ({ page }
 	})
 
 	try {
-		await openPersonalSettings(page)
+		const section = await openPersonalSettings(page)
 		const fieldCard = page.getByTestId(`profile-fields-personal-field-${fieldKey}`)
 		const fieldInput = page.getByTestId(`profile-fields-personal-input-${fieldKey}`)
 		const visibilityPanel = page.getByTestId('profile-fields-personal-visibility-panel')
@@ -509,10 +510,12 @@ test('embedded personal settings autosave a user-visible field', async ({ page }
 		await expect(page.getByTestId(`profile-fields-personal-visibility-${fieldKey}`)).toBeVisible()
 		await expect(page.getByTestId(`profile-fields-personal-visibility-${fieldKey}`)).toContainText('Hide')
 
+		const spansTheGrid = section === 'personal-info'
+
 		for (const viewport of [
-			{ width: 1400, expectExpandedShell: true },
-			{ width: 1200, expectExpandedShell: true },
-			{ width: 900, expectExpandedShell: true },
+			{ width: 1400, expectExpandedShell: spansTheGrid },
+			{ width: 1200, expectExpandedShell: spansTheGrid },
+			{ width: 900, expectExpandedShell: spansTheGrid },
 			{ width: 640, expectExpandedShell: false },
 		]) {
 			await expectEmbeddedLayoutAtWidth(page, fieldKey, viewport)

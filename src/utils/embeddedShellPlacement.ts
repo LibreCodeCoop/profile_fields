@@ -1,0 +1,165 @@
+// SPDX-FileCopyrightText: 2026 LibreCode coop and LibreCode contributors
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+const EMBEDDED_VISIBILITY_ANCHOR_ID = 'profile-fields-personal-visibility-anchor'
+
+let embeddedShellPlacementFrame = 0
+let embeddedShellResizeDebounceTimer = 0
+let embeddedVisibilityAnchorObserver: MutationObserver | null = null
+let observedProfileVisibilityRoot: HTMLElement | null = null
+let coreLayoutObserver: MutationObserver | null = null
+
+const personalSettingsUsesMultipleColumns = (personalSettings: HTMLElement) => {
+	const gridTemplateColumns = window.getComputedStyle(personalSettings).gridTemplateColumns
+	if (gridTemplateColumns === '') {
+		return personalSettings.getBoundingClientRect().width >= 900
+	}
+
+	return gridTemplateColumns
+		.split(' ')
+		.map((value) => value.trim())
+		.filter(Boolean)
+		.length > 1
+}
+
+const ensureEmbeddedVisibilityAnchor = () => {
+	const profileVisibilityRoot = document.querySelector<HTMLElement>('#profile-visibility')
+	if (profileVisibilityRoot === null) {
+		return
+	}
+
+	if (observedProfileVisibilityRoot !== profileVisibilityRoot) {
+		embeddedVisibilityAnchorObserver?.disconnect()
+		embeddedVisibilityAnchorObserver = new MutationObserver(() => {
+			ensureEmbeddedVisibilityAnchor()
+		})
+		embeddedVisibilityAnchorObserver.observe(profileVisibilityRoot, { childList: true })
+		observedProfileVisibilityRoot = profileVisibilityRoot
+	}
+
+	let anchor = profileVisibilityRoot.querySelector<HTMLElement>(`#${EMBEDDED_VISIBILITY_ANCHOR_ID}`)
+	if (anchor !== null) {
+		return
+	}
+
+	anchor = document.createElement('div')
+	anchor.id = EMBEDDED_VISIBILITY_ANCHOR_ID
+	anchor.className = 'profile-fields-personal-info-visibility-anchor'
+	const insertionTarget = profileVisibilityRoot.querySelector('.visibility-dropdowns')
+	if (insertionTarget !== null) {
+		insertionTarget.appendChild(anchor)
+	} else {
+		profileVisibilityRoot.appendChild(anchor)
+	}
+	window.dispatchEvent(new CustomEvent('profile-fields:embedded-visibility-anchor-ready'))
+}
+
+const scheduleEmbeddedPersonalInfoShellPlacement = () => {
+	if (embeddedShellPlacementFrame !== 0) {
+		window.cancelAnimationFrame(embeddedShellPlacementFrame)
+	}
+
+	embeddedShellPlacementFrame = window.requestAnimationFrame(() => {
+		embeddedShellPlacementFrame = 0
+		syncEmbeddedPersonalInfoShellPlacement()
+	})
+}
+
+const scheduleEmbeddedPersonalInfoShellPlacementAfterResize = () => {
+	if (embeddedShellResizeDebounceTimer !== 0) {
+		window.clearTimeout(embeddedShellResizeDebounceTimer)
+	}
+
+	embeddedShellResizeDebounceTimer = window.setTimeout(() => {
+		embeddedShellResizeDebounceTimer = 0
+		scheduleEmbeddedPersonalInfoShellPlacement()
+	}, 140)
+}
+
+const observeCoreLayout = () => {
+	if (coreLayoutObserver !== null) {
+		return
+	}
+
+	coreLayoutObserver = new MutationObserver(() => {
+		scheduleEmbeddedPersonalInfoShellPlacement()
+	})
+	coreLayoutObserver.observe(document.body ?? document.documentElement, { childList: true, subtree: true })
+}
+
+const stopObservingCoreLayout = () => {
+	coreLayoutObserver?.disconnect()
+	coreLayoutObserver = null
+}
+
+const syncEmbeddedPersonalInfoShellPlacementInColumn = (shell: HTMLElement, settingsColumn: HTMLElement) => {
+	shell.classList.remove('personal-settings-setting-box', 'personal-settings-section', 'profile-fields-personal-info-box--stacked')
+	shell.classList.add('profile-fields-personal-info-box--column')
+
+	const insertionTarget = settingsColumn.querySelector<HTMLElement>('.settings-section') ?? settingsColumn
+	if (shell.parentElement !== insertionTarget || shell.nextElementSibling !== null) {
+		insertionTarget.appendChild(shell)
+	}
+
+	stopObservingCoreLayout()
+
+	shell.style.marginTop = ''
+
+	shell.dataset.profileFieldsEmbeddedReady = 'true'
+}
+
+const syncEmbeddedPersonalInfoShellPlacement = () => {
+	const shell = document.querySelector<HTMLElement>('#profile-fields-personal-info-shell')
+	if (shell === null) {
+		return
+	}
+
+	const settingsColumn = document.querySelector<HTMLElement>('.settings-column')
+	if (settingsColumn !== null) {
+		syncEmbeddedPersonalInfoShellPlacementInColumn(shell, settingsColumn)
+
+		return
+	}
+
+	const personalSettings = document.querySelector<HTMLElement>('#personal-settings')
+	const profileVisibilitySection = document.querySelector<HTMLElement>('#profile-visibility')?.closest<HTMLElement>('.personal-settings-section') ?? null
+	if (personalSettings === null) {
+		return
+	}
+
+	stopObservingCoreLayout()
+	ensureEmbeddedVisibilityAnchor()
+
+	const useGridPlacement = personalSettingsUsesMultipleColumns(personalSettings)
+	personalSettings.classList.toggle('profile-fields-personal-info-grid', useGridPlacement)
+	personalSettings.classList.toggle('profile-fields-personal-info-stacked', !useGridPlacement)
+	shell.classList.toggle('personal-settings-setting-box', useGridPlacement)
+	shell.classList.toggle('personal-settings-section', !useGridPlacement)
+	shell.classList.toggle('profile-fields-personal-info-box--stacked', !useGridPlacement)
+
+	if (useGridPlacement) {
+		const insertionTarget = personalSettings.querySelector('#personal-settings-group-container')
+			?? personalSettings.querySelector('.msg')
+
+		if (insertionTarget !== null) {
+			personalSettings.insertBefore(shell, insertionTarget)
+		} else {
+			personalSettings.appendChild(shell)
+		}
+	} else if (profileVisibilitySection !== null && profileVisibilitySection.parentNode !== null) {
+		profileVisibilitySection.parentNode.insertBefore(shell, profileVisibilitySection)
+	} else if (personalSettings.parentNode !== null) {
+		personalSettings.parentNode.insertBefore(shell, personalSettings.nextSibling)
+	}
+
+	shell.style.marginTop = ''
+
+	shell.dataset.profileFieldsEmbeddedReady = 'true'
+}
+
+export const prepareEmbeddedPersonalInfoShell = () => {
+	observeCoreLayout()
+	scheduleEmbeddedPersonalInfoShellPlacement()
+	window.addEventListener('resize', scheduleEmbeddedPersonalInfoShellPlacementAfterResize, { passive: true })
+	window.addEventListener('load', scheduleEmbeddedPersonalInfoShellPlacement, { once: true, passive: true })
+}
