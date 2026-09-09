@@ -57,7 +57,7 @@ jobs:
           - 1025:1025
           - 8025:8025
 
-    name: SQLite PHP 8.2 Nextcloud master
+    name: SQLite PHP 8.3 Nextcloud master
 
     steps:
       - name: Checkout server
@@ -74,10 +74,10 @@ jobs:
           persist-credentials: false
           path: apps/${{ env.APP_NAME }}
 
-      - name: Set up php 8.2
+      - name: Set up php 8.3
         uses: shivammathur/setup-php@accd6127cb78bee3e8082180cb391013d204ef9f # v2.37.0
         with:
-          php-version: '8.2'
+          php-version: '8.3'
           extensions: bz2, ctype, curl, dom, fileinfo, gd, iconv, intl, json, libxml, mbstring, openssl, pcntl, posix, session, simplexml, sockets, sqlite, pdo_sqlite, xmlreader, xmlwriter, zip, zlib
           coverage: none
           ini-file: development

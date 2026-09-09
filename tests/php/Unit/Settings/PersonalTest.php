@@ -15,8 +15,22 @@ use OCP\AppFramework\Http\TemplateResponse;
 use PHPUnit\Framework\TestCase;
 
 class PersonalTest extends TestCase {
+	private function buildSettings(bool $coreSectionRenamed): PersonalInfo {
+		return new class($coreSectionRenamed) extends PersonalInfo {
+			public function __construct(
+				private bool $coreSectionRenamed,
+			) {
+			}
+
+			#[\Override]
+			protected function coreSectionExists(string $className): bool {
+				return $this->coreSectionRenamed;
+			}
+		};
+	}
+
 	public function testGetFormReturnsPersonalTemplate(): void {
-		$settings = new PersonalInfo();
+		$settings = $this->buildSettings(true);
 
 		$response = $settings->getForm();
 
@@ -26,9 +40,12 @@ class PersonalTest extends TestCase {
 	}
 
 	public function testSettingsMetadataMatchesPersonalSection(): void {
-		$settings = new PersonalInfo();
+		$this->assertSame('personal-info', $this->buildSettings(false)->getSection());
+		$this->assertSame(80, $this->buildSettings(false)->getPriority());
+	}
 
-		$this->assertSame('personal-info', $settings->getSection());
-		$this->assertSame(80, $settings->getPriority());
+	public function testSectionFollowsTheCoreSectionRename(): void {
+		$this->assertSame('personal-info', $this->buildSettings(false)->getSection());
+		$this->assertSame('profile-contact', $this->buildSettings(true)->getSection());
 	}
 }

@@ -811,6 +811,34 @@ onBeforeUnmount(() => {
 	max-inline-size: none;
 }
 
+.profile-fields-personal-info-box--column {
+	display: block;
+	width: 100%;
+	max-width: 100%;
+	min-width: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+.profile-fields-personal-info-box--column #profile-fields-personal-info-settings > .profile-fields-personal {
+	display: block;
+}
+
+.profile-fields-personal-info-box--column #profile-fields-personal-info-settings > .profile-fields-personal .profile-fields-personal__grid--embedded {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 0;
+}
+
+.profile-fields-personal-info-box--column #profile-fields-personal-info-settings > .profile-fields-personal .profile-fields-personal__card--embedded {
+	padding: 6px 0;
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+	box-shadow: none;
+	max-inline-size: none;
+}
+
 </style>
 
 <style scoped lang="scss">

@@ -10,6 +10,21 @@ const adminPassword = process.env.NEXTCLOUD_ADMIN_PASSWORD ?? 'admin'
 
 const optionInput = (page, index: number) => page.getByTestId(`profile-fields-admin-option-row-${index}`).locator('input')
 
+const openPersonalSettings = async(page) => {
+	for (const section of ['profile-contact', 'personal-info']) {
+		await page.goto(`./settings/user/${section}`)
+		try {
+			await page.getByTestId('profile-fields-personal').waitFor({ state: 'visible', timeout: 10_000 })
+
+			return section
+		} catch {
+			continue
+		}
+	}
+
+	throw new Error('Could not find the personal profile fields section')
+}
+
 const chooseFieldType = async(page, label: 'Text' | 'Number' | 'Select') => {
 	await page.getByTestId('profile-fields-admin-type-select').click()
 	await page.getByRole('option', { name: label, exact: true }).click()
@@ -30,8 +45,8 @@ const collectEmbeddedLayoutMetrics = async(page, fieldKey: string) => {
 	const customInput = page.getByTestId(`profile-fields-personal-input-${fieldKey}`)
 	const embeddedShell = page.locator('#profile-fields-personal-info-shell')
 
-	await aboutInput.scrollIntoViewIfNeeded()
-	await customInput.scrollIntoViewIfNeeded()
+	await aboutInput.scrollIntoViewIfNeeded({ timeout: 10_000 })
+	await customInput.scrollIntoViewIfNeeded({ timeout: 10_000 })
 
 	const aboutBox = await aboutInput.boundingBox()
 	const customFieldBox = await customField.boundingBox()
@@ -70,6 +85,7 @@ const expectEmbeddedLayoutAtWidth = async(
 
 	expect(Math.abs(aboutBox.width - customInputBox.width)).toBeLessThanOrEqual(6)
 	expect(customFieldBox.y).toBeGreaterThanOrEqual(aboutBottom - 1)
+	expect(embeddedShellBox.width).toBeGreaterThanOrEqual(aboutBox.width - 1)
 	if (expectExpandedShell) {
 		expect(embeddedShellBox.width).toBeGreaterThan(aboutBox.width + 100)
 	}
@@ -187,33 +203,30 @@ test('admin can reorder field definitions by dragging the list handles', async (
 
 		const firstHandle = page.getByTestId(`profile-fields-admin-definition-handle-${firstFieldKey}`)
 		const secondHandle = page.getByTestId(`profile-fields-admin-definition-handle-${secondFieldKey}`)
-		const verticalOrder = async() => {
-			const firstBox = await firstHandle.boundingBox()
-			const secondBox = await secondHandle.boundingBox()
-			expect(firstBox).not.toBeNull()
-			expect(secondBox).not.toBeNull()
-			return {
-				firstY: firstBox!.y,
-				secondY: secondBox!.y,
-			}
-		}
+		const draggedOrder = async() => (await page
+			.locator('.profile-fields-admin__list .profile-fields-admin__list-item-subname')
+			.allTextContents())
+			.filter((listedKey) => listedKey === firstFieldKey || listedKey === secondFieldKey)
 
-		let order = await verticalOrder()
-		expect(order.firstY).toBeLessThan(order.secondY)
+		await expect.poll(draggedOrder).toEqual([firstFieldKey, secondFieldKey])
 
-		await secondHandle.dragTo(firstHandle)
+		await secondHandle.hover()
+		await page.mouse.down()
 
-		await expect.poll(verticalOrder).toEqual(expect.objectContaining({
-			firstY: expect.any(Number),
-			secondY: expect.any(Number),
-		}))
-		order = await verticalOrder()
-		expect(order.secondY).toBeLessThan(order.firstY)
+		const firstHandleBox = await firstHandle.boundingBox()
+		expect(firstHandleBox).not.toBeNull()
+		const dropX = firstHandleBox!.x + firstHandleBox!.width / 2
+		const dropY = firstHandleBox!.y + firstHandleBox!.height / 2
+
+		await page.mouse.move(dropX, dropY, { steps: 10 })
+		await page.mouse.move(dropX, dropY)
+		await page.mouse.up()
+
+		await expect.poll(draggedOrder).toEqual([secondFieldKey, firstFieldKey])
 
 		await page.reload()
 		await expect(page.getByTestId('profile-fields-admin')).toBeVisible()
-		order = await verticalOrder()
-		expect(order.secondY).toBeLessThan(order.firstY)
+		await expect.poll(draggedOrder).toEqual([secondFieldKey, firstFieldKey])
 	} finally {
 		await deleteDefinitionByFieldKey(page.request, firstFieldKey)
 		await deleteDefinitionByFieldKey(page.request, secondFieldKey)
@@ -479,7 +492,7 @@ test('embedded personal settings autosave a user-visible field', async ({ page }
 	})
 
 	try {
-		await page.goto('./settings/user/personal-info')
+		const section = await openPersonalSettings(page)
 		const fieldCard = page.getByTestId(`profile-fields-personal-field-${fieldKey}`)
 		const fieldInput = page.getByTestId(`profile-fields-personal-input-${fieldKey}`)
 		const visibilityPanel = page.getByTestId('profile-fields-personal-visibility-panel')
@@ -503,10 +516,12 @@ test('embedded personal settings autosave a user-visible field', async ({ page }
 		await expect(page.getByTestId(`profile-fields-personal-visibility-${fieldKey}`)).toBeVisible()
 		await expect(page.getByTestId(`profile-fields-personal-visibility-${fieldKey}`)).toContainText('Hide')
 
+		const spansTheGrid = section === 'personal-info'
+
 		for (const viewport of [
-			{ width: 1400, expectExpandedShell: true },
-			{ width: 1200, expectExpandedShell: true },
-			{ width: 900, expectExpandedShell: true },
+			{ width: 1400, expectExpandedShell: spansTheGrid },
+			{ width: 1200, expectExpandedShell: spansTheGrid },
+			{ width: 900, expectExpandedShell: spansTheGrid },
 			{ width: 640, expectExpandedShell: false },
 		]) {
 			await expectEmbeddedLayoutAtWidth(page, fieldKey, viewport)
