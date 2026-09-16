@@ -19,6 +19,7 @@ OC.L10N.register(
     "URL" : "URL",
     "Email" : "E-pošta",
     "Select" : "Odaberi",
+    "Admins only" : "Samo administratori",
     "Active" : "Aktivan",
     "Label" : "Oznaka",
     "Rules" : "Pravila",
