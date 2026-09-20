@@ -1,24 +1,27 @@
-# SPDX-FileCopyrightText: 2026 LibreCode Coop and LibreCode contributors
+# This workflow is provided via the organization template repository
 #
-# SPDX-License-Identifier: AGPL-3.0-or-later
+# https://github.com/LibreCodeCoop/.github
+# https://docs.github.com/en/actions/learn-github-actions/sharing-workflows-with-your-organization
 
-name: reuse
+# SPDX-FileCopyrightText: 2022 Free Software Foundation Europe e.V. <https://fsfe.org>
+#
+# SPDX-License-Identifier: CC0-1.0
 
-on:
-  pull_request:
-  push:
-    branches:
-      - main
-      - master
-      - stable*
+name: REUSE Compliance Check
+
+on: [pull_request]
+
+permissions:
+  contents: read
 
 jobs:
-  reuse:
+  reuse-compliance-check:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-      - name: Run REUSE lint
-        uses: fsfe/reuse-action@v6
+      - name: REUSE Compliance Check
+        uses: fsfe/reuse-action@676e2d560c9a403aa252096d99fcab3e1132b0f5 # v6.0.0
