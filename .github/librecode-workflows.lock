@@ -1,8 +1,0 @@
-# SPDX-FileCopyrightText: 2026 LibreCode coop and contributors
-# SPDX-License-Identifier: MIT
-
-3a2ed92f25ae9a233d6d64d44bd122b39dee0f153e7a1a9dc81bfb19adcec09b lint-info-xml.yml
-6846828b23e3b4f9e09c27cc363ba39a66868cb02c683f4c434c232a40cb8958 lint-php-cs.yml
-f7049c6cce3f7dda9a4e99845029928631f61fa091ecc0595b1ae5b3b40e97cd lint-php.yml
-293316b8e7ebc4f705df2e75df5815a056308936584c3f9dcd0db0580779773a openapi.yml
-96e71e6140d9d8b8684d95c5cfbd9038005eb21e6ef9a6dad5d83dc755af3637 psalm.yml
