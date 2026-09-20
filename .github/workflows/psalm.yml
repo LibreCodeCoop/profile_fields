@@ -1,58 +1,16 @@
-# SPDX-FileCopyrightText: 2026 LibreCode Coop and LibreCode contributors
-#
+# SPDX-FileCopyrightText: 2026 LibreCode coop and contributors
 # SPDX-License-Identifier: AGPL-3.0-or-later
+
+# This workflow is published through the LibreCode organization catalog.
+# Implementation: LibreCodeCoop/github-workflows
 
 name: Static analysis
 
-on:
-  pull_request:
+on: pull_request
 
 permissions:
   contents: read
 
-concurrency:
-  group: psalm-${{ github.head_ref || github.run_id }}
-  cancel-in-progress: true
-
 jobs:
-  static-analysis:
-    runs-on: ubuntu-latest
-    name: static-psalm-analysis
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Get php version
-        id: versions
-        uses: icewind1991/nextcloud-version-matrix@cd0211ffcef1065e2020cd579e4843b8746e7a58 # v1.3.3
-
-      - name: Check enforcement of minimum PHP version ${{ steps.versions.outputs.php-min }} in psalm.xml
-        run: grep 'phpVersion="${{ steps.versions.outputs.php-min }}"' psalm.xml
-
-      - name: Set up php${{ steps.versions.outputs.php-available }}
-        uses: shivammathur/setup-php@accd6127cb78bee3e8082180cb391013d204ef9f # v2.37.0
-        with:
-          php-version: ${{ steps.versions.outputs.php-available }}
-          extensions: bz2, ctype, curl, dom, fileinfo, gd, iconv, intl, json, libxml, mbstring, openssl, pcntl, posix, session, simplexml, xmlreader, xmlwriter, zip, zlib, sqlite, pdo_sqlite
-          coverage: none
-          ini-file: development
-          ini-values: disable_functions=
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Install dependencies
-        run: |
-          composer remove nextcloud/ocp --dev --no-scripts
-          composer i
-
-      - name: Check for vulnerable PHP dependencies
-        run: composer require --dev roave/security-advisories:dev-latest
-
-      - name: Install nextcloud/ocp
-        run: composer require --dev nextcloud/ocp:dev-${{ steps.versions.outputs.branches-max }} --ignore-platform-reqs --with-dependencies
-
-      - name: Run Psalm
-        run: composer run psalm -- --threads=1 --monochrome --no-progress --output-format=github
+  psalm:
+    uses: LibreCodeCoop/github-workflows/.github/workflows/psalm.yml@bedd8421ad6c95914f10f0dc631333223d17c515
