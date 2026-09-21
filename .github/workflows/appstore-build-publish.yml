@@ -189,7 +189,7 @@ jobs:
           tar -zcvf ${{ env.APP_NAME }}.tar.gz ${{ env.APP_NAME }}
 
       - name: Validate release artifact
-        uses: LibreCodeCoop/github-workflows/actions/validate-release-artifact@eabf9eeacf26f8ef8c01a72641bf8e2ed1ba3637 # v0.2.0
+        uses: LibreCodeCoop/github-workflows/actions/release-artifact-validate@622599cc128ec55007b443d2908f78da930b8a21 # v0.5.0
         with:
           artifact: ${{ env.APP_NAME }}/build/artifacts/${{ env.APP_NAME }}.tar.gz
           app-name: ${{ env.APP_NAME }}
