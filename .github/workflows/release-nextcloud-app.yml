@@ -56,7 +56,7 @@ jobs:
           persist-credentials: false
 
       - name: Validate release plan
-        uses: LibreCodeCoop/github-workflows/actions/release-plan@94ad33acf3cdf261db5b90a2297f92325c48c5d2 # v0.2.0
+        uses: LibreCodeCoop/github-workflows/actions/release-plan@deb5fdbf37b7721ea01cd086cec0f3b3b2e3c7bc # v0.3.0
         with:
           version: ${{ inputs.version }}
           stable-branch: ${{ inputs.stable_branch }}
