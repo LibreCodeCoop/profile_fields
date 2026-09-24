@@ -55,14 +55,50 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Validate release plan
-        uses: LibreCodeCoop/github-workflows/actions/release-plan@94ad33acf3cdf261db5b90a2297f92325c48c5d2 # v0.2.0
+      - name: Set up PHP 8.3 for release-tool
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
-          version: ${{ inputs.version }}
-          stable-branch: ${{ inputs.stable_branch }}
-          milestone: ${{ inputs.milestone }}
-          blocker-queries: ${{ inputs.blocker_queries }}
-          github-token: ${{ github.token }}
+          php-version: '8.3'
+          coverage: none
+
+      - id: release-tool
+        name: Setup release-tool v0.11.2
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="https://github.com/LibreCodeCoop/release-tool/releases/download/v0.11.2"
+          curl --fail --silent --show-error --location "${base}/release-tool.phar" -o "${RUNNER_TEMP}/release-tool.phar"
+          curl --fail --silent --show-error --location "${base}/release-tool.phar.sha256" -o "${RUNNER_TEMP}/release-tool.phar.sha256"
+          (cd "${RUNNER_TEMP}" && sha256sum --check release-tool.phar.sha256)
+          echo "path=${RUNNER_TEMP}/release-tool.phar" >> "${GITHUB_OUTPUT}"
+
+      - name: Validate release plan
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          RELEASE_TOOL_PATH: ${{ steps.release-tool.outputs.path }}
+          RELEASE_VERSION: ${{ inputs.version }}
+          STABLE_BRANCH: ${{ inputs.stable_branch }}
+          RELEASE_MILESTONE: ${{ inputs.milestone }}
+          BLOCKER_QUERIES: ${{ inputs.blocker_queries }}
+        run: |
+          set -euo pipefail
+          plan="${RUNNER_TEMP}/release-preflight.json"
+          php "${RELEASE_TOOL_PATH}" release:preflight \
+            --version "${RELEASE_VERSION}" \
+            --stable-branch "${STABLE_BRANCH}" \
+            --current-ref "${STABLE_BRANCH}" \
+            --repository "${GITHUB_REPOSITORY}" \
+            --milestone "${RELEASE_MILESTONE}" \
+            --blocker-queries-json "${BLOCKER_QUERIES}" \
+            --json | tee "${plan}"
+          {
+            echo "## Release preflight"
+            echo
+            echo '~~~json'
+            cat "${plan}"
+            echo '~~~'
+          } >> "${GITHUB_STEP_SUMMARY}"
 
       - name: Validate publication credentials
         env:
