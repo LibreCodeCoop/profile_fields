@@ -189,7 +189,7 @@ jobs:
           tar -zcvf ${{ env.APP_NAME }}.tar.gz ${{ env.APP_NAME }}
 
       - name: Validate release artifact
-        uses: LibreCodeCoop/release-tool/actions/artifact-validate@98575fbf2610bd6aff2c6226f03f138ea4bd193e
+        uses: LibreCodeCoop/release-tool/actions/artifact-validate@710c4c83fba47bf01713f46e9c4cb4cf63debfba
         with:
           artifact: ${{ env.APP_NAME }}/build/artifacts/${{ env.APP_NAME }}.tar.gz
           app-name: ${{ env.APP_NAME }}
@@ -214,7 +214,7 @@ jobs:
           app_private_key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - name: Verify App Store publication
-        uses: LibreCodeCoop/release-tool/actions/appstore-publication-wait@98575fbf2610bd6aff2c6226f03f138ea4bd193e
+        uses: LibreCodeCoop/release-tool/actions/appstore-publication-wait@710c4c83fba47bf01713f46e9c4cb4cf63debfba
         with:
           app-name: ${{ env.APP_NAME }}
           version: ${{ env.APP_VERSION }}
