@@ -21,6 +21,7 @@ OC.L10N.register(
     "Email" : "Электронная почта",
     "Select" : "Выбрать",
     "Admins only" : "Только администраторам",
+    "Actions for {label}" : "Действия для \"{label}\"",
     "Active" : "Активно",
     "Inactive" : "Неактивно",
     "Drag to reorder" : "Перетащите для изменения порядка",
