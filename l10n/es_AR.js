@@ -4,6 +4,8 @@ OC.L10N.register(
     "Select a date" : "Elija una fecha",
     "Cancel" : "Cancel",
     "Options" : "Opciones",
+    "Move up" : "Mover hacia arriba",
+    "Move down" : "Mover hacia abajo",
     "Text" : "Texto",
     "Date" : "Fecha",
     "URL" : "URL",
