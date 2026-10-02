@@ -56,7 +56,7 @@ jobs:
           persist-credentials: false
 
       - name: Validate release plan
-        uses: LibreCodeCoop/release-tool/actions/release-preflight@2cadc91c5e04e2f9bb8eb0c20e8c3cf608f37b11
+        uses: LibreCodeCoop/release-tool/actions/release-preflight@d83c79f61a5a46322e105e7d84cf8e8a151d2085
         with:
           version: ${{ inputs.version }}
           stable-branch: ${{ inputs.stable_branch }}
