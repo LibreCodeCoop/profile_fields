@@ -214,7 +214,7 @@ jobs:
           app_private_key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - name: Verify App Store publication
-        uses: LibreCodeCoop/release-tool/actions/appstore-publication-wait@2cadc91c5e04e2f9bb8eb0c20e8c3cf608f37b11
+        uses: LibreCodeCoop/release-tool/actions/appstore-publication-wait@d83c79f61a5a46322e105e7d84cf8e8a151d2085
         with:
           app-name: ${{ env.APP_NAME }}
           version: ${{ env.APP_VERSION }}
