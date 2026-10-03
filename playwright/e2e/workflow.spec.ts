@@ -12,6 +12,8 @@ const adminPassword = process.env.NEXTCLOUD_ADMIN_PASSWORD ?? 'admin'
 
 const escapeRegex = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
+const workflowRuleSelector = '.section.rule, [class^="_rule_"]'
+
 const selectNcOption = async(page: Page, combobox: Locator, optionName: string) => {
 	await combobox.click()
 	await page.locator('[role="option"]').filter({
@@ -19,8 +21,8 @@ const selectNcOption = async(page: Page, combobox: Locator, optionName: string) 
 	}).first().click()
 }
 
-const ensureFlowCardIsVisible = async(page: Page, addFlowCard: Locator) => {
-	if (await addFlowCard.count() > 0) {
+const ensureFlowCardIsVisible = async(page: Page, addFlowButton: Locator) => {
+	if (await addFlowButton.count() > 0) {
 		return
 	}
 
@@ -29,28 +31,28 @@ const ensureFlowCardIsVisible = async(page: Page, addFlowCard: Locator) => {
 		await showMoreButton.click()
 	}
 
-	await expect(addFlowCard).toBeVisible()
+	await expect(addFlowButton).toBeVisible()
 }
 
 const configureDraftRule = async(page: Page, actionName: string, label: string, fieldValue: string, configureOperation?: (configuredRule: Locator) => Promise<void>, operationValue?: string) => {
-	const initialRuleCount = await page.locator('.section.rule').count()
-	const addFlowCard = page.locator('.actions__item.colored').filter({
-		has: page.getByRole('heading', { name: actionName, exact: true }),
-	})
-	await ensureFlowCardIsVisible(page, addFlowCard)
-	await addFlowCard.getByRole('button', { name: 'Add new flow' }).click()
+	const initialRuleCount = await page.locator(workflowRuleSelector).count()
+	const addFlowButton = page.getByRole('heading', { name: actionName, exact: true })
+		.locator('..')
+		.getByRole('button', { name: 'Add new flow' })
+	await ensureFlowCardIsVisible(page, addFlowButton)
+	await addFlowButton.click()
 
-	const configuredRule = page.locator('.section.rule').filter({
+	const configuredRule = page.locator(workflowRuleSelector).filter({
 		has: page.getByRole('button', { name: 'Cancel', exact: true }),
 	}).last()
 	await expect(configuredRule).toBeVisible()
-	const configuredRuleIndex = await configuredRule.evaluate((element) => {
-		return Array.from(document.querySelectorAll('.section.rule')).indexOf(element)
-	})
+	const configuredRuleIndex = await configuredRule.evaluate((element, selector) => {
+		return Array.from(document.querySelectorAll(selector)).indexOf(element)
+	}, workflowRuleSelector)
 
 	await expect(configuredRule.getByText('Profile field value updated', { exact: true })).toBeVisible()
-	await selectNcOption(page, configuredRule.getByRole('combobox', { name: 'Select a filter' }), 'Profile field value')
-	await selectNcOption(page, configuredRule.locator('.comparator [role="combobox"]'), 'is')
+	await selectNcOption(page, configuredRule.getByRole('combobox', { name: /^(Filter|Select a filter)$/ }), 'Profile field value')
+	await selectNcOption(page, configuredRule.getByRole('combobox', { name: /^(Comparator|Select a comparator)$/ }), 'is')
 
 	const checkEditor = configuredRule.locator('oca-profile-fields-check-user-profile-field')
 	await expect(checkEditor).toBeVisible()
@@ -70,8 +72,8 @@ const configureDraftRule = async(page: Page, actionName: string, label: string, 
 	await expect(configuredRule.getByRole('button', { name: 'Save' })).toBeVisible()
 	await configuredRule.getByRole('button', { name: 'Save' }).click()
 
-	await expect(page.locator('.section.rule')).toHaveCount(initialRuleCount + 1)
-	const savedRule = page.locator('.section.rule').nth(configuredRuleIndex)
+	await expect(page.locator(workflowRuleSelector)).toHaveCount(initialRuleCount + 1)
+	const savedRule = page.locator(workflowRuleSelector).nth(configuredRuleIndex)
 	await expect(savedRule.getByText('Profile field value updated', { exact: true })).toBeVisible()
 	await expect(savedRule.getByText('Active', { exact: true })).toBeVisible()
 
@@ -105,7 +107,7 @@ test('admin can create a profile field workflow rule', async ({ page }) => {
 	const { savedRule, initialRuleCount } = await configureDraftRule(page, 'Log profile field change', label, fieldValue)
 
 	await savedRule.getByRole('button', { name: 'Delete' }).click()
-	await expect(page.locator('.section.rule')).toHaveCount(initialRuleCount)
+	await expect(page.locator(workflowRuleSelector)).toHaveCount(initialRuleCount)
 	await deleteDefinitionByFieldKey(page.request, fieldKey)
 })
 
@@ -126,7 +128,7 @@ test('admin can create a send webhook workflow rule', async ({ page }) => {
 	}, webhookUrl)
 
 	await savedRule.getByRole('button', { name: 'Delete' }).click()
-	await expect(page.locator('.section.rule')).toHaveCount(initialRuleCount)
+	await expect(page.locator(workflowRuleSelector)).toHaveCount(initialRuleCount)
 	await deleteDefinitionByFieldKey(page.request, fieldKey)
 })
 
@@ -146,7 +148,7 @@ test('admin can create an email affected user workflow rule', async ({ page }) =
 	})
 
 	await savedRule.getByRole('button', { name: 'Delete' }).click()
-	await expect(page.locator('.section.rule')).toHaveCount(initialRuleCount)
+	await expect(page.locator(workflowRuleSelector)).toHaveCount(initialRuleCount)
 	await deleteDefinitionByFieldKey(page.request, fieldKey)
 })
 
@@ -172,7 +174,7 @@ test('admin can create a notify admins or groups workflow rule', async ({ page }
 	})
 
 	await savedRule.getByRole('button', { name: 'Delete' }).click()
-	await expect(page.locator('.section.rule')).toHaveCount(initialRuleCount)
+	await expect(page.locator(workflowRuleSelector)).toHaveCount(initialRuleCount)
 	await deleteDefinitionByFieldKey(page.request, fieldKey)
 })
 
@@ -189,6 +191,6 @@ test('admin can create a create Talk conversation workflow rule', async ({ page 
 	const { savedRule, initialRuleCount } = await configureDraftRule(page, 'Create Talk conversation', label, fieldValue)
 
 	await savedRule.getByRole('button', { name: 'Delete' }).click()
-	await expect(page.locator('.section.rule')).toHaveCount(initialRuleCount)
+	await expect(page.locator(workflowRuleSelector)).toHaveCount(initialRuleCount)
 	await deleteDefinitionByFieldKey(page.request, fieldKey)
 })

@@ -7,6 +7,7 @@ import { createApp, h, reactive, type App } from 'vue'
 
 import { listDefinitions, searchWorkflowTargetSuggestions, type WorkflowTargetSuggestion } from './api.ts'
 import type { FieldDefinition } from './types/index.ts'
+import { applyDefaultTriggerToNewestRule, getWorkflowEngineStore } from './utils/workflowEngineStore.ts'
 import {
 	getWorkflowOperatorKeys,
 	isWorkflowOperatorSupported,
@@ -70,39 +71,6 @@ type WorkflowWebhookOperationConfig = {
 type WorkflowEngineApi = {
 	registerCheck: (plugin: WorkflowEnginePlugin) => void
 	registerOperator: (plugin: WorkflowEngineOperatorPlugin) => void
-}
-
-type WorkflowEngineEntity = {
-	id: string
-	events: Array<{
-		eventName: string
-		displayName: string
-	}>
-}
-
-type WorkflowEngineRule = {
-	id: number
-	class: string
-	entity: string
-	events: string[]
-	name: string
-	checks: Array<{ class: string | null, operator: string | null, value: string }>
-	operation: string
-	valid?: boolean
-}
-
-type WorkflowEngineStore = {
-	state: {
-		rules: WorkflowEngineRule[]
-		entities: WorkflowEngineEntity[]
-	}
-	commit: (type: string, payload?: WorkflowEngineRule) => void
-	dispatch: (type: string, payload?: unknown) => Promise<unknown> | unknown
-}
-
-type WorkflowEngineRootVm = {
-	$store: WorkflowEngineStore
-	createNewRule: (operation: { id: string }) => Promise<unknown> | unknown
 }
 
 const workflowCheckClass = 'OCA\\ProfileFields\\Workflow\\UserProfileFieldCheck'
@@ -1188,25 +1156,11 @@ const applyWorkflowCardTheme = (): void => {
 		if (icon !== null && backgroundImage !== '' && backgroundImage !== 'none') {
 			icon.style.setProperty('--profile-fields-workflow-icon', backgroundImage)
 		}
-
-		const addFlowButton = card.querySelector<HTMLButtonElement>('button')
-		if (card.classList.contains('colored') && addFlowButton !== null && addFlowButton.dataset.profileFieldsWorkflowTriggerBound !== 'true') {
-			addFlowButton.dataset.profileFieldsWorkflowTriggerBound = 'true'
-			addFlowButton.addEventListener('click', () => {
-				window.setTimeout(() => {
-					const store = getWorkflowStore()
-					if (store !== null) {
-						applyDefaultTriggerToNewestWorkflowRule(store)
-					}
-				}, 0)
-			})
-		}
 	}
 }
 
 let workflowCardThemeObserver: MutationObserver | null = null
-let workflowDefaultsPatchAttempts = 0
-let workflowDefaultsPatched = false
+let workflowRuleDefaultsAttempts = 0
 
 const observeWorkflowCards = (): void => {
 	applyWorkflowCardTheme()
@@ -1234,74 +1188,30 @@ const startWorkflowCardTheme = (): void => {
 	window.setTimeout(() => observeWorkflowCards(), 0)
 }
 
-const getWorkflowRootVm = (): WorkflowEngineRootVm | null => {
-	const root = document.querySelector('#workflowengine') as (HTMLElement & { __vue__?: WorkflowEngineRootVm }) | null
-	return root?.__vue__ ?? null
+const workflowRuleDefaults = {
+	entityClass: workflowEntityClass,
+	eventClass: workflowUpdatedEventClass,
+	operationClasses: workflowOperationClasses,
 }
 
-const getWorkflowStore = (): WorkflowEngineStore | null => {
-	return getWorkflowRootVm()?.$store ?? null
-}
-
-const getDefaultWorkflowEventName = (store: WorkflowEngineStore): string | null => {
-	const entity = store.state.entities.find((item) => item.id === workflowEntityClass)
-	if (entity === undefined) {
-		return null
-	}
-
-	return entity.events.find((event) => event.eventName === workflowUpdatedEventClass)?.eventName
-		?? entity.events[0]?.eventName
-		?? null
-}
-
-const applyDefaultTriggerToNewestWorkflowRule = (store: WorkflowEngineStore): void => {
-	const defaultEventName = getDefaultWorkflowEventName(store)
-	if (defaultEventName === null) {
+const applyWorkflowRuleDefaults = (): void => {
+	const store = getWorkflowEngineStore(document.querySelector('#workflowengine'))
+	if (store !== null) {
+		store.onRuleCreated(() => applyDefaultTriggerToNewestRule(store, workflowRuleDefaults))
 		return
 	}
 
-	const targetRule = [...store.state.rules]
-		.reverse()
-		.find((rule) => workflowOperationClasses.includes(rule.class) && rule.id < 0)
-
-	if (targetRule === undefined) {
+	if (workflowRuleDefaultsAttempts >= 20) {
 		return
 	}
 
-	if (targetRule.entity === workflowEntityClass && targetRule.events.length === 1 && targetRule.events[0] === defaultEventName) {
-		return
-	}
-
-	store.commit('updateRule', {
-		...targetRule,
-		entity: workflowEntityClass,
-		events: [defaultEventName],
-	})
-}
-
-const patchWorkflowCreateRuleDefaults = (): void => {
-	if (workflowDefaultsPatched) {
-		return
-	}
-
-	const store = getWorkflowStore()
-	const rootVm = getWorkflowRootVm()
-	if (store === null || rootVm === null) {
-		if (workflowDefaultsPatchAttempts >= 20) {
-			return
-		}
-
-		workflowDefaultsPatchAttempts += 1
-		window.setTimeout(patchWorkflowCreateRuleDefaults, 50)
-		return
-	}
-
-	workflowDefaultsPatched = true
+	workflowRuleDefaultsAttempts += 1
+	window.setTimeout(applyWorkflowRuleDefaults, 50)
 }
 
 void loadDefinitions()
 startWorkflowCardTheme()
-patchWorkflowCreateRuleDefaults()
+applyWorkflowRuleDefaults()
 
 let registrationAttempts = 0
 
