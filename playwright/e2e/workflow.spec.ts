@@ -94,6 +94,17 @@ test.beforeEach(async ({ page }) => {
 	await login(page.request, adminUser, adminPassword)
 })
 
+test('admin sees profile field flow icons in the card text color', async ({ page }) => {
+	await page.goto('./settings/admin/workflow')
+	const heading = page.getByRole('heading', { name: 'Log profile field change', exact: true }).first()
+	await expect(heading).toBeVisible()
+
+	const icon = heading.locator('xpath=../../*[1]')
+	await expect(icon).toHaveCSS('filter', 'none')
+	await expect(icon).toHaveCSS('background-image', 'none')
+	await expect(icon).toHaveCSS('mask-image', /url\(/)
+})
+
 test('admin can create a profile field workflow rule', async ({ page }) => {
 	const suffix = Date.now()
 	const fieldKey = `playwright_workflow_${suffix}`

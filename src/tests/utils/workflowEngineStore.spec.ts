@@ -4,7 +4,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import {
-	applyDefaultTriggerToNewestRule,
+	applyDefaultTriggerToCreatedRule,
 	getWorkflowEngineStore,
 	type WorkflowEngineRule,
 	type WorkflowEngineStore,
@@ -40,9 +40,8 @@ const createRule = (overrides: Partial<WorkflowEngineRule> = {}): WorkflowEngine
 	...overrides,
 })
 
-const createStore = (rules: WorkflowEngineRule[]): WorkflowEngineStore => ({
+const createStore = (): WorkflowEngineStore => ({
 	getEntities: () => entities,
-	getRules: () => rules,
 	setRuleTrigger: vi.fn(),
 	onRuleCreated: vi.fn(),
 })
@@ -58,11 +57,12 @@ describe('getWorkflowEngineStore', () => {
 
 	it('adapts the Vuex store of the Vue 2 workflow engine', () => {
 		const rule = createRule()
-		let subscriber: ((mutation: { type: string }) => void) | undefined
+		const state = { rules: [createRule({ id: 7 }), rule], entities }
+		let subscriber: ((mutation: { type: string }, mutationState: typeof state) => void) | undefined
 		const vuexStore = {
-			state: { rules: [rule], entities },
+			state,
 			commit: vi.fn(),
-			subscribe: vi.fn((handler: (mutation: { type: string }) => void) => {
+			subscribe: vi.fn((handler: (mutation: { type: string }, mutationState: typeof state) => void) => {
 				subscriber = handler
 			}),
 		}
@@ -71,13 +71,13 @@ describe('getWorkflowEngineStore', () => {
 		const store = getWorkflowEngineStore(root)
 		const callback = vi.fn()
 		store?.onRuleCreated(callback)
-		subscriber?.({ type: 'updateRule' })
-		subscriber?.({ type: 'addRule' })
+		subscriber?.({ type: 'updateRule' }, state)
+		subscriber?.({ type: 'addRule' }, state)
 		store?.setRuleTrigger(rule, entityClass, [eventClass])
 
 		expect(store?.getEntities()).toBe(entities)
-		expect(store?.getRules()).toEqual([rule])
-		expect(callback).toHaveBeenCalledTimes(1)
+		expect(callback).toHaveBeenCalledOnce()
+		expect(callback).toHaveBeenCalledWith(rule)
 		expect(vuexStore.commit).toHaveBeenCalledWith('updateRule', { ...rule, entity: entityClass, events: [eventClass] })
 	})
 
@@ -86,7 +86,7 @@ describe('getWorkflowEngineStore', () => {
 		let actionHandler: ((context: { name: string, after: (callback: () => void) => void }) => void) | undefined
 		const piniaStore = {
 			entities,
-			rules: [rule],
+			rules: [createRule({ id: 7 }), rule],
 			setRuleTrigger: vi.fn(),
 			$onAction: vi.fn((handler: (context: { name: string, after: (callback: () => void) => void }) => void) => {
 				actionHandler = handler
@@ -104,8 +104,8 @@ describe('getWorkflowEngineStore', () => {
 		store?.setRuleTrigger(rule, entityClass, [eventClass])
 
 		expect(store?.getEntities()).toBe(entities)
-		expect(store?.getRules()).toEqual([rule])
-		expect(callback).toHaveBeenCalledTimes(1)
+		expect(callback).toHaveBeenCalledOnce()
+		expect(callback).toHaveBeenCalledWith(rule)
 		expect(piniaStore.setRuleTrigger).toHaveBeenCalledWith(rule, entityClass, [eventClass])
 	})
 
@@ -118,50 +118,54 @@ describe('getWorkflowEngineStore', () => {
 	})
 })
 
-describe('applyDefaultTriggerToNewestRule', () => {
-	it('points the newest unsaved profile field rule at the profile field update event', () => {
-		const olderRule = createRule({ id: -2 })
-		const newestRule = createRule({ id: -1 })
-		const store = createStore([createRule({ id: 5 }), olderRule, newestRule])
+describe('applyDefaultTriggerToCreatedRule', () => {
+	it('points a new profile field rule at the profile field update event', () => {
+		const rule = createRule()
+		const store = createStore()
 
-		applyDefaultTriggerToNewestRule(store, defaults)
+		applyDefaultTriggerToCreatedRule(store, rule, defaults)
 
 		expect(store.setRuleTrigger).toHaveBeenCalledOnce()
-		expect(store.setRuleTrigger).toHaveBeenCalledWith(newestRule, entityClass, [eventClass])
+		expect(store.setRuleTrigger).toHaveBeenCalledWith(rule, entityClass, [eventClass])
 	})
 
-	it('ignores saved rules and rules of other operations', () => {
-		const store = createStore([
-			createRule({ id: 3 }),
-			createRule({ id: -1, class: 'OCA\\FilesAccessControl\\Operation' }),
-		])
+	it('ignores rules of other operations so profile field drafts keep their trigger', () => {
+		const store = createStore()
 
-		applyDefaultTriggerToNewestRule(store, defaults)
+		applyDefaultTriggerToCreatedRule(store, createRule({ class: 'OCA\\FilesAccessControl\\Operation' }), defaults)
+
+		expect(store.setRuleTrigger).not.toHaveBeenCalled()
+	})
+
+	it('ignores saved rules', () => {
+		const store = createStore()
+
+		applyDefaultTriggerToCreatedRule(store, createRule({ id: 3 }), defaults)
 
 		expect(store.setRuleTrigger).not.toHaveBeenCalled()
 	})
 
 	it('keeps a rule that already uses the default trigger', () => {
-		const store = createStore([createRule({ entity: entityClass, events: [eventClass] })])
+		const store = createStore()
 
-		applyDefaultTriggerToNewestRule(store, defaults)
+		applyDefaultTriggerToCreatedRule(store, createRule({ entity: entityClass, events: [eventClass] }), defaults)
 
 		expect(store.setRuleTrigger).not.toHaveBeenCalled()
 	})
 
 	it('falls back to the first event of the entity', () => {
 		const rule = createRule()
-		const store = createStore([rule])
+		const store = createStore()
 
-		applyDefaultTriggerToNewestRule(store, { ...defaults, eventClass: 'missingEvent' })
+		applyDefaultTriggerToCreatedRule(store, rule, { ...defaults, eventClass: 'missingEvent' })
 
 		expect(store.setRuleTrigger).toHaveBeenCalledWith(rule, entityClass, ['otherEvent'])
 	})
 
 	it('does nothing when the profile field entity is not available', () => {
-		const store = createStore([createRule()])
+		const store = createStore()
 
-		applyDefaultTriggerToNewestRule(store, { ...defaults, entityClass: 'missingEntity' })
+		applyDefaultTriggerToCreatedRule(store, createRule(), { ...defaults, entityClass: 'missingEntity' })
 
 		expect(store.setRuleTrigger).not.toHaveBeenCalled()
 	})

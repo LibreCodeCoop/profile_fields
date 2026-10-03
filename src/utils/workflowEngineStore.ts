@@ -18,9 +18,8 @@ export type WorkflowEngineRule = {
 
 export type WorkflowEngineStore = {
 	getEntities: () => WorkflowEngineEntity[]
-	getRules: () => WorkflowEngineRule[]
 	setRuleTrigger: (rule: WorkflowEngineRule, entity: string, events: string[]) => void
-	onRuleCreated: (callback: () => void) => void
+	onRuleCreated: (callback: (rule: WorkflowEngineRule) => void) => void
 }
 
 export type WorkflowRuleDefaults = {
@@ -35,7 +34,7 @@ type VuexWorkflowStore = {
 		entities: WorkflowEngineEntity[]
 	}
 	commit: (type: string, payload?: unknown) => void
-	subscribe: (handler: (mutation: { type: string }) => void) => unknown
+	subscribe: (handler: (mutation: { type: string }, state: VuexWorkflowStore['state']) => void) => unknown
 }
 
 type PiniaActionContext = {
@@ -59,12 +58,12 @@ const piniaStoreId = 'workflowengine'
 
 const createVuexAdapter = (store: VuexWorkflowStore): WorkflowEngineStore => ({
 	getEntities: () => store.state.entities,
-	getRules: () => store.state.rules,
 	setRuleTrigger: (rule, entity, events) => store.commit('updateRule', { ...rule, entity, events }),
 	onRuleCreated: (callback) => {
-		store.subscribe((mutation) => {
-			if (mutation.type === 'addRule') {
-				callback()
+		store.subscribe((mutation, state) => {
+			const createdRule = state.rules.at(-1)
+			if (mutation.type === 'addRule' && createdRule !== undefined) {
+				callback(createdRule)
 			}
 		})
 	},
@@ -72,13 +71,19 @@ const createVuexAdapter = (store: VuexWorkflowStore): WorkflowEngineStore => ({
 
 const createPiniaAdapter = (store: PiniaWorkflowStore): WorkflowEngineStore => ({
 	getEntities: () => store.entities,
-	getRules: () => store.rules,
 	setRuleTrigger: (rule, entity, events) => store.setRuleTrigger(rule, entity, events),
 	onRuleCreated: (callback) => {
 		store.$onAction(({ name, after }) => {
-			if (name === 'createNewRule') {
-				after(callback)
+			if (name !== 'createNewRule') {
+				return
 			}
+
+			after(() => {
+				const createdRule = store.rules.at(-1)
+				if (createdRule !== undefined) {
+					callback(createdRule)
+				}
+			})
 		})
 	},
 })
@@ -120,23 +125,19 @@ const getDefaultEventName = (store: WorkflowEngineStore, defaults: WorkflowRuleD
 		?? null
 }
 
-export const applyDefaultTriggerToNewestRule = (store: WorkflowEngineStore, defaults: WorkflowRuleDefaults): void => {
+export const applyDefaultTriggerToCreatedRule = (store: WorkflowEngineStore, rule: WorkflowEngineRule, defaults: WorkflowRuleDefaults): void => {
+	if (!defaults.operationClasses.includes(rule.class) || rule.id >= 0) {
+		return
+	}
+
 	const defaultEventName = getDefaultEventName(store, defaults)
 	if (defaultEventName === null) {
 		return
 	}
 
-	const targetRule = [...store.getRules()]
-		.reverse()
-		.find((rule) => defaults.operationClasses.includes(rule.class) && rule.id < 0)
-
-	if (targetRule === undefined) {
+	if (rule.entity === defaults.entityClass && rule.events.length === 1 && rule.events[0] === defaultEventName) {
 		return
 	}
 
-	if (targetRule.entity === defaults.entityClass && targetRule.events.length === 1 && targetRule.events[0] === defaultEventName) {
-		return
-	}
-
-	store.setRuleTrigger(targetRule, defaults.entityClass, [defaultEventName])
+	store.setRuleTrigger(rule, defaults.entityClass, [defaultEventName])
 }
