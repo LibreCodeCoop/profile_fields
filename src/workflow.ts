@@ -7,6 +7,7 @@ import { createApp, h, reactive, type App } from 'vue'
 
 import { listDefinitions, searchWorkflowTargetSuggestions, type WorkflowTargetSuggestion } from './api.ts'
 import type { FieldDefinition } from './types/index.ts'
+import { applyDefaultTriggerToCreatedRule, getWorkflowEngineStore } from './utils/workflowEngineStore.ts'
 import {
 	getWorkflowOperatorKeys,
 	isWorkflowOperatorSupported,
@@ -72,39 +73,6 @@ type WorkflowEngineApi = {
 	registerOperator: (plugin: WorkflowEngineOperatorPlugin) => void
 }
 
-type WorkflowEngineEntity = {
-	id: string
-	events: Array<{
-		eventName: string
-		displayName: string
-	}>
-}
-
-type WorkflowEngineRule = {
-	id: number
-	class: string
-	entity: string
-	events: string[]
-	name: string
-	checks: Array<{ class: string | null, operator: string | null, value: string }>
-	operation: string
-	valid?: boolean
-}
-
-type WorkflowEngineStore = {
-	state: {
-		rules: WorkflowEngineRule[]
-		entities: WorkflowEngineEntity[]
-	}
-	commit: (type: string, payload?: WorkflowEngineRule) => void
-	dispatch: (type: string, payload?: unknown) => Promise<unknown> | unknown
-}
-
-type WorkflowEngineRootVm = {
-	$store: WorkflowEngineStore
-	createNewRule: (operation: { id: string }) => Promise<unknown> | unknown
-}
-
 const workflowCheckClass = 'OCA\\ProfileFields\\Workflow\\UserProfileFieldCheck'
 const workflowOperationClasses = [
 	'OCA\\ProfileFields\\Workflow\\LogProfileFieldChangeOperation',
@@ -126,8 +94,9 @@ const workflowOperationNames = new Set([
 	t('profile_fields', 'Create Talk conversation'),
 	t('profile_fields', 'Send webhook'),
 ])
-const workflowCardClassName = 'profile-fields-workflow-card'
 const workflowItemClassName = 'profile-fields-workflow-item'
+const workflowDescriptionClassName = 'profile-fields-workflow-description'
+const workflowIconClassName = 'profile-fields-workflow-icon'
 const workflowCardThemeStyleId = 'profile-fields-workflow-card-theme'
 
 // TRANSLATORS The labels below are technical workflow operators shown in filter dropdowns.
@@ -1133,21 +1102,17 @@ const ensureWorkflowCardThemeStyle = (): void => {
 	const style = document.createElement('style')
 	style.id = workflowCardThemeStyleId
 	style.textContent = `
-		.actions__item.${workflowItemClassName} {
-			color: var(--color-main-text);
+		.${workflowItemClassName},
+		.${workflowItemClassName} .${workflowDescriptionClassName},
+		.${workflowItemClassName} h3 {
+			color: var(--color-main-text) !important;
 		}
 
-		.actions__item.${workflowItemClassName} .actions__item__description h3,
-		.actions__item.${workflowItemClassName} .actions__item__description small,
-		.actions__item.${workflowItemClassName} .actions__item__description {
-			color: var(--color-main-text);
+		.${workflowItemClassName} small {
+			color: color-mix(in srgb, var(--color-main-text) 78%, transparent) !important;
 		}
 
-		.actions__item.${workflowItemClassName} .actions__item__description small {
-			color: color-mix(in srgb, var(--color-main-text) 78%, transparent);
-		}
-
-		.actions__item.${workflowItemClassName} .icon {
+		.${workflowItemClassName} .${workflowIconClassName} {
 			background-color: currentColor;
 			background-image: none !important;
 			mask-image: var(--profile-fields-workflow-icon);
@@ -1165,48 +1130,34 @@ const ensureWorkflowCardThemeStyle = (): void => {
 	document.head.append(style)
 }
 
-const isWorkflowOperationCard = (element: Element): boolean => {
-	const heading = element.querySelector<HTMLHeadingElement>('.actions__item__description h3')
-	return workflowOperationNames.has(heading?.textContent?.trim() ?? '')
-}
-
 const applyWorkflowCardTheme = (): void => {
 	ensureWorkflowCardThemeStyle()
 
-	for (const card of document.querySelectorAll('.actions__item')) {
-		if (!isWorkflowOperationCard(card)) {
+	for (const heading of document.querySelectorAll('h3')) {
+		if (!workflowOperationNames.has(heading.textContent?.trim() ?? '')) {
+			continue
+		}
+
+		const description = heading.parentElement
+		const card = description?.parentElement
+		const icon = card?.firstElementChild
+		if (!(description instanceof HTMLElement) || !(card instanceof HTMLElement) || !(icon instanceof HTMLElement) || icon === description) {
 			continue
 		}
 
 		card.classList.add(workflowItemClassName)
-		if (card.classList.contains('colored')) {
-			card.classList.add(workflowCardClassName)
-		}
+		description.classList.add(workflowDescriptionClassName)
+		icon.classList.add(workflowIconClassName)
 
-		const icon = card.querySelector<HTMLElement>('.icon')
-		const backgroundImage = icon?.style.backgroundImage || (icon === null || icon === undefined ? '' : window.getComputedStyle(icon).backgroundImage)
-		if (icon !== null && backgroundImage !== '' && backgroundImage !== 'none') {
+		const backgroundImage = icon.style.backgroundImage || window.getComputedStyle(icon).backgroundImage
+		if (backgroundImage !== '' && backgroundImage !== 'none') {
 			icon.style.setProperty('--profile-fields-workflow-icon', backgroundImage)
-		}
-
-		const addFlowButton = card.querySelector<HTMLButtonElement>('button')
-		if (card.classList.contains('colored') && addFlowButton !== null && addFlowButton.dataset.profileFieldsWorkflowTriggerBound !== 'true') {
-			addFlowButton.dataset.profileFieldsWorkflowTriggerBound = 'true'
-			addFlowButton.addEventListener('click', () => {
-				window.setTimeout(() => {
-					const store = getWorkflowStore()
-					if (store !== null) {
-						applyDefaultTriggerToNewestWorkflowRule(store)
-					}
-				}, 0)
-			})
 		}
 	}
 }
 
 let workflowCardThemeObserver: MutationObserver | null = null
-let workflowDefaultsPatchAttempts = 0
-let workflowDefaultsPatched = false
+let workflowRuleDefaultsAttempts = 0
 
 const observeWorkflowCards = (): void => {
 	applyWorkflowCardTheme()
@@ -1234,74 +1185,30 @@ const startWorkflowCardTheme = (): void => {
 	window.setTimeout(() => observeWorkflowCards(), 0)
 }
 
-const getWorkflowRootVm = (): WorkflowEngineRootVm | null => {
-	const root = document.querySelector('#workflowengine') as (HTMLElement & { __vue__?: WorkflowEngineRootVm }) | null
-	return root?.__vue__ ?? null
+const workflowRuleDefaults = {
+	entityClass: workflowEntityClass,
+	eventClass: workflowUpdatedEventClass,
+	operationClasses: workflowOperationClasses,
 }
 
-const getWorkflowStore = (): WorkflowEngineStore | null => {
-	return getWorkflowRootVm()?.$store ?? null
-}
-
-const getDefaultWorkflowEventName = (store: WorkflowEngineStore): string | null => {
-	const entity = store.state.entities.find((item) => item.id === workflowEntityClass)
-	if (entity === undefined) {
-		return null
-	}
-
-	return entity.events.find((event) => event.eventName === workflowUpdatedEventClass)?.eventName
-		?? entity.events[0]?.eventName
-		?? null
-}
-
-const applyDefaultTriggerToNewestWorkflowRule = (store: WorkflowEngineStore): void => {
-	const defaultEventName = getDefaultWorkflowEventName(store)
-	if (defaultEventName === null) {
+const applyWorkflowRuleDefaults = (): void => {
+	const store = getWorkflowEngineStore(document.querySelector('#workflowengine'))
+	if (store !== null) {
+		store.onRuleCreated((rule) => applyDefaultTriggerToCreatedRule(store, rule, workflowRuleDefaults))
 		return
 	}
 
-	const targetRule = [...store.state.rules]
-		.reverse()
-		.find((rule) => workflowOperationClasses.includes(rule.class) && rule.id < 0)
-
-	if (targetRule === undefined) {
+	if (workflowRuleDefaultsAttempts >= 20) {
 		return
 	}
 
-	if (targetRule.entity === workflowEntityClass && targetRule.events.length === 1 && targetRule.events[0] === defaultEventName) {
-		return
-	}
-
-	store.commit('updateRule', {
-		...targetRule,
-		entity: workflowEntityClass,
-		events: [defaultEventName],
-	})
-}
-
-const patchWorkflowCreateRuleDefaults = (): void => {
-	if (workflowDefaultsPatched) {
-		return
-	}
-
-	const store = getWorkflowStore()
-	const rootVm = getWorkflowRootVm()
-	if (store === null || rootVm === null) {
-		if (workflowDefaultsPatchAttempts >= 20) {
-			return
-		}
-
-		workflowDefaultsPatchAttempts += 1
-		window.setTimeout(patchWorkflowCreateRuleDefaults, 50)
-		return
-	}
-
-	workflowDefaultsPatched = true
+	workflowRuleDefaultsAttempts += 1
+	window.setTimeout(applyWorkflowRuleDefaults, 50)
 }
 
 void loadDefinitions()
 startWorkflowCardTheme()
-patchWorkflowCreateRuleDefaults()
+applyWorkflowRuleDefaults()
 
 let registrationAttempts = 0
 
