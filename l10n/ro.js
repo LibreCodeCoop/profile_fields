@@ -2,8 +2,10 @@ OC.L10N.register(
     "profile_fields",
     {
     "Enter a number" : "Introduceți un număr",
+    "Select a date" : "Selectează o dată",
     "Enter an email address" : "Introduceți o adresă de email",
     "Cancel" : "Cancel",
+    "Save changes" : "Salvează modificările",
     "Options" : "Opțiuni",
     "Move up" : "Mută înainte",
     "Move down" : "Mută în jos",
@@ -18,6 +20,8 @@ OC.L10N.register(
     "Label" : "Etichetă",
     "Visibility" : "Vizibil",
     "Type" : "Tip",
+    "Show to everyone" : "Afișează tuturor",
+    "Show to logged in accounts only" : "Afișează doar conturilor autentificate",
     "Hide" : "Ascunde"
 },
 "nplurals=3; plural=(n==1?0:(((n%100>19)||((n%100==0)&&(n!=0)))?2:1));");
