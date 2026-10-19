@@ -18,6 +18,7 @@ OC.L10N.register(
     "Email" : "–¶–∞—Ö–∏–º —à—É—É–¥–∞–Ω",
     "Select" : "–°–æ–Ω–≥–æ—Ö",
     "Admins only" : "Зөвхөн админууд",
+    "Actions for {label}" : "{label}-д зориулсан үйлдлүүд",
     "Active" : "Идэвхтэй",
     "Label" : "–•–∞—è–≥",
     "Rules" : "Дүрмүүд",
