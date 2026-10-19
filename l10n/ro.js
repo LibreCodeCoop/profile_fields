@@ -16,12 +16,14 @@ OC.L10N.register(
     "URL" : "URL",
     "Email" : "E-mail",
     "Select" : "Selectează",
+    "Actions for {label}" : "Acțiuni pentru {label}",
     "Active" : "Activ",
     "Label" : "Etichetă",
     "Visibility" : "Vizibil",
     "Type" : "Tip",
     "Show to everyone" : "Afișează tuturor",
     "Show to logged in accounts only" : "Afișează doar conturilor autentificate",
-    "Hide" : "Ascunde"
+    "Hide" : "Ascunde",
+    "Administrators" : "Administratori"
 },
 "nplurals=3; plural=(n==1?0:(((n%100>19)||((n%100==0)&&(n!=0)))?2:1));");
