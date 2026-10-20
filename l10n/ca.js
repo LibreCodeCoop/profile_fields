@@ -23,6 +23,8 @@ OC.L10N.register(
     "Multiselect" : "Selecció múltiple",
     "Admins only" : "Només administradors",
     "Active" : "Actiu",
+    "Delete field" : "Suprimeix el camp",
+    "Drag to reorder" : "Arrossega per reordenar",
     "Label" : "Etiqueta",
     "Rules" : "Regles",
     "Visibility" : "Visibilitat",
