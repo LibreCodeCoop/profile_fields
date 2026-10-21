@@ -24,6 +24,7 @@ OC.L10N.register(
     "Show to everyone" : "Afișează tuturor",
     "Show to logged in accounts only" : "Afișează doar conturilor autentificate",
     "Hide" : "Ascunde",
+    "contains" : "conține",
     "Administrators" : "Administratori"
 },
 "nplurals=3; plural=(n==1?0:(((n%100>19)||((n%100==0)&&(n!=0)))?2:1));");
