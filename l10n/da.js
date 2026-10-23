@@ -209,7 +209,7 @@ OC.L10N.register(
     "Additional profile field visibility" : "Synlighed for ekstra profilfelter",
     "Choose who can see each additional profile field on your profile." : "Vælg, hvem der kan se de enkelte ekstra profilfelter på din profil.",
     "Show to everyone" : "Vis til alle",
-    "Show to logged in accounts only" : "Vis kun til påloggede konti",
+    "Show to logged in accounts only" : "Vis kun for konti, der er logget ind",
     "Hide" : "Skjul",
     "is set" : "er angivet",
     "is not set" : "er ikke angivet",
