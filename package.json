@@ -39,7 +39,7 @@
     "@nextcloud/vite-config": "^2.5.4",
     "@playwright/test": "^1.63.0",
     "@vitejs/plugin-vue": "^6.0.8",
-    "@vue/test-utils": "^2.4.6",
+    "@vue/test-utils": "^2.5.0",
     "jsdom": "^29.0.2",
     "typescript": "^6.0.3",
     "vitest": "^4.1.11"
