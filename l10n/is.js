@@ -8,6 +8,7 @@ OC.L10N.register(
     "Move up" : "Færa upp",
     "Move down" : "Færa niður",
     "Text" : "Texti",
+    "Number" : "Tala",
     "Date" : "Dagsetning",
     "URL" : "Slóð",
     "Email" : "Tölvupóstur",
@@ -23,6 +24,7 @@ OC.L10N.register(
     "Hide" : "Fela",
     "is" : "er",
     "is not" : "er ekki",
+    "contains" : "inniheldur",
     "Administrators" : "Stjórnendur"
 },
 "nplurals=2; plural=(n % 10 != 1 || n % 100 == 11);");

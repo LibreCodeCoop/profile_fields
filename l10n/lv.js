@@ -3,7 +3,11 @@ OC.L10N.register(
     {
     "Cancel" : "Atcelt",
     "Save changes" : "Saglabāt izmaiņas",
+    "Options" : "Iespējas",
+    "Move up" : "Pārvietot augšup",
+    "Move down" : "Pārvietot lejup",
     "Text" : "Teksts",
+    "Number" : "Skaitlis",
     "Date" : "Datums",
     "URL" : "URL",
     "Email" : "E-pasts",
