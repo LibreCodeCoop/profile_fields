@@ -6,6 +6,7 @@
     "Move up" : "Помести горе",
     "Move down" : "Помести доле",
     "Text" : "Текст",
+    "Number" : "Број",
     "Date" : "Датум",
     "URL" : "Адреса",
     "Email" : "Е-пошта",
@@ -19,6 +20,7 @@
     "Hide" : "Сокриј",
     "is" : "е",
     "is not" : "не е",
+    "contains" : "содржи",
     "Administrators" : "Администратори"
 },"pluralForm" :"nplurals=2; plural=(n % 10 == 1 && n % 100 != 11) ? 0 : 1;"
 }

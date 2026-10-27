@@ -8,6 +8,7 @@ OC.L10N.register(
     "Move up" : "Помести горе",
     "Move down" : "Помести доле",
     "Text" : "Текст",
+    "Number" : "Број",
     "Date" : "Датум",
     "URL" : "Адреса",
     "Email" : "Е-пошта",
@@ -21,6 +22,7 @@ OC.L10N.register(
     "Hide" : "Сокриј",
     "is" : "е",
     "is not" : "не е",
+    "contains" : "содржи",
     "Administrators" : "Администратори"
 },
 "nplurals=2; plural=(n % 10 == 1 && n % 100 != 11) ? 0 : 1;");

@@ -10,6 +10,7 @@ OC.L10N.register(
     "Move up" : "Mover arriba",
     "Move down" : "Mover abajo",
     "Text" : "Texto",
+    "Number" : "Número",
     "Date" : "Fecha",
     "URL" : "URL",
     "Email" : "Correo electrónico",
