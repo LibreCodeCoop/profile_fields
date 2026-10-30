@@ -13,6 +13,7 @@ OC.L10N.register(
     "URL" : "Адреса",
     "Email" : "Е-пошта",
     "Select" : "Избери",
+    "Actions for {label}" : "Акции за {label}",
     "Active" : "Активно",
     "Label" : "Ознака",
     "Visibility" : "Видливост",
