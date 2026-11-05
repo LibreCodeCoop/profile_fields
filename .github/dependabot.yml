@@ -23,3 +23,7 @@ updates:
     directory: "/"
     schedule:
       interval: daily
+    groups:
+      release-tool-actions:
+        patterns:
+          - "LibreCodeCoop/release-tool/actions/*"

@@ -1,0 +1,55 @@
+# SPDX-FileCopyrightText: 2026 LibreCode coop and contributors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+name: Release tool pin consistency
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/release-nextcloud-app.yml'
+      - '.github/workflows/appstore-build-publish.yml'
+      - '.github/workflows/release-tool-pin-consistency.yml'
+      - '.github/dependabot.yml'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/release-nextcloud-app.yml'
+      - '.github/workflows/appstore-build-publish.yml'
+      - '.github/workflows/release-tool-pin-consistency.yml'
+      - '.github/dependabot.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Verify all release-tool Actions use the latest published revision
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mapfile -t pinned < <(
+            grep -hEo 'LibreCodeCoop/release-tool/actions/[a-z-]+@[0-9a-f]{40}' \
+              .github/workflows/release-nextcloud-app.yml \
+              .github/workflows/appstore-build-publish.yml |
+              sed -E 's/.*@//' | sort -u
+          )
+          if [[ "${#pinned[@]}" -ne 1 ]]; then
+            echo "::error::Release-tool Actions must all use one immutable revision."
+            exit 1
+          fi
+
+          latest_tag="$(gh api repos/LibreCodeCoop/release-tool/releases/latest --jq '.tag_name')"
+          latest_sha="$(gh api "repos/LibreCodeCoop/release-tool/git/ref/tags/${latest_tag}" --jq '.object.sha')"
+          if [[ "${pinned[0]}" != "${latest_sha}" ]]; then
+            echo "::error::Release-tool pins ${pinned[0]} differ from published ${latest_tag} (${latest_sha})."
+            exit 1
+          fi
+          echo "All release-tool Actions match ${latest_tag}: ${latest_sha}"
