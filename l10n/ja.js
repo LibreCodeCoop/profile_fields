@@ -18,6 +18,7 @@ OC.L10N.register(
     "URL" : "URL",
     "Email" : "メール",
     "Select" : "選択",
+    "Actions for {label}" : "{label} のアクション",
     "Active" : "有効",
     "Label" : "ラベル",
     "Rules" : "ルール",
