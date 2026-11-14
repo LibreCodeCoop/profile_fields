@@ -164,6 +164,52 @@ class ProfileFieldDirectorySearchServiceTest extends TestCase {
 		$this->assertSame('bruno', $result['items'][0]['user_uid']);
 	}
 
+	public function testAdminCanInspectAllPopulatedFieldsForExactUidWithPagination(): void {
+		$actor = $this->createMock(IUser::class);
+		$actor->method('getUID')->willReturn('admin');
+		$this->groupManager->expects($this->once())->method('isAdmin')->with('admin')->willReturn(true);
+		$this->userManager->expects($this->once())->method('get')->with('alice')->willReturn($this->buildUser('Alice Doe'));
+
+		$mailbox = $this->buildDefinition(1, 'mailcow_mailbox', 'Mailbox', userVisible: false);
+		$status = $this->buildDefinition(2, 'mail_provisioning_status', 'Authorization status', userVisible: false);
+		$disabled = $this->buildDefinition(3, 'archived_mail_status', 'Archived status', userVisible: false);
+		$disabled->setActive(false);
+		$this->fieldDefinitionService->expects($this->once())->method('findActiveOrdered')->willReturn([$mailbox, $status]);
+		$this->fieldValueMapper->expects($this->once())->method('findByUserUid')->with('alice')->willReturn([
+			$this->buildValue(1, 'alice', 'private', 'alice@example.org'),
+			$this->buildValue(2, 'alice', 'private', 'pending'),
+			$this->buildValue(3, 'alice', 'private', 'ignore-me'),
+		]);
+
+		$result = $this->service->searchByUserUid($actor, 'alice', 1, 1);
+		$this->assertSame(2, $result['total']);
+		$this->assertCount(1, $result['items']);
+		$this->assertSame('alice', $result['items'][0]['user_uid']);
+		$this->assertSame('Alice Doe', $result['items'][0]['display_name']);
+		$this->assertSame('mail_provisioning_status', $result['items'][0]['matched_fields'][0]['field_key']);
+		$this->assertSame('pending', $result['items'][0]['matched_fields'][0]['value']);
+	}
+
+	public function testNonAdminCannotLookupPrivateFieldsByUid(): void {
+		$actor = $this->createMock(IUser::class);
+		$actor->method('getUID')->willReturn('groupadmin');
+		$this->groupManager->expects($this->once())->method('isAdmin')->with('groupadmin')->willReturn(false);
+		$this->fieldValueMapper->expects($this->never())->method('findByUserUid');
+		$this->fieldDefinitionService->expects($this->never())->method('findActiveOrdered');
+		$this->userManager->expects($this->never())->method('get');
+
+		$this->assertSame(['total' => 0, 'items' => []], $this->service->searchByUserUid($actor, 'alice', 20, 0));
+	}
+
+	public function testUnknownUidDoesNotLoadStoredValues(): void {
+		$actor = $this->createMock(IUser::class);
+		$actor->method('getUID')->willReturn('admin');
+		$this->groupManager->method('isAdmin')->willReturn(true);
+		$this->userManager->method('get')->with('does-not-exist')->willReturn(null);
+		$this->fieldValueMapper->expects($this->never())->method('findByUserUid');
+		$this->assertSame(['total' => 0, 'items' => []], $this->service->searchByUserUid($actor, 'does-not-exist', 20, 0));
+	}
+
 	private function buildDefinition(int $id, string $fieldKey, string $label, bool $userVisible = true): FieldDefinition {
 		$definition = new FieldDefinition();
 		$definition->setId($id);
