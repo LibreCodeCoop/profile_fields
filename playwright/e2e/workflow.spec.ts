@@ -178,7 +178,7 @@ test('admin can create a notify admins or groups workflow rule', async ({ page }
 		await expect(targetsEditor).toBeVisible()
 
 		await targetsEditor.getByRole('combobox').click()
-		await targetsEditor.getByRole('searchbox').fill('admin')
+		await page.keyboard.type('admin')
 		await expect(page.locator('.vs__dropdown-menu')).toBeVisible()
 		await page.locator('.vs__dropdown-option').filter({ hasText: /Administrators/ }).first().click()
 		await expect(targetsEditor).toContainText('Administrators')
