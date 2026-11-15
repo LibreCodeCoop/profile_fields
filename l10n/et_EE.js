@@ -91,7 +91,6 @@ OC.L10N.register(
     "Cancel" : "Katkesta",
     "Saving changes …" : "Salvestan muudatusi…",
     "Save changes" : "Salvesta muudatused",
-    "_Option_::_Options_" : ["Valik","Valikud"],
     "_{count} option ready._::_{count} options ready._" : ["{count} valikut on valmis.","{count} valikut on valmis."],
     "Reorder option {optionValue}" : "Muuda „{optionValue}“ valiku järjekorda",
     "Option {position}" : "{position} valik",
@@ -131,7 +130,6 @@ OC.L10N.register(
     "Create field" : "Lisa väli",
     "No fields configured" : "Ühtegi välja pole seadistatud",
     "No field selected" : "Ühtegi välja pole valitud",
-    "_field configured_::_fields configured_" : ["väli on seadistatud","välja on seadistatud"],
     "Edit field {label}" : "Muuda „{label}“ välja",
     "Actions for {label}" : "Tegevused „{label}“ väljaga",
     "Disable field" : "Eemalda väli kasutuselt",
@@ -200,6 +198,8 @@ OC.L10N.register(
     "Timeout (seconds)" : "Aegumine (sekundites)",
     "Retries (0 or more)" : "Uuesti proovimisi (0 või enam)",
     "Search for admins, groups, or users" : "Otsi peakasutajaid, gruppe või kasutajaid",
-    "Select who should be notified. If empty, administrators are notified by default." : "Vali, kes peaks saama teavituse. Vaikimisi saavad teavituse peakasutajate grupi liikmed."
+    "Select who should be notified. If empty, administrators are notified by default." : "Vali, kes peaks saama teavituse. Vaikimisi saavad teavituse peakasutajate grupi liikmed.",
+    "_Option_::_Options_" : ["Valik","Valikud"],
+    "_field configured_::_fields configured_" : ["väli on seadistatud","välja on seadistatud"]
 },
 "nplurals=2; plural=(n != 1);");

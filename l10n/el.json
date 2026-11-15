@@ -115,7 +115,6 @@
     "Cancel" : "Ακύρωση",
     "Saving changes …" : "Αποθήκευση αλλαγών …",
     "Save changes" : "Αποθήκευση αλλαγών",
-    "_Option_::_Options_" : ["Επιλογή","Επιλογές"],
     "_{count} option ready._::_{count} options ready._" : ["{count} επιλογή είναι έτοιμη.","{count} επιλογές είναι έτοιμες."],
     "Reorder option {optionValue}" : "Αναδιάταξη επιλογής {optionValue}",
     "Option {position}" : "Επιλογή {position}",
@@ -158,7 +157,6 @@
     "Create your first field to start building the catalog." : "Δημιουργήστε το πρώτο σας πεδίο για να ξεκινήσετε τη δημιουργία του καταλόγου.",
     "No field selected" : "Δεν έχει επιλεγεί πεδίο",
     "Select a field from the list, or create a new one." : "Επιλέξτε ένα πεδίο από τη λίστα ή δημιουργήστε ένα νέο.",
-    "_field configured_::_fields configured_" : ["ρυθμισμένο πεδίο","ρυθμισμένα πεδία"],
     "Edit field {label}" : "Επεξεργασία πεδίου {label}",
     "Actions for {label}" : "Ενέργειες για {label}",
     "Disable field" : "Απενεργοποίηση πεδίου",
@@ -236,6 +234,8 @@
     "Optional email subject template" : "Προαιρετικό πρότυπο θέματος email",
     "Optional email body template. You can use placeholders like {{fieldLabel}}" : "Προαιρετικό πρότυπο σώματος email. Μπορείτε να χρησιμοποιήσετε μεταβλητές αντικατάστασης όπως {{fieldLabel}}",
     "Search for admins, groups, or users" : "Αναζήτηση για διαχειριστές, ομάδες ή χρήστες",
-    "Select who should be notified. If empty, administrators are notified by default." : "Επιλέξτε ποιος πρέπει να ειδοποιηθεί. Εάν παραμείνει κενό, οι διαχειριστές ειδοποιούνται από προεπιλογή."
+    "Select who should be notified. If empty, administrators are notified by default." : "Επιλέξτε ποιος πρέπει να ειδοποιηθεί. Εάν παραμείνει κενό, οι διαχειριστές ειδοποιούνται από προεπιλογή.",
+    "_Option_::_Options_" : ["Επιλογή","Επιλογές"],
+    "_field configured_::_fields configured_" : ["ρυθμισμένο πεδίο","ρυθμισμένα πεδία"]
 },"pluralForm" :"nplurals=2; plural=(n != 1);"
 }
