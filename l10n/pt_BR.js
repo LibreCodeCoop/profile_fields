@@ -117,7 +117,6 @@ OC.L10N.register(
     "Cancel" : "Cancelar",
     "Saving changes …" : "Salvando alterações …",
     "Save changes" : "Salvar alterações",
-    "_Option_::_Options_" : ["Opção","Opções","Opções"],
     "_{count} option ready._::_{count} options ready._" : ["{count} opção pronta.","{count} de opções prontas.","{count} opções prontas."],
     "Reorder option {optionValue}" : "Reordenar opção {optionValue}",
     "Option {position}" : "Opção {position}",
@@ -160,7 +159,6 @@ OC.L10N.register(
     "Create your first field to start building the catalog." : "Crie seu primeiro campo para começar a montar o catálogo.",
     "No field selected" : "Nenhum campo selecionado",
     "Select a field from the list, or create a new one." : "Selecione um campo da lista ou crie um novo.",
-    "_field configured_::_fields configured_" : ["campo configurado","campos configurados","campos configurados"],
     "Edit field {label}" : "Editar campo {label}",
     "Actions for {label}" : "Ações para {label}",
     "Disable field" : "Desativar campo",
@@ -238,6 +236,8 @@ OC.L10N.register(
     "Optional email subject template" : "Modelo opcional de assunto de e-mail",
     "Optional email body template. You can use placeholders like {{fieldLabel}}" : "Modelo opcional para o corpo do e-mail. Você pode usar marcadores de posição como {{fieldLabel}}",
     "Search for admins, groups, or users" : "Pesquisar administradores, grupos ou usuários",
-    "Select who should be notified. If empty, administrators are notified by default." : "Selecione quem deve ser notificado. Se o campo estiver vazio, os administradores serão notificados por padrão."
+    "Select who should be notified. If empty, administrators are notified by default." : "Selecione quem deve ser notificado. Se o campo estiver vazio, os administradores serão notificados por padrão.",
+    "_Option_::_Options_" : ["Opção","Opções","Opções"],
+    "_field configured_::_fields configured_" : ["campo configurado","campos configurados","campos configurados"]
 },
 "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

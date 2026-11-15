@@ -117,7 +117,6 @@ OC.L10N.register(
     "Cancel" : "لغو",
     "Saving changes …" : "در حال ذخیره‌سازی تغییرات…",
     "Save changes" : "ذخیره تغییرات",
-    "_Option_::_Options_" : ["گزینه","گزینه‌ها"],
     "_{count} option ready._::_{count} options ready._" : ["{count} گزینه آماده است.","{count} گزینه آماده است."],
     "Reorder option {optionValue}" : "تغییر ترتیب گزینه {optionValue}",
     "Option {position}" : "گزینه {position}",
@@ -160,7 +159,6 @@ OC.L10N.register(
     "Create your first field to start building the catalog." : "اولین فیلد خود را ایجاد کنید تا ساخت کاتالوگ را شروع کنید.",
     "No field selected" : "هیچ فیلدی انتخاب نشده است",
     "Select a field from the list, or create a new one." : "یک فیلد از لیست انتخاب کنید یا یک فیلد جدید ایجاد کنید.",
-    "_field configured_::_fields configured_" : ["فیلد پیکربندی‌شده","فیلد پیکربندی‌شده"],
     "Edit field {label}" : "ویرایش فیلد {label}",
     "Actions for {label}" : "اقدامات برای {label}",
     "Disable field" : "غیرفعال کردن فیلد",
@@ -238,6 +236,8 @@ OC.L10N.register(
     "Optional email subject template" : "قالب موضوع ایمیل اختیاری",
     "Optional email body template. You can use placeholders like {{fieldLabel}}" : "قالب بدنه ایمیل اختیاری. می‌توانید از متغیرهایی مانند {{fieldLabel}} استفاده کنید",
     "Search for admins, groups, or users" : "جستجوی مدیران، گروه‌ها یا کاربران",
-    "Select who should be notified. If empty, administrators are notified by default." : "انتخاب کنید چه کسانی مطلع شوند. اگر خالی بماند، به طور پیش‌فرض مدیران مطلع می‌شوند."
+    "Select who should be notified. If empty, administrators are notified by default." : "انتخاب کنید چه کسانی مطلع شوند. اگر خالی بماند، به طور پیش‌فرض مدیران مطلع می‌شوند.",
+    "_Option_::_Options_" : ["گزینه","گزینه‌ها"],
+    "_field configured_::_fields configured_" : ["فیلد پیکربندی‌شده","فیلد پیکربندی‌شده"]
 },
 "nplurals=2; plural=(n > 1);");

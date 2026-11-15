@@ -17,7 +17,6 @@ OC.L10N.register(
     "Cancel" : "Zrušit",
     "Saving changes …" : "Ukládání změn …",
     "Save changes" : "Uložit změny",
-    "_Option_::_Options_" : ["Volba","Volby","Voleb","Volby"],
     "Option {position}" : "Volba {position}",
     "Options" : "Možnosti",
     "Move up" : "Přesunout výše",
@@ -38,7 +37,6 @@ OC.L10N.register(
     "Edit field" : "Upravit kolonku",
     "Create field" : "Vytvořit kolonku",
     "No fields configured" : "Nenastaveny žádné kolonky",
-    "_field configured_::_fields configured_" : ["kolonka nastavena","kolonky nastaveny","kolonek nastaveno","kolonky nastaveny"],
     "Edit field {label}" : "Upravit kolonku {label}",
     "Actions for {label}" : "Akce pro {label}",
     "Disable field" : "Zakázat kolonku",
@@ -76,6 +74,8 @@ OC.L10N.register(
     "Administrators" : "Správci",
     "Group: {groupId}" : "Skupina: {groupId}",
     "User: {userId}" : "Uživatel: {userId}",
-    "Timeout (seconds)" : "Časový limit (sekundy)"
+    "Timeout (seconds)" : "Časový limit (sekundy)",
+    "_Option_::_Options_" : ["Volba","Volby","Voleb","Volby"],
+    "_field configured_::_fields configured_" : ["kolonka nastavena","kolonky nastaveny","kolonek nastaveno","kolonky nastaveny"]
 },
 "nplurals=4; plural=(n == 1 && n % 1 == 0) ? 0 : (n >= 2 && n <= 4 && n % 1 == 0) ? 1: (n % 1 != 0 ) ? 2 : 3;");

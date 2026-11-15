@@ -115,7 +115,6 @@
     "Cancel" : "Annuler",
     "Saving changes …" : "Enregistrement des modifications …",
     "Save changes" : "Enregistrer les modifications",
-    "_Option_::_Options_" : ["Option","Options","Options"],
     "_{count} option ready._::_{count} options ready._" : ["{count} option prête.","{count} options prêtes.","{count} options prêtes."],
     "Reorder option {optionValue}" : "Changer l'ordre de l'option {optionValue}",
     "Option {position}" : "Option {position}",
@@ -158,7 +157,6 @@
     "Create your first field to start building the catalog." : "Créez votre premier champ pour commencer à construire le catalogue.",
     "No field selected" : "Aucun champ sélectionné",
     "Select a field from the list, or create a new one." : "Sélectionnez un champ depuis la liste, ou créez-en un nouveau.",
-    "_field configured_::_fields configured_" : ["champ configuré","champs configurés","champs configurés"],
     "Edit field {label}" : "Modifier le champ {label}",
     "Actions for {label}" : "Actions pour {label}",
     "Disable field" : "Désactiver le champ",
@@ -236,6 +234,8 @@
     "Optional email subject template" : "Modèle d'objet d'e-mail facultatif",
     "Optional email body template. You can use placeholders like {{fieldLabel}}" : "Modèle facultatif du corps de l'e-mail. Vous pouvez utiliser des espaces réservés tels que {{fieldLabel}}",
     "Search for admins, groups, or users" : "Rechercher des administrateurs, des groupes ou des utilisateurs",
-    "Select who should be notified. If empty, administrators are notified by default." : "Sélectionnez qui doit recevoir les notifications. Si vide, les administrateurs sont avertis par défaut."
+    "Select who should be notified. If empty, administrators are notified by default." : "Sélectionnez qui doit recevoir les notifications. Si vide, les administrateurs sont avertis par défaut.",
+    "_Option_::_Options_" : ["Option","Options","Options"],
+    "_field configured_::_fields configured_" : ["champ configuré","champs configurés","champs configurés"]
 },"pluralForm" :"nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

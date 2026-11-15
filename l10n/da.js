@@ -117,7 +117,6 @@ OC.L10N.register(
     "Cancel" : "Annuller",
     "Saving changes …" : "Gemmer ændringer …",
     "Save changes" : "Gem ændringer",
-    "_Option_::_Options_" : ["Valgmulighed","Valgmuligheder"],
     "_{count} option ready._::_{count} options ready._" : ["{count} valgmulighed klar.","{count} valgmuligheder klar."],
     "Reorder option {optionValue}" : "Flyt valgmuligheden {optionValue}",
     "Option {position}" : "Valgmulighed {position}",
@@ -160,7 +159,6 @@ OC.L10N.register(
     "Create your first field to start building the catalog." : "Opret dit første felt for at begynde at opbygge kataloget.",
     "No field selected" : "Intet felt valgt",
     "Select a field from the list, or create a new one." : "Vælg et felt fra listen, eller opret et nyt.",
-    "_field configured_::_fields configured_" : ["felt konfigureret","felter konfigureret"],
     "Edit field {label}" : "Rediger feltet {label}",
     "Actions for {label}" : "Handlinger for {label}",
     "Disable field" : "Deaktiver felt",
@@ -238,6 +236,8 @@ OC.L10N.register(
     "Optional email subject template" : "Valgfri skabelon til e-mailens emne",
     "Optional email body template. You can use placeholders like {{fieldLabel}}" : "Valgfri skabelon til e-mailens indhold. Du kan bruge pladsholdere som {{fieldLabel}}",
     "Search for admins, groups, or users" : "Søg efter administratorer, grupper eller brugere",
-    "Select who should be notified. If empty, administrators are notified by default." : "Vælg, hvem der skal have besked. Hvis feltet er tomt, får administratorerne besked som standard."
+    "Select who should be notified. If empty, administrators are notified by default." : "Vælg, hvem der skal have besked. Hvis feltet er tomt, får administratorerne besked som standard.",
+    "_Option_::_Options_" : ["Valgmulighed","Valgmuligheder"],
+    "_field configured_::_fields configured_" : ["felt konfigureret","felter konfigureret"]
 },
 "nplurals=2; plural=(n != 1);");

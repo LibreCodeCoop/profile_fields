@@ -117,7 +117,6 @@ OC.L10N.register(
     "Cancel" : "Cancel",
     "Saving changes …" : "Saving changes …",
     "Save changes" : "Save changes",
-    "_Option_::_Options_" : ["Option","Options"],
     "_{count} option ready._::_{count} options ready._" : ["{count} option ready.","{count} options ready."],
     "Reorder option {optionValue}" : "Reorder option {optionValue}",
     "Option {position}" : "Option {position}",
@@ -160,7 +159,6 @@ OC.L10N.register(
     "Create your first field to start building the catalog." : "Create your first field to start building the catalog.",
     "No field selected" : "No field selected",
     "Select a field from the list, or create a new one." : "Select a field from the list, or create a new one.",
-    "_field configured_::_fields configured_" : ["field configured","fields configured"],
     "Edit field {label}" : "Edit field {label}",
     "Actions for {label}" : "Actions for {label}",
     "Disable field" : "Disable field",
@@ -238,6 +236,8 @@ OC.L10N.register(
     "Optional email subject template" : "Optional email subject template",
     "Optional email body template. You can use placeholders like {{fieldLabel}}" : "Optional email body template. You can use placeholders like {{fieldLabel}}",
     "Search for admins, groups, or users" : "Search for admins, groups, or users",
-    "Select who should be notified. If empty, administrators are notified by default." : "Select who should be notified. If empty, administrators are notified by default."
+    "Select who should be notified. If empty, administrators are notified by default." : "Select who should be notified. If empty, administrators are notified by default.",
+    "_Option_::_Options_" : ["Option","Options"],
+    "_field configured_::_fields configured_" : ["field configured","fields configured"]
 },
 "nplurals=2; plural=(n != 1);");

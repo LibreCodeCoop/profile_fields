@@ -117,7 +117,6 @@ OC.L10N.register(
     "Cancel" : "Cealaigh",
     "Saving changes …" : "Ag sábháil athruithe …",
     "Save changes" : "Sabháil na hathruithe",
-    "_Option_::_Options_" : ["Rogha","Roghanna","Roghanna","Roghanna","Roghanna"],
     "_{count} option ready._::_{count} options ready._" : ["{count} rogha réidh.","{count} roghanna réidh.","{count} roghanna réidh.","{count} roghanna réidh.","{count} roghanna réidh."],
     "Reorder option {optionValue}" : "Rogha athordaithe {optionValue}",
     "Option {position}" : "Rogha {position}",
@@ -160,7 +159,6 @@ OC.L10N.register(
     "Create your first field to start building the catalog." : "Cruthaigh do chéad réimse chun tús a chur leis an gcatalóg a thógáil.",
     "No field selected" : "Níor roghnaíodh aon réimse",
     "Select a field from the list, or create a new one." : "Roghnaigh réimse ón liosta, nó cruthaigh ceann nua.",
-    "_field configured_::_fields configured_" : ["réimse cumraithe","réimsí cumraithe","réimsí cumraithe","réimsí cumraithe","réimsí cumraithe"],
     "Edit field {label}" : "Cuir réimse {label} in eagar",
     "Actions for {label}" : "Gníomhartha do {label}",
     "Disable field" : "Díchumasaigh réimse",
@@ -238,6 +236,8 @@ OC.L10N.register(
     "Optional email subject template" : "Teimpléad ábhair ríomhphoist roghnach",
     "Optional email body template. You can use placeholders like {{fieldLabel}}" : "Teimpléad roghnach do chorp ríomhphoist. Is féidir leat úsáid a bhaint as áitchoimeádóirí cosúil le {{fieldLabel}}",
     "Search for admins, groups, or users" : "Cuardaigh riarthóirí, grúpaí nó úsáideoirí",
-    "Select who should be notified. If empty, administrators are notified by default." : "Roghnaigh cé ba chóir a chur ar an eolas. Má tá sé folamh, cuirtear riarthóirí ar an eolas de réir réamhshocraithe."
+    "Select who should be notified. If empty, administrators are notified by default." : "Roghnaigh cé ba chóir a chur ar an eolas. Má tá sé folamh, cuirtear riarthóirí ar an eolas de réir réamhshocraithe.",
+    "_Option_::_Options_" : ["Rogha","Roghanna","Roghanna","Roghanna","Roghanna"],
+    "_field configured_::_fields configured_" : ["réimse cumraithe","réimsí cumraithe","réimsí cumraithe","réimsí cumraithe","réimsí cumraithe"]
 },
 "nplurals=5; plural=(n==1 ? 0 : n==2 ? 1 : n<7 ? 2 : n<11 ? 3 : 4);");
