@@ -115,7 +115,6 @@
     "Cancel" : "İptal",
     "Saving changes …" : "Değişiklikler kaydediliyor…",
     "Save changes" : "Değişiklikleri kaydet",
-    "_Option_::_Options_" : ["Seçenek","Seçenekler"],
     "_{count} option ready._::_{count} options ready._" : ["{count} seçenek hazır.","{count} seçenek hazır."],
     "Reorder option {optionValue}" : "{optionValue} seçeneğinin sırasını değiştir",
     "Option {position}" : "{position} seçeneği",
@@ -158,7 +157,6 @@
     "Create your first field to start building the catalog." : "Kataloğu oluşturmaya başlamak için ilk alanınızı oluşturun.",
     "No field selected" : "Herhangi bir alan seçilmemiş",
     "Select a field from the list, or create a new one." : "Listeden bir alan seçin ya da yeni bir alan oluşturun.",
-    "_field configured_::_fields configured_" : ["alan yapılandırılmış","alan yapılandırılmış"],
     "Edit field {label}" : "{label} alanını düzenle",
     "Actions for {label}" : "{label} işlemleri",
     "Disable field" : "Alanı kullanımdan kaldır",
@@ -236,6 +234,8 @@
     "Optional email subject template" : "İsteğe bağlı e-posta konusu kalıbı",
     "Optional email body template. You can use placeholders like {{fieldLabel}}" : "İsteğe bağlı e-posta içeriği kalıbı. {{fieldLabel}} gibi kodları kullanabilirsiniz",
     "Search for admins, groups, or users" : "Yönetici, grup veya kullanıcı ara",
-    "Select who should be notified. If empty, administrators are notified by default." : "Kimin bilgilendirileceğini seçin. Boş bırakılırsa, varsayılan olarak yöneticiler bilgilendirilir."
+    "Select who should be notified. If empty, administrators are notified by default." : "Kimin bilgilendirileceğini seçin. Boş bırakılırsa, varsayılan olarak yöneticiler bilgilendirilir.",
+    "_Option_::_Options_" : ["Seçenek","Seçenekler"],
+    "_field configured_::_fields configured_" : ["alan yapılandırılmış","alan yapılandırılmış"]
 },"pluralForm" :"nplurals=2; plural=(n > 1);"
 }

@@ -117,7 +117,6 @@ OC.L10N.register(
     "Cancel" : "Отмена",
     "Saving changes …" : "Сохранение изменений …",
     "Save changes" : "Сохранить изменения",
-    "_Option_::_Options_" : ["Вариант","Варианта","Вариантов","Варианта"],
     "_{count} option ready._::_{count} options ready._" : ["Готово: {count} вариант.","Готово: {count} варианта.","Готово: {count} вариантов.","Готово: {count} варианта."],
     "Reorder option {optionValue}" : "Изменить порядок варианта {optionValue}",
     "Option {position}" : "Вариант {position}",
@@ -160,7 +159,6 @@ OC.L10N.register(
     "Create your first field to start building the catalog." : "Создайте первое поле, чтобы начать формировать каталог.",
     "No field selected" : "Поле не выбрано",
     "Select a field from the list, or create a new one." : "Выберите поле из списка или создайте новое.",
-    "_field configured_::_fields configured_" : ["поле настроено","поля настроены","полей настроено","поля настроены"],
     "Edit field {label}" : "Изменить поле {label}",
     "Actions for {label}" : "Действия для «{label}»",
     "Disable field" : "Отключить поле",
@@ -238,6 +236,8 @@ OC.L10N.register(
     "Optional email subject template" : "Необязательный шаблон темы письма",
     "Optional email body template. You can use placeholders like {{fieldLabel}}" : "Необязательный шаблон текста письма. Можно использовать подстановки, например {{fieldLabel}}",
     "Search for admins, groups, or users" : "Поиск администраторов, групп или пользователей",
-    "Select who should be notified. If empty, administrators are notified by default." : "Выберите, кого уведомлять. Если оставить пустым, по умолчанию уведомляются администраторы."
+    "Select who should be notified. If empty, administrators are notified by default." : "Выберите, кого уведомлять. Если оставить пустым, по умолчанию уведомляются администраторы.",
+    "_Option_::_Options_" : ["Вариант","Варианта","Вариантов","Варианта"],
+    "_field configured_::_fields configured_" : ["поле настроено","поля настроены","полей настроено","поля настроены"]
 },
 "nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n%100>=11 && n%100<=14)? 2 : 3);");

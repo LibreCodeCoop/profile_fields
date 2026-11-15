@@ -59,7 +59,6 @@ OC.L10N.register(
     "No fields configured" : "Geen veld geconfigureerd",
     "No field selected" : "Geen veld geselecteerd",
     "Select a field from the list, or create a new one." : "Selecteer een veld uit de lijst of maak een nieuwe aan.",
-    "_field configured_::_fields configured_" : ["veld geconfigureerd","velden geconfigureerd"],
     "Edit field {label}" : "Wijzig veld {label}",
     "Actions for {label}" : "Acties voor {label}",
     "Disable field" : "Veld uitschakelen",
@@ -126,6 +125,7 @@ OC.L10N.register(
     "Enter the comparison value" : "Voer de vergelijkingswaarde in",
     "Timeout (seconds)" : "Time-out (seconden)",
     "Retries (0 or more)" : "Herpogingen (0 of meer)",
-    "Search for admins, groups, or users" : "Zoek naar beheerders, groepen of gebruikers"
+    "Search for admins, groups, or users" : "Zoek naar beheerders, groepen of gebruikers",
+    "_field configured_::_fields configured_" : ["veld geconfigureerd","velden geconfigureerd"]
 },
 "nplurals=2; plural=(n != 1);");

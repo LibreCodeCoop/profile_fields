@@ -117,7 +117,6 @@ OC.L10N.register(
     "Cancel" : "Atsisakyti",
     "Saving changes …" : "Išsaugomi pakeitimai …",
     "Save changes" : "Įrašyti pakeitimus",
-    "_Option_::_Options_" : ["Parinktis","Parinktys","Parinktys","Parinktys"],
     "_{count} option ready._::_{count} options ready._" : ["Paruošta {count} parinktis","Paruoštos parinktys - {count}","Paruoštos parinktys - {count}","Paruoštos parinktys - {count}."],
     "Reorder option {optionValue}" : "Perrikiavimo parinktis {optionValue}",
     "Option {position}" : "Parinktis {position}",
@@ -160,7 +159,6 @@ OC.L10N.register(
     "Create your first field to start building the catalog." : "Sukurkite savo pirmąjį lauką, kad pradėtumėte kurti katalogą.",
     "No field selected" : "Nepasirinktas joks laukas",
     "Select a field from the list, or create a new one." : "Pasirinkite lauką iš sąrašo arba sukurkite naują.",
-    "_field configured_::_fields configured_" : ["laukas sukonfigūruotas","laukai sukonfigūruoti","laukai sukonfigūruoti","laukai sukonfigūruoti"],
     "Edit field {label}" : "Redaguoti lauką {label}",
     "Actions for {label}" : "Veiksmai susiję su {label}",
     "Disable field" : "Išjungti lauką",
@@ -238,6 +236,8 @@ OC.L10N.register(
     "Optional email subject template" : "Pasirenkamas el. laiško temos šablonas",
     "Optional email body template. You can use placeholders like {{fieldLabel}}" : "Pasirenkamas el. laiško turinio šablonas. Galite naudoti vietos žymeklius, pavyzdžiui, {{fieldLabel}}",
     "Search for admins, groups, or users" : "Ieškoti administratorių, grupių arba vartotojų",
-    "Select who should be notified. If empty, administrators are notified by default." : "Pasirinkite, kas turi būti informuotas. Jei laukas tuščias, pagal numatytuosius nustatymus informuojami administratoriai."
+    "Select who should be notified. If empty, administrators are notified by default." : "Pasirinkite, kas turi būti informuotas. Jei laukas tuščias, pagal numatytuosius nustatymus informuojami administratoriai.",
+    "_Option_::_Options_" : ["Parinktis","Parinktys","Parinktys","Parinktys"],
+    "_field configured_::_fields configured_" : ["laukas sukonfigūruotas","laukai sukonfigūruoti","laukai sukonfigūruoti","laukai sukonfigūruoti"]
 },
 "nplurals=4; plural=(n % 10 == 1 && (n % 100 > 19 || n % 100 < 11) ? 0 : (n % 10 >= 2 && n % 10 <=9) && (n % 100 > 19 || n % 100 < 11) ? 1 : n % 1 != 0 ? 2: 3);");

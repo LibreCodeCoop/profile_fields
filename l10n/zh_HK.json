@@ -115,7 +115,6 @@
     "Cancel" : "取消",
     "Saving changes …" : "更新儲存中 ...",
     "Save changes" : "保存更改",
-    "_Option_::_Options_" : ["選項"],
     "_{count} option ready._::_{count} options ready._" : ["已有 {count} 個選項準備就緒。"],
     "Reorder option {optionValue}" : "重新排序選項 {optionValue}",
     "Option {position}" : "選項 {position}",
@@ -158,7 +157,6 @@
     "Create your first field to start building the catalog." : "建立您的第一個欄位以開始構建目錄。",
     "No field selected" : "未選擇欄位",
     "Select a field from the list, or create a new one." : "從列表中選擇欄位，或建立新欄位。",
-    "_field configured_::_fields configured_" : ["個欄位已配置。"],
     "Edit field {label}" : "編輯欄位 {label}",
     "Actions for {label}" : "{label} 的操作",
     "Disable field" : "停用欄位",
@@ -236,6 +234,8 @@
     "Optional email subject template" : "可選的電郵主旨範本",
     "Optional email body template. You can use placeholders like {{fieldLabel}}" : "可選的電郵本文範本。您可以使用佔位符，例如 {{fieldLabel}}",
     "Search for admins, groups, or users" : "搜尋管理員、群組或用戶",
-    "Select who should be notified. If empty, administrators are notified by default." : "選擇應通知的人。如果留空，預設會通知管理員。"
+    "Select who should be notified. If empty, administrators are notified by default." : "選擇應通知的人。如果留空，預設會通知管理員。",
+    "_Option_::_Options_" : ["選項"],
+    "_field configured_::_fields configured_" : ["個欄位已配置。"]
 },"pluralForm" :"nplurals=1; plural=0;"
 }

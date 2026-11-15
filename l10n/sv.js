@@ -117,7 +117,6 @@ OC.L10N.register(
     "Cancel" : "Avbryt",
     "Saving changes …" : "Sparar ändringar …",
     "Save changes" : "Spara ändringar",
-    "_Option_::_Options_" : ["Alternativ","Alternativ"],
     "_{count} option ready._::_{count} options ready._" : ["{count} alternativ klart.","{count} alternativ klara."],
     "Reorder option {optionValue}" : "Ändra ordning för alternativet {optionValue}",
     "Option {position}" : "Alternativ {position}",
@@ -160,7 +159,6 @@ OC.L10N.register(
     "Create your first field to start building the catalog." : "Skapa ditt första fält för att börja bygga katalogen.",
     "No field selected" : "Inget fält har valts",
     "Select a field from the list, or create a new one." : "Välj ett fält i listan eller skapa ett nytt.",
-    "_field configured_::_fields configured_" : ["fält konfigurerat","fält konfigurerade"],
     "Edit field {label}" : "Redigera fältet {label}",
     "Actions for {label}" : "Åtgärder för {label}",
     "Disable field" : "Inaktivera fält",
@@ -238,6 +236,8 @@ OC.L10N.register(
     "Optional email subject template" : "Valfri mall för e-postämne",
     "Optional email body template. You can use placeholders like {{fieldLabel}}" : "Valfri mall för e-postmeddelandets brödtext. Du kan använda platshållare som {{fieldLabel}}",
     "Search for admins, groups, or users" : "Sök efter administratörer, grupper eller användare",
-    "Select who should be notified. If empty, administrators are notified by default." : "Välj vilka som ska aviseras. Om fältet är tomt aviseras administratörer som standard."
+    "Select who should be notified. If empty, administrators are notified by default." : "Välj vilka som ska aviseras. Om fältet är tomt aviseras administratörer som standard.",
+    "_Option_::_Options_" : ["Alternativ","Alternativ"],
+    "_field configured_::_fields configured_" : ["fält konfigurerat","fält konfigurerade"]
 },
 "nplurals=2; plural=(n != 1);");

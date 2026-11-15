@@ -115,7 +115,6 @@
     "Cancel" : "Abbrechen",
     "Saving changes …" : "Speichere Änderungen …",
     "Save changes" : "Änderungen speichern",
-    "_Option_::_Options_" : ["Option","Optionen"],
     "_{count} option ready._::_{count} options ready._" : ["{count} Option ist verfügbar.","{count} Optionen sind verfügbar."],
     "Reorder option {optionValue}" : "Option {optionValue} umsortieren",
     "Option {position}" : "Option {position}",
@@ -158,7 +157,6 @@
     "Create your first field to start building the catalog." : "Erstelle dein erstes Feld, um mit dem Aufbau des Katalogs zu beginnen.",
     "No field selected" : "Kein Feld ausgewählt",
     "Select a field from the list, or create a new one." : "Ein Feld aus der Liste auswählen oder ein neues erstellen.",
-    "_field configured_::_fields configured_" : ["konfiguriertes Feld","konfigurierte Felder"],
     "Edit field {label}" : "Feld {label} bearbeiten",
     "Actions for {label}" : "Aktionen für {label}",
     "Disable field" : "Feld deaktivieren",
@@ -236,6 +234,8 @@
     "Optional email subject template" : "Optionale E-Mail-Betreffvorlage",
     "Optional email body template. You can use placeholders like {{fieldLabel}}" : "Optionale E-Mail-Textvorlage. Du kannst Platzhalter wie {{fieldLabel}} verwenden",
     "Search for admins, groups, or users" : "Nach Administration, Gruppen oder Benutzern suchen",
-    "Select who should be notified. If empty, administrators are notified by default." : "Auswählen, wer benachrichtigt werden soll. Wenn diese Option nicht ausgewählt ist, wird standardmäßig die Administration benachrichtigt."
+    "Select who should be notified. If empty, administrators are notified by default." : "Auswählen, wer benachrichtigt werden soll. Wenn diese Option nicht ausgewählt ist, wird standardmäßig die Administration benachrichtigt.",
+    "_Option_::_Options_" : ["Option","Optionen"],
+    "_field configured_::_fields configured_" : ["konfiguriertes Feld","konfigurierte Felder"]
 },"pluralForm" :"nplurals=2; plural=(n != 1);"
 }

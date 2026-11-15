@@ -115,7 +115,6 @@
     "Cancel" : "Batal",
     "Saving changes …" : "Menyimpan perubahan …",
     "Save changes" : "Simpan perubahan",
-    "_Option_::_Options_" : ["Opsi"],
     "_{count} option ready._::_{count} options ready._" : ["{count} opsi siap."],
     "Reorder option {optionValue}" : "Ubah urutan opsi {optionValue}",
     "Option {position}" : "Opsi {position}",
@@ -158,7 +157,6 @@
     "Create your first field to start building the catalog." : "Buat bidang pertama Anda untuk mulai membangun katalog.",
     "No field selected" : "Tidak ada bidang yang dipilih",
     "Select a field from the list, or create a new one." : "Pilih bidang dari daftar atau buat bidang baru.",
-    "_field configured_::_fields configured_" : ["bidang dikonfigurasi"],
     "Edit field {label}" : "Edit bidang {label}",
     "Actions for {label}" : "Tindakan untuk {label}",
     "Disable field" : "Nonaktifkan bidang",
@@ -236,6 +234,8 @@
     "Optional email subject template" : "Templat subjek email opsional",
     "Optional email body template. You can use placeholders like {{fieldLabel}}" : "Templat isi email opsional. Anda dapat menggunakan placeholder seperti {{fieldLabel}}",
     "Search for admins, groups, or users" : "Cari administrator, grup, atau pengguna",
-    "Select who should be notified. If empty, administrators are notified by default." : "Pilih pihak yang harus diberi notifikasi. Jika kosong, administrator akan diberi notifikasi secara default."
+    "Select who should be notified. If empty, administrators are notified by default." : "Pilih pihak yang harus diberi notifikasi. Jika kosong, administrator akan diberi notifikasi secara default.",
+    "_Option_::_Options_" : ["Opsi"],
+    "_field configured_::_fields configured_" : ["bidang dikonfigurasi"]
 },"pluralForm" :"nplurals=1; plural=0;"
 }
