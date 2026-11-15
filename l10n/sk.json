@@ -115,7 +115,6 @@
     "Cancel" : "Zrušiť",
     "Saving changes …" : "Ukladajú sa zmeny …",
     "Save changes" : "Uložiť zmeny",
-    "_Option_::_Options_" : ["Možnosť","Možnosti","Možnosti","Možnosti"],
     "_{count} option ready._::_{count} options ready._" : ["{count} možnosť je pripravená.","{count} možnosti sú pripravené.","Počet pripravených možností: {count}.","{count} možností je pripravených."],
     "Reorder option {optionValue}" : "Zmeniť poradie možnosti {optionValue}",
     "Option {position}" : "Možnosť {position}",
@@ -158,7 +157,6 @@
     "Create your first field to start building the catalog." : "Vytvorte svoje prvé pole a začnite budovať katalóg.",
     "No field selected" : "Nie je vybrané žiadne pole",
     "Select a field from the list, or create a new one." : "Vyberte pole zo zoznamu alebo vytvorte nové.",
-    "_field configured_::_fields configured_" : ["nakonfigurované pole","nakonfigurované polia","nakonfigurovaných polí","nakonfigurovaných polí"],
     "Edit field {label}" : "Upraviť pole {label}",
     "Actions for {label}" : "Akcie pre {label}",
     "Disable field" : "Zakázať pole",
@@ -236,6 +234,8 @@
     "Optional email subject template" : "Voliteľná šablóna predmetu e-mailu",
     "Optional email body template. You can use placeholders like {{fieldLabel}}" : "Voliteľná šablóna tela e-mailu. Môžete použiť zástupné symboly, napríklad {{fieldLabel}}",
     "Search for admins, groups, or users" : "Vyhľadajte správcov, skupiny alebo používateľov",
-    "Select who should be notified. If empty, administrators are notified by default." : "Vyberte, komu sa má poslať upozornenie. Ak nič nevyberiete, predvolene budú upozornení správcovia."
+    "Select who should be notified. If empty, administrators are notified by default." : "Vyberte, komu sa má poslať upozornenie. Ak nič nevyberiete, predvolene budú upozornení správcovia.",
+    "_Option_::_Options_" : ["Možnosť","Možnosti","Možnosti","Možnosti"],
+    "_field configured_::_fields configured_" : ["nakonfigurované pole","nakonfigurované polia","nakonfigurovaných polí","nakonfigurovaných polí"]
 },"pluralForm" :"nplurals=4; plural=(n % 1 == 0 && n == 1 ? 0 : n % 1 == 0 && n >= 2 && n <= 4 ? 1 : n % 1 != 0 ? 2: 3);"
 }
