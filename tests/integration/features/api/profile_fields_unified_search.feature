@@ -137,3 +137,55 @@ Feature: profile fields unified search
       | (jq).ocs.data.entries[0].subline   | Unified Region Hidden: LATAM - Hidden  |
       | (jq).ocs.data.entries[1].title     | profileviewer-displayname              |
       | (jq).ocs.data.entries[1].subline   | Unified Region Private: LATAM - Private |
+
+  Scenario: admins can inspect each hidden field of an exact UID with pagination
+    Given as user "admin"
+    When sending "post" to ocs "/apps/profile_fields/api/v1/definitions"
+      | fieldKey          | mailcow_mailbox         |
+      | label             | Mailbox                |
+      | type              | email                  |
+      | editPolicy        | admins                 |
+      | exposurePolicy    | hidden                 |
+      | sortOrder         | 10                     |
+      | active            | true                   |
+    Then the response should have a status code 201
+    And fetch field "(MCP_MAILBOX_FIELD_ID)(jq).ocs.data.id" from previous JSON response
+    When sending "post" to ocs "/apps/profile_fields/api/v1/definitions"
+      | fieldKey          | mail_admin_decision     |
+      | label             | Authorization          |
+      | type              | text                   |
+      | editPolicy        | admins                 |
+      | exposurePolicy    | hidden                 |
+      | sortOrder         | 20                     |
+      | active            | true                   |
+    Then the response should have a status code 201
+    And fetch field "(MCP_DECISION_FIELD_ID)(jq).ocs.data.id" from previous JSON response
+    When sending "put" to ocs "/apps/profile_fields/api/v1/users/profileuser/values/<MCP_MAILBOX_FIELD_ID>"
+      | value             | test@example.org       |
+      | currentVisibility | private                |
+    Then the response should have a status code 200
+    When sending "put" to ocs "/apps/profile_fields/api/v1/users/profileuser/values/<MCP_DECISION_FIELD_ID>"
+      | value             | pending                |
+      | currentVisibility | private                |
+    Then the response should have a status code 200
+    When sending "get" to ocs "/search/providers/profile_fields.directory/search?term=uid%3Aprofileuser&limit=1&from=/settings/users"
+    Then the response should have a status code 200
+    And the response should be a JSON array with the following mandatory values
+      | key                               | value                         |
+      | (jq).ocs.data.isPaginated         | true                          |
+      | (jq).ocs.data.cursor              | 1                             |
+      | (jq).ocs.data.entries             | (jq)length == 1               |
+      | (jq).ocs.data.entries[0].subline  | Mailbox: test@example.org     |
+    When sending "get" to ocs "/search/providers/profile_fields.directory/search?term=uid%3Aprofileuser&limit=1&cursor=1&from=/settings/users"
+    Then the response should have a status code 200
+    And the response should be a JSON array with the following mandatory values
+      | key                               | value                         |
+      | (jq).ocs.data.isPaginated         | false                         |
+      | (jq).ocs.data.entries             | (jq)length == 1               |
+      | (jq).ocs.data.entries[0].subline  | Authorization: pending        |
+    Given as user "profileviewer"
+    When sending "get" to ocs "/search/providers/profile_fields.directory/search?term=uid%3Aprofileuser&from=/settings/users"
+    Then the response should have a status code 200
+    And the response should be a JSON array with the following mandatory values
+      | key                               | value                         |
+      | (jq).ocs.data.entries             | (jq)length == 0               |
