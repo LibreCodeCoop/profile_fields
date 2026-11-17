@@ -204,7 +204,7 @@ OC.L10N.register(
     "Additional profile fields" : "Zusätzliche Profilfelder",
     "No additional fields yet" : "Noch keine weiteren Felder",
     "Your administrator has not assigned additional profile fields to your account yet." : "Deine Administration hat deinem Konto noch keine zusätzlichen Profilfelder zugewiesen.",
-    "Managed by your administrator." : "Wird von deiiner Administration verwaltet.",
+    "Managed by your administrator." : "Wird von deiner Administration verwaltet.",
     "Read-only field value" : "Schreibgeschützter Feldwert",
     "Additional profile field visibility" : "Zusätzliche Profilfeld-Sichtbarkeit",
     "Choose who can see each additional profile field on your profile." : "Auswählen, wer die einzelnen zusätzlichen Profilfelder in deinem Profil sehen kann.",
