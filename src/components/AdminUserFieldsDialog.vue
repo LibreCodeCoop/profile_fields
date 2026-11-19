@@ -315,7 +315,7 @@ export default defineComponent({
 			}
 
 			if (field.definition.type === 'number' && !plainNumberPattern.test(rawValue)) {
-				// TRANSLATORS "{fieldLabel}" is a profile field label.
+				// TRANSLATORS "{fieldLabel}" is a profile field label. "Plain numeric" means digits only, optionally with a leading minus and a dot as decimal separator, e.g. 42, -7 or 3.5 (no decimal comma, thousands separators or units).
 				return t('profile_fields', '{fieldLabel} must be a plain numeric value.', { fieldLabel: field.definition.label })
 			}
 
