@@ -1,10 +1,12 @@
 # SPDX-FileCopyrightText: 2025 Nextcloud GmbH and Nextcloud contributors
 # SPDX-License-Identifier: MIT
 
-0c1923aac02786a2cfe5fb1d41649c6d lint-info-xml.yml
-8b65678da826d72e47aded7d71803732 lint-php-cs.yml
-ce6af16282fe39c722b044200d64690f lint-php.yml
-3fef15986dc6afdbf60685683ac28774 openapi.yml
-26fe8b9690716b621f085df64ff395dc psalm.yml
-df735e3a28099b65ba7e3fe63d96c72c reuse.yml
-36e0b36945119dc63b8223bb1065fa2b sync-workflow-templates.yml
+# workflow-lock-schema: 3
+
+{"workflow":"lint-info-xml.yml","sha256":"3a2ed92f25ae9a233d6d64d44bd122b39dee0f153e7a1a9dc81bfb19adcec09b","catalog_commit":"3af264ca6c15bf8799a38e7292916cc59c689f93"}
+{"workflow":"lint-php-cs.yml","sha256":"5a9693b730f2f5196002e0d70af635bb5122ee2460096871818c508dc7553742","catalog_commit":"3af264ca6c15bf8799a38e7292916cc59c689f93"}
+{"workflow":"lint-php.yml","sha256":"83d968027814e65e315744d535022cd81d5c96ed38c449d96d74dda8828f4728","catalog_commit":"3af264ca6c15bf8799a38e7292916cc59c689f93"}
+{"workflow":"openapi.yml","sha256":"fbad4ed3a459b507b7a35425d1916fdeac8cab70d0c8ca2af4fd19226436501e","catalog_commit":"3af264ca6c15bf8799a38e7292916cc59c689f93"}
+{"workflow":"psalm.yml","sha256":"0dde38b2c1fdbc973e5cba0574d4249219d26b894db82d0dd71fbec53f6bdd1a","catalog_commit":"3af264ca6c15bf8799a38e7292916cc59c689f93"}
+{"workflow":"reuse.yml","sha256":"f563735e1a573cca3acb2975321ee760e5d52cb6ca64bfcc11a5da4ae0f9bf73","catalog_commit":"3af264ca6c15bf8799a38e7292916cc59c689f93"}
+{"workflow":"sync-workflow-templates.yml","sha256":"be8d4092f92f8a4373482170f3e07036da3fcf684bbebdcff25cf65eb17bb228","catalog_commit":"3af264ca6c15bf8799a38e7292916cc59c689f93"}
