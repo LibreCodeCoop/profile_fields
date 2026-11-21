@@ -1,0 +1,14 @@
+# SPDX-FileCopyrightText: 2026 LibreCode coop and contributors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+--- a/.github/workflows/sync-workflow-templates.yml
++++ b/.github/workflows/sync-workflow-templates.yml
+@@ -147,7 +147,8 @@
+         with:
+           source: source/workflow-templates
+           target: target
+           catalog-commit: ${{ steps.catalog-revision.outputs.sha }}
++          include: lint-info-xml.yml,lint-php-cs.yml,lint-php.yml,openapi.yml,psalm.yml,reuse.yml,sync-workflow-templates.yml
+ 
+       - name: Create Pull Request
+         if: ${{ steps.sync.outputs.changed == 'true' }}
