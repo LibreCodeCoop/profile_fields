@@ -149,20 +149,21 @@ class ProfileFieldDirectorySearchService {
 			return ['total' => 0, 'items' => []];
 		}
 
-		$definitions = [];
-		foreach ($this->fieldDefinitionService->findActiveOrdered() as $definition) {
-			$definitions[$definition->getId()] = $definition;
+		$userUid = $user->getUID();
+		$valuesByDefinitionId = [];
+		foreach ($this->fieldValueMapper->findByUserUid($userUid) as $fieldValue) {
+			$valuesByDefinitionId[$fieldValue->getFieldDefinitionId()] = $fieldValue;
 		}
 
 		$items = [];
-		foreach ($this->fieldValueMapper->findByUserUid($userUid) as $fieldValue) {
-			$definition = $definitions[$fieldValue->getFieldDefinitionId()] ?? null;
-			if ($definition === null) {
+		foreach ($this->fieldDefinitionService->findActiveOrdered() as $definition) {
+			$fieldValue = $valuesByDefinitionId[$definition->getId()] ?? null;
+			if ($fieldValue === null) {
 				continue;
 			}
 
 			$scalarValue = $this->extractScalarValue($fieldValue);
-			if ($scalarValue === null) {
+			if ($scalarValue === null || $scalarValue === '') {
 				continue;
 			}
 

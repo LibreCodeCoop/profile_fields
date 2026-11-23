@@ -64,9 +64,10 @@ For administrative inspection of a single profile, an **instance administrator**
 search for `uid:<nextcloud_uid>` with provider `profile_fields.directory`. The
 results contain one populated field per paginated search entry, including hidden
 admin-managed fields. Group administrators and regular users receive no results
-from this exact-UID lookup. Normal directory search behavior is unchanged.
+from this exact-UID lookup. Regular directory search also renders boolean values as
+`true` or `false`, rather than `1` or an empty string.
 
 This is a read-only discovery interface, **not** a mailbox provisioning API or a
 bulk-export mechanism. Use the existing `profile_fields:data:import --dry-run` and
 `profile_fields:data:import` commands for validated, idempotent administrative
-imports. Never infer a cooperado's approval from a technical mailbox match.
+imports.
