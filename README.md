@@ -52,3 +52,22 @@ Run the app commands from the Nextcloud stack root, not from the host PHP enviro
 
 ### Workflow automation
 ![Workflow automation](img/screenshots/workflow-notify-admins.png)
+
+## Nextcloud global search integration
+
+Profile Fields already registers the `profile_fields.directory` provider in Nextcloud global
+search. MCP clients that consume Nextcloud's global search can use this provider
+without any connector-specific modification. Searches match stored field values,
+respecting field visibility and the caller's Nextcloud privileges.
+
+For administrative inspection of a single profile, an **instance administrator** can
+search for `uid:<nextcloud_uid>` with provider `profile_fields.directory`. The
+results contain one populated field per paginated search entry, including hidden
+admin-managed fields. Group administrators and regular users receive no results
+from this exact-UID lookup. Regular directory search also renders boolean values as
+`true` or `false`, rather than `1` or an empty string.
+
+This is a read-only discovery interface, **not** a mailbox provisioning API or a
+bulk-export mechanism. Use the existing `profile_fields:data:import --dry-run` and
+`profile_fields:data:import` commands for validated, idempotent administrative
+imports.

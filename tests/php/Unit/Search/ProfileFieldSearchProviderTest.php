@@ -159,6 +159,25 @@ class ProfileFieldSearchProviderTest extends TestCase {
 		$this->assertSame('https://cloud.test/settings/users?search=alice', $entry['resourceUrl']);
 	}
 
+	public function testExactUidQueryDelegatesToPrivilegedLookup(): void {
+		$l10n = $this->buildL10n();
+		$urlGenerator = $this->createMock(IURLGenerator::class);
+		$service = $this->createMock(ProfileFieldDirectorySearchService::class);
+		$actor = $this->createMock(IUser::class);
+		$query = $this->createMock(ISearchQuery::class);
+		$query->method('getTerm')->willReturn('uid:alice');
+		$query->method('getLimit')->willReturn(10);
+		$query->method('getCursor')->willReturn(null);
+
+		$service->expects($this->once())->method('searchByUserUid')
+			->with($actor, 'alice', 10, 0)
+			->willReturn(['total' => 0, 'items' => []]);
+		$service->expects($this->never())->method('search');
+
+		$provider = new ProfileFieldSearchProvider($l10n, $urlGenerator, $service);
+		$this->assertSame([], $provider->search($actor, $query)->jsonSerialize()['entries']);
+	}
+
 	private function buildL10n(): IL10N&MockObject {
 		$l10n = $this->createMock(IL10N::class);
 		$l10n->method('t')->willReturnCallback(static fn (string $text): string => $text);

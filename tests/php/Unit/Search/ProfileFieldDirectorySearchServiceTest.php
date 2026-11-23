@@ -164,6 +164,113 @@ class ProfileFieldDirectorySearchServiceTest extends TestCase {
 		$this->assertSame('bruno', $result['items'][0]['user_uid']);
 	}
 
+	public function testAdminCanInspectAllPopulatedFieldsForExactUidWithPagination(): void {
+		$actor = $this->createMock(IUser::class);
+		$actor->method('getUID')->willReturn('admin');
+		$this->groupManager->expects($this->once())->method('isAdmin')->with('admin')->willReturn(true);
+		$user = $this->buildUser('Alice Doe');
+		$user->method('getUID')->willReturn('alice');
+		$this->userManager->expects($this->once())->method('get')->with('alice')->willReturn($user);
+
+		$mailbox = $this->buildDefinition(1, 'mailcow_mailbox', 'Mailbox', userVisible: false);
+		$status = $this->buildDefinition(2, 'mail_provisioning_status', 'Authorization status', userVisible: false);
+		$this->fieldDefinitionService->expects($this->once())->method('findActiveOrdered')->willReturn([$mailbox, $status]);
+		$this->fieldValueMapper->expects($this->once())->method('findByUserUid')->with('alice')->willReturn([
+			$this->buildValue(1, 'alice', 'private', 'alice@example.org'),
+			$this->buildValue(2, 'alice', 'private', 'pending'),
+			$this->buildValue(3, 'alice', 'private', 'ignore-me'),
+		]);
+
+		$result = $this->service->searchByUserUid($actor, 'alice', 1, 1);
+		$this->assertSame(2, $result['total']);
+		$this->assertCount(1, $result['items']);
+		$this->assertSame('alice', $result['items'][0]['user_uid']);
+		$this->assertSame('Alice Doe', $result['items'][0]['display_name']);
+		$this->assertSame('mail_provisioning_status', $result['items'][0]['matched_fields'][0]['field_key']);
+		$this->assertSame('pending', $result['items'][0]['matched_fields'][0]['value']);
+	}
+
+	public function testExactUidLookupUsesCanonicalUidAndConfiguredOrdering(): void {
+		$actor = $this->createMock(IUser::class);
+		$actor->method('getUID')->willReturn('admin');
+		$this->groupManager->method('isAdmin')->willReturn(true);
+		$user = $this->buildUser('Alice');
+		$user->method('getUID')->willReturn('alice');
+		$this->userManager->expects($this->once())->method('get')->with('Alice')->willReturn($user);
+		$this->fieldDefinitionService->method('findActiveOrdered')->willReturn([
+			$this->buildDefinition(2, 'first', 'First'),
+			$this->buildDefinition(1, 'second', 'Second'),
+		]);
+		$this->fieldValueMapper->expects($this->once())->method('findByUserUid')->with('alice')->willReturn([
+			$this->buildValue(1, 'alice', 'private', 'last'),
+			$this->buildValue(2, 'alice', 'private', 'top'),
+		]);
+		$result = $this->service->searchByUserUid($actor, 'Alice', 1, 0);
+		$this->assertSame(2, $result['total']);
+		$this->assertSame('alice', $result['items'][0]['user_uid']);
+		$this->assertSame('first', $result['items'][0]['matched_fields'][0]['field_key']);
+	}
+
+	public function testExactUidSkipsEmptyValuesButRetainsBooleanFalse(): void {
+		$actor = $this->createMock(IUser::class);
+		$actor->method('getUID')->willReturn('admin');
+		$this->groupManager->method('isAdmin')->willReturn(true);
+		$user = $this->buildUser('Alice');
+		$user->method('getUID')->willReturn('alice');
+		$this->userManager->method('get')->willReturn($user);
+		$this->fieldDefinitionService->method('findActiveOrdered')->willReturn([
+			$this->buildDefinition(1, 'empty', 'Empty'),
+			$this->buildDefinition(2, 'enabled', 'Enabled'),
+		]);
+		$false = $this->buildValue(2, 'alice', 'private', '');
+		$false->setValueJson('{"value":false}');
+		$this->fieldValueMapper->method('findByUserUid')->willReturn([
+			$this->buildValue(1, 'alice', 'private', '   '),
+			$false,
+		]);
+		$result = $this->service->searchByUserUid($actor, 'alice', 10, 0);
+		$this->assertSame(1, $result['total']);
+		$this->assertSame('false', $result['items'][0]['matched_fields'][0]['value']);
+	}
+
+	public function testRegularSearchMatchesBooleanWords(): void {
+		$this->fieldDefinitionService->method('findActiveOrdered')->willReturn([
+			$this->buildDefinition(1, 'enabled', 'Enabled'),
+		]);
+		$true = $this->buildValue(1, 'alice', 'public', '');
+		$true->setValueJson('{"value":true}');
+		$false = $this->buildValue(1, 'bob', 'public', '');
+		$false->setValueJson('{"value":false}');
+		$this->fieldValueMapper->method('findAllOrdered')->willReturn([$true, $false]);
+		$this->userManager->method('get')->willReturnCallback(fn (string $uid): IUser => $this->buildUser($uid));
+		$trueResult = $this->service->search(null, 'true', 10, 0);
+		$this->assertSame(1, $trueResult['total']);
+		$this->assertSame('true', $trueResult['items'][0]['matched_fields'][0]['value']);
+		$falseResult = $this->service->search(null, 'fal', 10, 0);
+		$this->assertSame(1, $falseResult['total']);
+		$this->assertSame('false', $falseResult['items'][0]['matched_fields'][0]['value']);
+	}
+
+	public function testNonAdminCannotLookupPrivateFieldsByUid(): void {
+		$actor = $this->createMock(IUser::class);
+		$actor->method('getUID')->willReturn('groupadmin');
+		$this->groupManager->expects($this->once())->method('isAdmin')->with('groupadmin')->willReturn(false);
+		$this->fieldValueMapper->expects($this->never())->method('findByUserUid');
+		$this->fieldDefinitionService->expects($this->never())->method('findActiveOrdered');
+		$this->userManager->expects($this->never())->method('get');
+
+		$this->assertSame(['total' => 0, 'items' => []], $this->service->searchByUserUid($actor, 'alice', 20, 0));
+	}
+
+	public function testUnknownUidDoesNotLoadStoredValues(): void {
+		$actor = $this->createMock(IUser::class);
+		$actor->method('getUID')->willReturn('admin');
+		$this->groupManager->method('isAdmin')->willReturn(true);
+		$this->userManager->method('get')->with('does-not-exist')->willReturn(null);
+		$this->fieldValueMapper->expects($this->never())->method('findByUserUid');
+		$this->assertSame(['total' => 0, 'items' => []], $this->service->searchByUserUid($actor, 'does-not-exist', 20, 0));
+	}
+
 	private function buildDefinition(int $id, string $fieldKey, string $label, bool $userVisible = true): FieldDefinition {
 		$definition = new FieldDefinition();
 		$definition->setId($id);

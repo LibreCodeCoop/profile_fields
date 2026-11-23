@@ -114,6 +114,76 @@ class ProfileFieldDirectorySearchService {
 		];
 	}
 
+	/**
+	 * Inspect one user's populated fields via the global search provider.
+	 *
+	 * Each field is a separate paginated search result, so connectors that
+	 * consume search snippets do not silently lose fields from a profile.
+	 * This privileged lookup deliberately returns nothing to non-admins.
+	 *
+	 * @return array{total: int, items: list<array{
+	 *     user_uid: string,
+	 *     display_name: string,
+	 *     matched_fields: list<array{field_key: string, field_label: string, value: string}>
+	 * }>}
+	 */
+	public function searchByUserUid(?IUser $actor, string $userUid, int $limit, int $offset): array {
+		if ($limit < 1) {
+			throw new InvalidArgumentException('limit must be greater than 0');
+		}
+		if ($offset < 0) {
+			throw new InvalidArgumentException('offset must be greater than or equal to 0');
+		}
+
+		$actorUid = $actor?->getUID();
+		if ($actorUid === null || !$this->groupManager->isAdmin($actorUid)) {
+			return ['total' => 0, 'items' => []];
+		}
+
+		$userUid = trim($userUid);
+		if ($userUid === '') {
+			return ['total' => 0, 'items' => []];
+		}
+		$user = $this->userManager->get($userUid);
+		if ($user === null) {
+			return ['total' => 0, 'items' => []];
+		}
+
+		$userUid = $user->getUID();
+		$valuesByDefinitionId = [];
+		foreach ($this->fieldValueMapper->findByUserUid($userUid) as $fieldValue) {
+			$valuesByDefinitionId[$fieldValue->getFieldDefinitionId()] = $fieldValue;
+		}
+
+		$items = [];
+		foreach ($this->fieldDefinitionService->findActiveOrdered() as $definition) {
+			$fieldValue = $valuesByDefinitionId[$definition->getId()] ?? null;
+			if ($fieldValue === null) {
+				continue;
+			}
+
+			$scalarValue = $this->extractScalarValue($fieldValue);
+			if ($scalarValue === null || $scalarValue === '') {
+				continue;
+			}
+
+			$items[] = [
+				'user_uid' => $userUid,
+				'display_name' => $this->resolveDisplayName($user, $userUid),
+				'matched_fields' => [[
+					'field_key' => $definition->getFieldKey(),
+					'field_label' => $definition->getLabel(),
+					'value' => $scalarValue,
+				]],
+			];
+		}
+
+		return [
+			'total' => count($items),
+			'items' => array_slice($items, $offset, $limit),
+		];
+	}
+
 	private function extractScalarValue(FieldValue $value): ?string {
 		$decoded = json_decode($value->getValueJson(), true);
 		$scalar = $decoded['value'] ?? null;
@@ -121,7 +191,7 @@ class ProfileFieldDirectorySearchService {
 			return null;
 		}
 
-		return trim((string)$scalar);
+		return is_bool($scalar) ? ($scalar ? 'true' : 'false') : trim((string)$scalar);
 	}
 
 	private function isSearchableForActor(FieldExposurePolicy $exposurePolicy, string $currentVisibility, bool $actorIsAdmin, bool $actorIsAuthenticated): bool {
