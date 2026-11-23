@@ -50,7 +50,11 @@ class ProfileFieldSearchProvider implements IProvider {
 		}
 
 		$cursor = $this->normalizeCursor($query->getCursor());
-		$result = $this->searchService->search($user, $term, $query->getLimit(), $cursor);
+		if (str_starts_with(mb_strtolower($term), 'uid:')) {
+			$result = $this->searchService->searchByUserUid($user, substr($term, 4), $query->getLimit(), $cursor);
+		} else {
+			$result = $this->searchService->search($user, $term, $query->getLimit(), $cursor);
+		}
 		$entries = array_map(fn (array $item): SearchResultEntry => $this->buildEntry($item), $result['items']);
 		if ($cursor + count($entries) >= $result['total']) {
 			return SearchResult::complete($this->getName(), $entries);
