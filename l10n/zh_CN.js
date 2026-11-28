@@ -20,6 +20,7 @@ OC.L10N.register(
     "Email" : "电子邮件",
     "Select" : "选择",
     "Admins only" : "仅管理员",
+    "Actions for {label}" : "{label} 的操作",
     "Active" : "作用",
     "Label" : "标签",
     "Rules" : "规则",
